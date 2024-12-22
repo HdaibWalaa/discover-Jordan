@@ -1,0 +1,39 @@
+{
+    "expo": {
+        "name": "rehletna-jo",
+        "slug": "rehletna-jo",
+        "version": "1.0.0",
+        "orientation": "portrait",
+        "icon": "./assets/icon.png",
+        "userInterfaceStyle": "light",
+        "splash": {
+            "image": "./assets/splash.png",
+            "resizeMode": "contain",
+            "backgroundColor": "#ffffff"
+        },
+        "ios": {
+            "supportsTablet": true,
+            "bundleIdentifier": "com.walaa141.rehletnajo"
+        },
+        "android": {
+            "adaptiveIcon": {
+                "foregroundImage": "./assets/adaptive-icon.png",
+                "backgroundColor": "#ffffff"
+            },
+            "package": "com.walaa141.rehletnajo"
+        },
+        "web": {
+            "favicon": "./assets/favicon.png"
+        },
+        "extra": {
+            "eas": {
+                "projectId": "6a74be3a-afcf-43e1-8b70-0f41fcb45eed"
+            }
+        },
+        "plugins": [
+            "expo-asset"
+        ]
+    }
+
+
+}
