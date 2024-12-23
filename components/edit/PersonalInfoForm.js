@@ -1,73 +1,37 @@
-import React, { useState } from "react";
+import React from "react";
 import {
   View,
-  Text,
   TextInput,
-  Button,
-  Image,
   TouchableOpacity,
-  Alert,
+  Text,
+  StyleSheet,
 } from "react-native";
-import * as ImagePicker from "expo-image-picker";
-import { useNavigation } from "@react-navigation/native"; // For navigation
-import styles from "../../screens/Edit/EditUserProfileStyles";
-import {HeightSpacer} from "../index";
+import { COLORS } from "../../constants/theme";
+import {
+  widthPercentageToDP as wp,
+  heightPercentageToDP as hp,
+} from "react-native-responsive-screen";
 
-const PersonalInfoForm = () => {
-  const [firstName, setFirstName] = useState("");
-  const [lastName, setLastName] = useState("");
-  const [username, setUsername] = useState("");
-  const [birthday, setBirthday] = useState("");
-  const [gender, setGender] = useState(""); // Male or Female options.
-  const [description, setDescription] = useState("");
-  const [phoneNumber, setPhoneNumber] = useState("");
-  const [image, setImage] = useState(null);
-
-  const navigation = useNavigation(); // Navigation object to navigate to the next screen
-
-  const pickImage = async () => {
-    let result = await ImagePicker.launchImageLibraryAsync({
-      mediaTypes: ImagePicker.MediaTypeOptions.Images,
-      allowsEditing: true,
-      quality: 1,
-    });
-
-    if (!result.canceled) {
-      const { uri } = result.assets[0];
-      setImage(uri);
-    }
-  };
-
-const handleNext = () => {
-  const data = {
-    firstName,
-    lastName,
-    username,
-    birthday,
-    gender,
-    description,
-    phoneNumber,
-    image, // Ensure the image is passed to TagsSelection
-  };
-
-  console.log("Data being passed to TagsSelection screen:", data);
-
-  if (firstName && lastName && username && birthday && gender && phoneNumber) {
-    navigation.navigate("TagsSelection", data); // Pass the image to the next screen
-  } else {
-    Alert.alert("Please fill all the required fields.");
-  }
-};
-
-
-
-
-
-
+const PersonalInfoForm = ({
+  firstName,
+  lastName,
+  username,
+  birthday,
+  gender,
+  phoneNumber,
+  description,
+  setFirstName,
+  setLastName,
+  setUsername,
+  setBirthday,
+  setGender,
+  setPhoneNumber,
+  setDescription,
+  handleNext,
+  birthdayWarning,
+}) => {
   return (
-    <View style={styles.container1}>
-      <Text style={styles.header}>Personal Information</Text>
-
+    <View>
       <View style={styles.inputContainer}>
         <TextInput
           style={styles.input}
@@ -76,7 +40,6 @@ const handleNext = () => {
           onChangeText={setFirstName}
         />
       </View>
-
       <View style={styles.inputContainer}>
         <TextInput
           style={styles.input}
@@ -85,7 +48,6 @@ const handleNext = () => {
           onChangeText={setLastName}
         />
       </View>
-
       <View style={styles.inputContainer}>
         <TextInput
           style={styles.input}
@@ -94,7 +56,6 @@ const handleNext = () => {
           onChangeText={setUsername}
         />
       </View>
-
       <View style={styles.inputContainer}>
         <TextInput
           style={styles.input}
@@ -102,8 +63,10 @@ const handleNext = () => {
           value={birthday}
           onChangeText={setBirthday}
         />
+        {birthdayWarning ? (
+          <Text style={styles.warningText}>{birthdayWarning}</Text>
+        ) : null}
       </View>
-
       <View style={styles.genderContainer}>
         <TouchableOpacity
           style={[
@@ -114,7 +77,6 @@ const handleNext = () => {
         >
           <Text style={styles.genderText}>Male</Text>
         </TouchableOpacity>
-
         <TouchableOpacity
           style={[
             styles.genderButton,
@@ -125,7 +87,6 @@ const handleNext = () => {
           <Text style={styles.genderText}>Female</Text>
         </TouchableOpacity>
       </View>
-
       <View style={styles.inputContainer}>
         <TextInput
           style={styles.input}
@@ -134,7 +95,6 @@ const handleNext = () => {
           onChangeText={setPhoneNumber}
         />
       </View>
-
       <View style={styles.inputContainer}>
         <TextInput
           style={styles.input}
@@ -147,9 +107,167 @@ const handleNext = () => {
       <TouchableOpacity style={styles.button} onPress={handleNext}>
         <Text style={styles.buttonText}>Next</Text>
       </TouchableOpacity>
-      <HeightSpacer height={50} />
     </View>
   );
 };
 
 export default PersonalInfoForm;
+
+
+
+const styles = StyleSheet.create({
+  inputContainer: {
+    marginBottom: 10,
+  },
+  header: {
+    fontSize: 24,
+    fontWeight: "bold",
+    marginBottom: 20,
+    textAlign: "center", // Center align the header text
+    color: "#000", // Black text color
+  },
+  inputContainer: {
+    flexDirection: "row",
+    alignItems: "center",
+    borderBottomWidth: 1,
+    borderColor: "#D1D1D1", // Lighter grey for borders
+    marginVertical: 15, // More margin between inputs
+    paddingBottom: 5,
+    paddingHorizontal: 10, // Add horizontal padding
+    backgroundColor: "#F9F9F9", // Slight background color for input
+    borderRadius: 10, // Rounded corners
+  },
+  input: {
+    marginLeft: 10,
+    fontSize: 16,
+    flex: 1,
+    paddingVertical: 10,
+    color: "#000", // Black text color
+  },
+  icon: {
+    width: 20, // Icon size matching the design
+    height: 20,
+  },
+  genderContainer: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    marginVertical: 20,
+    paddingHorizontal: 10,
+  },
+  genderButton: {
+    flexDirection: "row",
+    alignItems: "center",
+    padding: 15,
+    borderWidth: 2,
+    borderRadius: 12,
+    width: "45%",
+    justifyContent: "center",
+
+    borderColor: COLORS.gray, // Yellow border for non-selected buttons
+  },
+  genderSelected: {
+    borderColor: "#FCD228",
+    backgroundColor: "#FCD22820", // Light transparent yellow when selected
+  },
+  selectedTags: {
+    borderColor: "#FCD228",
+    backgroundColor: "#FCD22820",
+  },
+  genderText: {
+    marginLeft: 10,
+    fontSize: 16,
+    fontWeight: "600",
+    color: "#000", // Black text color for gender options
+  },
+  button: {
+    backgroundColor: "#FCD228", // Primary yellow button color
+    paddingVertical: hp("2%"),
+    borderRadius: 12,
+    alignItems: "center",
+    marginTop: 30,
+    width: "100%", // Full-width button
+  },
+  buttonText: {
+    fontSize: 18,
+    fontWeight: "bold",
+    color: "#000", // Black text color for button
+  },
+  avatarContainer: {
+    alignItems: "center",
+    marginTop: 30,
+  },
+  avatarImage: {
+    width: 100, // Avatar size
+    height: 100,
+    borderRadius: 50, // Round avatar
+    backgroundColor: "#FCD228", // Background color matching the theme
+  },
+  editIcon: {
+    position: "absolute",
+    bottom: 0,
+    right: 10,
+    backgroundColor: "#fff",
+    padding: 5,
+    borderRadius: 25,
+    borderColor: "#FCD228",
+    borderWidth: 2,
+  },
+  formHeader: {
+    textAlign: "center",
+    fontSize: 18,
+    fontWeight: "600",
+    color: "#000",
+    marginBottom: 10,
+  },
+  tagContainer: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    justifyContent: "space-evenly",
+    marginTop: 20,
+  },
+  tag: {
+    backgroundColor: "#F5F5F5", // Light gray background for non-selected tags
+    padding: 10,
+    margin: 5,
+    borderRadius: 25, // Rounded shape
+    borderWidth: 2,
+    borderColor: "transparent", // No border by default
+    flexDirection: "row", // Icon and text in row
+    alignItems: "center", // Vertically center the content
+    justifyContent: "center",
+    width: wp("22%"),
+    height: wp("10%"), // Adjust size as needed
+  },
+  selectedTag: {
+    backgroundColor: "#FCD22820", // Light yellow background for selected tag
+    borderColor: "#FCD228", // Yellow border for selected tags
+  },
+  tagIcon: {
+    width: 20, // Adjust icon size
+    height: 20,
+    marginRight: 5, // Space between icon and text
+  },
+  tagText: {
+    fontSize: 14,
+    fontWeight: "600",
+    color: "#000", // Black text color
+  },
+  button: {
+    backgroundColor: "#FCD228",
+    paddingVertical: hp("2%"),
+    borderRadius: 12,
+    alignItems: "center",
+    marginTop: 30,
+    width: "100%",
+  },
+  buttonText: {
+    fontSize: 18,
+    fontWeight: "bold",
+    color: "#000",
+  },
+  warningText: {
+    color: "red",
+    fontSize: 12,
+    marginTop: 5,
+  },
+});

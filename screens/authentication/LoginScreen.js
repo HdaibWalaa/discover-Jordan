@@ -52,7 +52,7 @@ function LoginScreen() {
         authCtx.authenticate(token, first_login);
 
         if (first_login) {
-          navigation.reset({ index: 0, routes: [{ name: "EditProfile" }] });
+          navigation.reset({ index: 0, routes: [{ name: "EditUserProfile" }] });
         } else {
           navigation.reset({ index: 0, routes: [{ name: "BottomTabs" }] });
         }

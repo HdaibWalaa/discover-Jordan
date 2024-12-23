@@ -39,7 +39,6 @@ import OtherUserProfile from "./profile/OtherUserProfile";
 import PlacesFilter from "./search/PlacesFilter";
 import ContactUs from "./Sitting/ContactUs";
 import EditUserProfile from "./Edit/EditUserProfile";
-import TagsSelection from "./Edit/TagsSelection";
 export {
   Home,
   Onboarding,
@@ -82,5 +81,4 @@ export {
   OtherUserProfile,
   PlacesFilter,
   EditUserProfile,
-  TagsSelection,
 };
