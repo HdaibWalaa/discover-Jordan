@@ -110,9 +110,9 @@ function AuthForm({ isLogin, onSubmit, credentialsInvalid }) {
       <View>
         <ReusableBtn
           onPress={submitHandler}
-          btnText={isLogin ? "Log In" : "Sign Up"}
+          btnText={isLogin ? "LogIn" : "Sign Up"}
           backgroundColor={COLORS.primary}
-          width={294}
+          width={75}
           borderColor={COLORS.primary}
           borderWidth={0}
           textColor={COLORS.black}
@@ -124,7 +124,7 @@ function AuthForm({ isLogin, onSubmit, credentialsInvalid }) {
             <ReusableText
               text={"Forgot Your Password?"}
               family={"Medium"}
-              size={TEXT.xSmall}
+              size={TEXT.medium}
               color={COLORS.secondary}
               align={"center"}
             />

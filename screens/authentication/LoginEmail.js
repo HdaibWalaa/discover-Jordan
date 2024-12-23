@@ -2,7 +2,7 @@ import React from "react";
 import { View, Text, ImageBackground, Pressable } from "react-native";
 import { LinearGradient } from "expo-linear-gradient";
 import { COLORS } from "../../constants/theme";
-import styles from "./LoginStyles";
+import styles from "./LoginEmailStyles";
 import {
   GoBack,
   ReusableBtn,
@@ -10,12 +10,23 @@ import {
   GoogleButton,
   InstagramButton,
 } from "../../components";
+import {
+  widthPercentageToDP as wp,
+  heightPercentageToDP as hp,
+} from "react-native-responsive-screen";
 
 const LoginEmail = ({ navigation }) => {
   return (
     <LinearGradient style={{ flex: 1 }} colors={[COLORS.white, COLORS.white]}>
       <View style={{ flex: 1 }}>
-        <View style={{ position: "absolute", top: 54, left: 26, zIndex: 999 }}>
+        <View
+          style={{
+            position: "absolute",
+            top: hp("6%"),
+            left: wp("6%"),
+            zIndex: 999,
+          }}
+        >
           <GoBack />
         </View>
         <View
@@ -23,7 +34,7 @@ const LoginEmail = ({ navigation }) => {
             flex: 1,
             justifyContent: "center",
             alignItems: "center",
-            paddingBottom: 200,
+            paddingBottom: hp("20%"),
           }}
         >
           <ImageBackground
@@ -31,9 +42,9 @@ const LoginEmail = ({ navigation }) => {
             style={{
               height: "100%",
               width: "100%",
-              borderRadius: 20,
-              borderBottomLeftRadius: 50,
-              borderBottomRightRadius: 50,
+              borderRadius: wp("5%"),
+              borderBottomLeftRadius: wp("10%"),
+              borderBottomRightRadius: wp("10%"),
               overflow: "hidden",
               justifyContent: "flex-start",
               alignItems: "center",
@@ -45,12 +56,18 @@ const LoginEmail = ({ navigation }) => {
           </View>
 
           <View style={styles.formContainer}>
-            <View style={{ marginVertical: 22, marginTop: -5, left: 5 }}>
+            <View
+              style={{
+                marginVertical: hp("2%"),
+                marginTop: -hp("0.5%"),
+                left: wp("1%"),
+              }}
+            >
               <Text
                 style={{
-                  fontSize: 22,
+                  fontSize: wp("5%"),
                   fontWeight: "bold",
-                  marginVertical: 12,
+                  marginVertical: hp("1.5%"),
                   color: COLORS.black,
                 }}
               >
@@ -58,7 +75,7 @@ const LoginEmail = ({ navigation }) => {
               </Text>
               <Text
                 style={{
-                  fontSize: 16,
+                  fontSize: wp("4%"),
                   color: COLORS.black,
                 }}
               >
@@ -72,7 +89,8 @@ const LoginEmail = ({ navigation }) => {
               }}
               btnText={"Continue with the email"}
               backgroundColor={COLORS.primary}
-              width={294}
+              width={75}
+              height={7}
               borderColor={COLORS.primary}
               borderWidth={0}
               textColor={COLORS.black}
@@ -86,9 +104,9 @@ const LoginEmail = ({ navigation }) => {
               style={{
                 flexDirection: "row",
                 justifyContent: "center",
-                width: 186,
-                height: 52,
-                left: 54.88,
+                width: wp("30%"),
+                height: hp("7%"),
+                left: wp("23%"),
               }}
             >
               <FacebookButton
@@ -97,9 +115,9 @@ const LoginEmail = ({ navigation }) => {
               <GoogleButton
                 onPress={() => console.log("Google button pressed")}
               />
-              <InstagramButton
+              {/* <InstagramButton
                 onPress={() => console.log("Instagram button pressed")}
-              />
+              /> */}
             </View>
           </View>
 
@@ -107,15 +125,15 @@ const LoginEmail = ({ navigation }) => {
             style={{
               flexDirection: "row",
               justifyContent: "center",
-              marginVertical: 22,
-              top: 130,
+              marginVertical: hp("2%"),
+              top: hp("12%"),
             }}
           >
             <Text
               style={{
-                fontSize: 16,
+                fontSize: wp("4%"),
                 color: COLORS.black,
-                fontWeight: 300,
+                fontWeight: "300",
               }}
             >
               Not registered yet?
@@ -123,10 +141,10 @@ const LoginEmail = ({ navigation }) => {
             <Pressable onPress={() => navigation.navigate("Signup")}>
               <Text
                 style={{
-                  fontSize: 16,
+                  fontSize: wp("4%"),
                   color: COLORS.secondary,
-                  fontWeight: 700,
-                  marginLeft: 6,
+                  fontWeight: "700",
+                  marginLeft: wp("1%"),
                 }}
               >
                 Create an Account

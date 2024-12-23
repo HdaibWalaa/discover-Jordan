@@ -29,8 +29,8 @@ const Welcome = () => {
             <ReusableBtn
               btnText={"Continue as visitor"}
               backgroundColor={COLORS.white}
-              width={322}
-              height={70}
+              width={90}
+              height={7}
               borderColor={COLORS.white}
               borderWidth={0}
               textColor={COLORS.black}
@@ -40,8 +40,8 @@ const Welcome = () => {
             <ReusableBtn
               btnText={"Join Us"}
               backgroundColor={COLORS.primary}
-              width={322}
-              height={70}
+              width={90}
+              height={7}
               borderColor={COLORS.primary}
               borderWidth={0}
               textColor={COLORS.black}

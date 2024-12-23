@@ -5,6 +5,10 @@ import AuthForm from "./AuthForm";
 import { COLORS, TEXT } from "../../constants/theme";
 import ReusableText from "../Reusable/ReusableText";
 import { validateCredentials } from "../../util/validation";
+import {
+  widthPercentageToDP as wp,
+  heightPercentageToDP as hp,
+} from "react-native-responsive-screen";
 
 const AuthContent = ({ isLogin, onAuthenticate, errorMessages = [] }) => {
   const navigation = useNavigation();
@@ -95,17 +99,18 @@ const AuthContent = ({ isLogin, onAuthenticate, errorMessages = [] }) => {
           <ReusableText
             text={isLogin ? "Not registered yet?" : "Already have account?"}
             family={"Medium"}
-            size={TEXT.xSmall}
+            size={TEXT.Small}
             color={COLORS.black}
             align={"center"}
           />
           <Pressable onPress={switchAuthModeHandler}>
             <ReusableText
-              text={isLogin ? "Create an Account" : "Login Now"}
+              text={isLogin ? " Create an Account" : " Login Now"}
               family={"Medium"}
-              size={TEXT.xSmall}
+              size={TEXT.Small}
               color={COLORS.secondary}
               align={"center"}
+             
             />
           </Pressable>
         </View>
@@ -132,6 +137,8 @@ const styles = StyleSheet.create({
   },
   switchContainer: {
     flexDirection: "row",
-    alignItems: "center",
+    justifyContent: "center",
+    marginVertical: hp("2%"),
+    top: hp("1.5%"),
   },
 });

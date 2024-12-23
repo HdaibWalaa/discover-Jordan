@@ -179,6 +179,8 @@ export async function resendVerificationEmail(token) {
   }
 }
 
+
+
 // Function to fetch user profile
 export async function getUserProfile(token) {
   const url = `${BASE_URL}/user/profile`;
