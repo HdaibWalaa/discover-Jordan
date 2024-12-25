@@ -40,7 +40,7 @@ const styles = StyleSheet.create({
     borderRadius: 5,
   },
   buttonText: {
-    color: COLORS.white,
+    color: COLORS.black,
     fontSize: 14,
   },
 });

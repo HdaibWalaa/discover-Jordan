@@ -1,3 +1,4 @@
+import React, { useContext, useEffect, useState } from "react";
 import {
   View,
   Text,
@@ -5,10 +6,7 @@ import {
   ImageBackground,
   TouchableOpacity,
   Alert,
-  Modal,
-  FlatList,
 } from "react-native";
-import React, { useContext, useEffect, useState } from "react";
 import { createMaterialTopTabNavigator } from "@react-navigation/material-top-tabs";
 import Following from "../follow/Following";
 import AllPlans from "../plan/AllPlans";
@@ -21,8 +19,7 @@ import { AntDesign } from "@expo/vector-icons";
 import { useNavigation, useRoute } from "@react-navigation/native";
 import { AuthContext } from "../../store/auth-context";
 import { getUserProfile } from "../../util/auth";
-import FollowingScreen from "./FollowingScreen";
-import FollowersScreen from "./FollowersScreen";
+import FollowersModal from "./FollowersModal";
 
 const Tab = createMaterialTopTabNavigator();
 
@@ -33,8 +30,7 @@ const Profile = () => {
   const authCtx = useContext(AuthContext);
   const [profile, setProfile] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
-  const [isFollowersVisible, setIsFollowersVisible] = useState(false);
-  const [isFollowingVisible, setIsFollowingVisible] = useState(false);
+  const [isFollowersModalVisible, setIsFollowersModalVisible] = useState(false);
 
   useEffect(() => {
     const fetchProfile = async () => {
@@ -65,50 +61,6 @@ const Profile = () => {
     }
   };
 
-  const renderFollowingList = () => (
-    <Modal
-      animationType="slide"
-      transparent={true}
-      visible={isFollowingVisible}
-      onRequestClose={() => setIsFollowingVisible(false)}
-    >
-      <View style={styles.modalContainer}>
-        <View style={styles.modalContent}>
-          <Text style={styles.modalTitle}>Following</Text>
-          <FollowingScreen />
-          <TouchableOpacity
-            style={styles.closeButton}
-            onPress={() => setIsFollowingVisible(false)}
-          >
-            <Text style={styles.closeButtonText}>Close</Text>
-          </TouchableOpacity>
-        </View>
-      </View>
-    </Modal>
-  );
-
-  const renderFollowersList = () => (
-    <Modal
-      animationType="slide"
-      transparent={true}
-      visible={isFollowersVisible}
-      onRequestClose={() => setIsFollowersVisible(false)}
-    >
-      <View style={styles.modalContainer}>
-        <View style={styles.modalContent}>
-          <Text style={styles.modalTitle}>Followers</Text>
-          <FollowersScreen />
-          <TouchableOpacity
-            style={styles.closeButton}
-            onPress={() => setIsFollowersVisible(false)}
-          >
-            <Text style={styles.closeButtonText}>Close</Text>
-          </TouchableOpacity>
-        </View>
-      </View>
-    </Modal>
-  );
-
   if (isLoading) {
     return <Text>Loading...</Text>;
   }
@@ -121,22 +73,39 @@ const Profile = () => {
         imageStyle={{ resizeMode: "cover" }}
       >
         <View style={styles.headerContent}>
-          <TouchableOpacity
-            style={styles.iconButtonLeft}
-            onPress={handleLogout}
-            accessibilityLabel="Logout"
-          >
-            <AntDesign name="logout" size={24} color={COLORS.black} />
-          </TouchableOpacity>
+          <View style={styles.iconButtonLeft}>
+            <TouchableOpacity
+              style={styles.actionButton}
+              onPress={handleLogout}
+              accessibilityLabel="Logout"
+            >
+              <AntDesign name="logout" size={24} color={COLORS.black} />
+            </TouchableOpacity>
+          </View>
 
-          <TouchableOpacity
-            style={styles.iconButtonRight}
-            onPress={() => navigation.navigate("EditProfile")}
-            accessibilityLabel="Edit Profile"
-          >
-            <AntDesign name="edit" size={24} color={COLORS.black} />
-          </TouchableOpacity>
+          <View style={styles.buttonRowLeft}>
+            <TouchableOpacity
+              style={styles.actionButton}
+              onPress={() => setIsFollowersModalVisible(true)}
+              accessibilityLabel="Followers List"
+            >
+              <Image
+                source={require("../../assets/images/icons/followersList.png")}
+                style={styles.icon}
+              />
+            </TouchableOpacity>
+            {!isOtherUser && (
+              <TouchableOpacity
+                style={styles.actionButton}
+                onPress={() => navigation.navigate("EditUserProfile")}
+                accessibilityLabel="Edit Profile"
+              >
+                <AntDesign name="edit" size={24} color={COLORS.black} />
+              </TouchableOpacity>
+            )}
+          </View>
         </View>
+
         <View style={styles.profile}>
           <Image
             source={
@@ -165,16 +134,12 @@ const Profile = () => {
         <View style={styles.followContainer}>
           <TouchableOpacity
             style={styles.followBox}
-            onPress={() => setIsFollowersVisible(true)}
+            onPress={() => setIsFollowersModalVisible(true)}
           >
             <Text style={styles.followCount}>{profile?.follower_number}</Text>
             <Text style={styles.followLabel}>Followers</Text>
           </TouchableOpacity>
-
-          <TouchableOpacity
-            style={styles.followBox}
-            onPress={() => setIsFollowingVisible(true)}
-          >
+          <TouchableOpacity style={styles.followBox}>
             <Text style={styles.followCount}>{profile?.following_number}</Text>
             <Text style={styles.followLabel}>Following</Text>
           </TouchableOpacity>
@@ -201,11 +166,13 @@ const Profile = () => {
         </View>
       </View>
 
-      {/* Render Following List */}
-      {renderFollowingList()}
-
-      {/* Render Followers List */}
-      {renderFollowersList()}
+      {/* Followers Modal */}
+      <FollowersModal
+        isVisible={isFollowersModalVisible}
+        onClose={() => setIsFollowersModalVisible(false)}
+        token={authCtx.token}
+        userId={authCtx.userId}
+      />
     </View>
   );
 };

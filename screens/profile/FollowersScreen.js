@@ -10,7 +10,8 @@ import {
 } from "react-native";
 import { AuthContext } from "../../store/auth-context";
 import { fetchFollowersApi } from "../../hook/followersApi";
-import styles from "./FollowingScreenStyles"; // Create your own style file for this screen
+import axios from "axios";
+import styles from "./FollowingScreenStyles"; 
 
 const FollowersScreen = () => {
   const [followers, setFollowers] = useState([]);
@@ -22,12 +23,8 @@ const FollowersScreen = () => {
   useEffect(() => {
     const fetchFollowers = async () => {
       try {
-        const responseData = await fetchFollowersApi(token, userId); // Fetch followers
-        if (responseData?.data?.length > 0) {
-          setFollowers(responseData.data);
-        } else {
-          Alert.alert("No Followers", "You have no followers yet.");
-        }
+        const responseData = await fetchFollowersApi(token, userId);
+        setFollowers(responseData?.data || []);
       } catch (error) {
         Alert.alert("Error", "Failed to load followers.");
       } finally {
@@ -36,6 +33,40 @@ const FollowersScreen = () => {
     };
     fetchFollowers();
   }, [token, userId]);
+
+  const handleFollow = async (followerId) => {
+    try {
+      await axios.post(
+        "https://dashboard.rehletna-jo.com/api/follow/create",
+        { following_id: followerId },
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+      Alert.alert("Success", "You are now following this user.");
+    } catch (error) {
+      Alert.alert("Error", "Failed to follow the user.");
+    }
+  };
+
+  const handleDelete = async (followerId) => {
+    try {
+      await axios.delete(
+        `https://joureny.zaytunatreasures.com/api/follow/delete/${followerId}`,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+      setFollowers(followers.filter((item) => item.follower_id !== followerId));
+      Alert.alert("Success", "Follower removed.");
+    } catch (error) {
+      Alert.alert("Error", "Failed to remove the follower.");
+    }
+  };
 
   if (loading) {
     return <ActivityIndicator size="large" />;
@@ -48,9 +79,20 @@ const FollowersScreen = () => {
         <Text style={styles.name}>{item.follower_name}</Text>
         <Text style={styles.posts}>{item.posts_count || 0} Posts</Text>
       </View>
-      <TouchableOpacity style={styles.button}>
-        <Text style={styles.buttonText}>Follow</Text>
-      </TouchableOpacity>
+      <View style={styles.actionButtons}>
+        <TouchableOpacity
+          style={styles.followButton}
+          onPress={() => handleFollow(item.follower_id)}
+        >
+          <Text style={styles.buttonText}>Follow</Text>
+        </TouchableOpacity>
+        <TouchableOpacity
+          style={styles.deleteButton}
+          onPress={() => handleDelete(item.follower_id)}
+        >
+          <Text style={styles.buttonText}>Delete</Text>
+        </TouchableOpacity>
+      </View>
     </View>
   );
 
@@ -63,6 +105,5 @@ const FollowersScreen = () => {
     />
   );
 };
-
 
 export default FollowersScreen;

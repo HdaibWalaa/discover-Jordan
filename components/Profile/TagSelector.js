@@ -7,10 +7,16 @@ import {
   Image,
   Alert,
 } from "react-native";
-import axios from "axios"; // Ensure axios is imported
-import { COLORS, SIZES } from "../../constants/theme";
+import axios from "axios";
+import { COLORS, SIZES,TEXT } from "../../constants/theme";
 import { AuthContext } from "../../store/auth-context";
 import BASE_URL from "../../hook/apiConfig";
+import ReusableText from "../Reusable/ReusableText";
+import {
+  widthPercentageToDP as wp,
+  heightPercentageToDP as hp,
+} from "react-native-responsive-screen";
+import ReusableBtn from "../Buttons/ReusableBtn";
 
 const TagSelector = ({ selectedTags, onTagsChange }) => {
   const [tags, setTags] = useState([]);
@@ -25,7 +31,9 @@ const TagSelector = ({ selectedTags, onTagsChange }) => {
             Accept: "application/json",
           },
         });
-        setTags(response.data.data);
+
+        console.log("Fetched Tags:", response.data.data); // Log fetched tags
+        setTags(response.data.data); // Update state with tags
       } catch (error) {
         Alert.alert("Error", "Failed to fetch tags. Please try again later.");
         console.error("Error fetching tags:", error);
@@ -35,17 +43,30 @@ const TagSelector = ({ selectedTags, onTagsChange }) => {
     fetchTags();
   }, [authCtx.token]);
 
-  const handleTagPress = (tagName) => {
-    const newTags = selectedTags.includes(tagName)
-      ? selectedTags.filter((name) => name !== tagName)
-      : [...selectedTags, tagName];
+  const handleTagPress = (tagId) => {
+    // Update selected tags
+    const newTags = selectedTags.includes(tagId)
+      ? selectedTags.filter((id) => id !== tagId)
+      : [...selectedTags, tagId];
 
+    console.log("Updated Selected Tags:", newTags); // Log updated tags
     onTagsChange(newTags);
   };
 
   return (
     <View style={styles.container}>
-      <Text style={styles.label}>Tags</Text>
+      <View style={styles.headerContainer}>
+        <ReusableText
+          text={"Tags Options: Make Your Choices"}
+          family={"Bold"}
+          size={TEXT.medium}
+          color={COLORS.black}
+          align={"left"}
+        />
+        <View style={styles.stepIndicator}>
+          <Text style={styles.stepText}>2/2</Text>
+        </View>
+      </View>
       <View style={styles.tagContainer}>
         {tags.map((tag) => (
           <TouchableOpacity
@@ -88,31 +109,59 @@ const styles = StyleSheet.create({
   label: {
     fontSize: SIZES.body3,
     marginBottom: 8,
+    color: COLORS.black,
   },
   tagContainer: {
     flexDirection: "row",
     flexWrap: "wrap",
+    justifyContent: "flex-start",
   },
   tagButton: {
-    padding: 10,
-    margin: 5,
-    backgroundColor: COLORS.lightGray,
-    borderRadius: 20,
+    flexDirection: "row",
     alignItems: "center",
+    padding: 10,
+    margin: 2,
+    backgroundColor: COLORS.lightGray,
+    borderRadius: 30,
+    borderWidth: 1,
+    borderColor: COLORS.black, // Default black border for inactive
   },
   selectedTagButton: {
-    backgroundColor: COLORS.primary,
+    borderColor: COLORS.primary, // Colored border for active tag
   },
   tagImage: {
-    width: 50,
-    height: 50,
+    width: 40,
+    height: 40,
+    marginRight: 10, // Space between image and text
   },
   tagText: {
     color: COLORS.black,
-    fontSize: SIZES.body3,
-    textAlign: "center",
+    fontSize: SIZES.body4,
   },
   selectedTagText: {
+    color: COLORS.primary, // Change text color when selected
+  },
+  headerContainer: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    marginBottom: hp("5%"),
+    width: wp(64),
+    left: hp("2%"),
+    top: wp(3),
+  },
+  stepIndicator: {
+    backgroundColor: COLORS.black,
+    borderRadius: wp("12.5%"),
+    width: wp("12.5%"),
+    height: wp("12.5%"),
+    alignItems: "center",
+    justifyContent: "center",
+    left: hp("4%"),
+  },
+  stepText: {
     color: COLORS.white,
+    fontSize: wp("4%"),
+    fontWeight: "bold",
   },
 });

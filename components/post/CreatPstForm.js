@@ -10,12 +10,12 @@ import {
 import * as ImagePicker from "expo-image-picker";
 import { createPost } from "../../hook/PostApi";
 import { AuthContext } from "../../store/auth-context";
+import { FancyAlert } from "react-native-expo-fancy-alerts";
 import styles from "./post.style";
 import VisitableType from "./VisitableType";
-import PostMedia from "./PostMedia";
 import PostPrivacy from "./PostPrivacy";
 import HeightSpacer from "../Reusable/HeightSpacer";
-import Modal from "react-native-modal";
+import { COLORS } from "../../constants/theme";
 import SelectPlace from "../trip/SelcetPlace";
 import SelectEvent from "./SelectEvent";
 import SelectPlan from "./SelectPlan";
@@ -28,23 +28,33 @@ const CreatePostForm = ({ navigation }) => {
   const [privacy, setPrivacy] = useState(1);
   const [visitableType, setVisitableType] = useState("Trip");
   const [visitableId, setVisitableId] = useState("");
-  const [isModalVisible, setModalVisible] = useState(false);
-  const [modalMessage, setModalMessage] = useState("");
+  const [isAlertVisible, setIsAlertVisible] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
   const { token } = useContext(AuthContext);
 
-  const pickImage = async () => {
-    let result = await ImagePicker.launchImageLibraryAsync({
-      mediaTypes: ImagePicker.MediaTypeOptions.Images,
+  // Pick media (images or videos)
+  const pickMedia = async () => {
+    const result = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ImagePicker.MediaTypeOptions.All,
       allowsMultipleSelection: true,
-      base64: true,
     });
 
     if (!result.canceled) {
-      setMedia(result.assets.map((asset) => asset.uri));
+      const selectedMedia = result.assets.map((asset) => ({
+        uri: asset.uri,
+        type: asset.type,
+      }));
+      setMedia((prevMedia) => [...prevMedia, ...selectedMedia]);
     }
   };
 
   const handleCreatePost = async () => {
+    if (!visitableId || !content.trim()) {
+      Alert.alert("Error", "Please fill all required fields.");
+      return;
+    }
+
+    setIsLoading(true);
     try {
       const response = await createPost(
         token,
@@ -56,73 +66,47 @@ const CreatePostForm = ({ navigation }) => {
       );
 
       if (response.status === 200) {
-        setModalMessage(response.msg || "Post created successfully!");
-        setModalVisible(true);
+        setIsAlertVisible(true); // Show Fancy Alert
+
+        // Automatically navigate to Following screen after 2 seconds
+        setTimeout(() => {
+          setIsAlertVisible(false);
+          navigation.navigate("Following");
+        }, 2000);
       } else {
-        console.error("Failed to create post:", response.msg);
-        setModalMessage("Failed to create post.");
-        setModalVisible(true);
+        Alert.alert("Error", "Failed to create post.");
       }
     } catch (error) {
       console.error("Error creating post:", error);
-      setModalMessage("An error occurred while creating the post.");
-      setModalVisible(true);
+      Alert.alert("Error", "An error occurred while creating the post.");
+    } finally {
+      setIsLoading(false);
     }
-  };
-
-  const closeModal = () => {
-    setModalVisible(false);
-    navigation.goBack();
   };
 
   const renderVisitableSelect = () => {
     switch (visitableType) {
       case "Place":
         return (
-           <SelectPlace
-            label="Place Name"
-            iconSource={require("../../assets/images/icons/place.png")}
-            iconSource2={require("../../assets/images/icons/Iconly.png")}
-            onValueChange={setVisitableId} value={visitableId}
-            width={350}
-          />
+          <SelectPlace onValueChange={setVisitableId} value={visitableId} />
         );
       case "Trip":
         return (
-          <SelectTrip
-            label="Trip Name"
-            iconSource={require("../../assets/images/icons/place.png")}
-            iconSource2={require("../../assets/images/icons/Iconly.png")}
-            onValueChange={setVisitableId}
-            value={visitableId}
-            width={350}
-          />
+          <SelectTrip onValueChange={setVisitableId} value={visitableId} />
         );
       case "Plan":
         return (
-          <SelectPlan  label="Plan Name"
-            iconSource={require("../../assets/images/icons/place.png")}
-            iconSource2={require("../../assets/images/icons/Iconly.png")}
-            onValueChange={setVisitableId} value={visitableId}
-            width={350} />
+          <SelectPlan onValueChange={setVisitableId} value={visitableId} />
         );
       case "Event":
         return (
-          <SelectEvent  label="Event Name"
-            iconSource={require("../../assets/images/icons/place.png")}
-            iconSource2={require("../../assets/images/icons/Iconly.png")}
-            onValueChange={setVisitableId} value={visitableId}
-            width={350} />
+          <SelectEvent onValueChange={setVisitableId} value={visitableId} />
         );
       case "Volunteering":
         return (
           <SelectVolunteering
-            label="Volunteer Name"
-            iconSource={require("../../assets/images/icons/place.png")}
-            iconSource2={require("../../assets/images/icons/Iconly.png")}
             onValueChange={setVisitableId}
             value={visitableId}
-            width={350}
           />
         );
       default:
@@ -160,13 +144,26 @@ const CreatePostForm = ({ navigation }) => {
       id: "4",
       component: <PostPrivacy privacy={privacy} setPrivacy={setPrivacy} />,
     },
-    { id: "5", component: <PostMedia pickImage={pickImage} /> },
+    {
+      id: "5",
+      component: (
+        <TouchableOpacity style={styles.pickMediaButton} onPress={pickMedia}>
+          <Text style={styles.pickMediaText}>Pick Media</Text>
+        </TouchableOpacity>
+      ),
+    },
     {
       id: "6",
       component: (
         <View style={styles.mediaPreviewContainer}>
-          {media.map((uri, index) => (
-            <Image key={index} source={{ uri }} style={styles.mediaPreview} />
+          {media.map((file, index) => (
+            <View key={index} style={styles.mediaWrapper}>
+              {file.type === "image" ? (
+                <Image source={{ uri: file.uri }} style={styles.mediaPreview} />
+              ) : (
+                <Text style={styles.videoPreviewText}>[Video Selected]</Text>
+              )}
+            </View>
           ))}
         </View>
       ),
@@ -174,8 +171,14 @@ const CreatePostForm = ({ navigation }) => {
     {
       id: "7",
       component: (
-        <TouchableOpacity style={styles.postButton} onPress={handleCreatePost}>
-          <Text style={styles.postButtonText}>POST</Text>
+        <TouchableOpacity
+          style={[styles.postButton, isLoading && styles.disabledButton]}
+          onPress={handleCreatePost}
+          disabled={isLoading}
+        >
+          <Text style={styles.postButtonText}>
+            {isLoading ? "Posting..." : "POST"}
+          </Text>
         </TouchableOpacity>
       ),
     },
@@ -183,11 +186,43 @@ const CreatePostForm = ({ navigation }) => {
   ];
 
   return (
-    <FlatList
-      data={formSections}
-      keyExtractor={(item) => item.id}
-      renderItem={({ item }) => <View>{item.component}</View>}
-    />
+    <View>
+      <FlatList
+        data={formSections}
+        keyExtractor={(item) => item.id}
+        renderItem={({ item }) => <View>{item.component}</View>}
+      />
+      {/* Fancy Alert */}
+      <FancyAlert
+        visible={isAlertVisible}
+        icon={
+          <View
+            style={{
+              flex: 1,
+              justifyContent: "center",
+              alignItems: "center",
+              backgroundColor: COLORS.primary,
+              borderRadius: 50,
+              width: "100%",
+            }}
+          >
+            <Text style={{ color: "white", fontSize: 24 }}>🎉</Text>
+          </View>
+        }
+        style={{ backgroundColor: "white" }}
+      >
+        <Text
+          style={{
+            marginTop: -16,
+            marginBottom: 32,
+            textAlign: "center",
+            fontSize: 16,
+          }}
+        >
+          Post created successfully!
+        </Text>
+      </FancyAlert>
+    </View>
   );
 };
 

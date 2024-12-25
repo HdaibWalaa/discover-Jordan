@@ -26,30 +26,38 @@ function ResetPasswordScreen() {
   const [emailIsInvalid, setEmailIsInvalid] = useState(false);
   const navigation = useNavigation();
 
-  async function resetPasswordHandler() {
-    if (!email || !email.includes("@")) {
-      setEmailIsInvalid(true);
-      Alert.alert("Invalid Input", "Please enter a valid email address.");
-      return;
-    }
-    setEmailIsInvalid(false);
+async function resetPasswordHandler() {
+  if (!email || !email.includes("@")) {
+    setEmailIsInvalid(true);
+    Alert.alert("Invalid Input", "Please enter a valid email address.");
+    return;
+  }
+  setEmailIsInvalid(false);
 
-    try {
-      await forgotPassword(email);
+  try {
+    const response = await forgotPassword(email);
+    if (response.status === 200) {
       Alert.alert(
         "Success",
-        "Check your email for password reset instructions."
+        response.msg || "Check your email for password reset instructions."
       );
       navigation.navigate("Login");
-    } catch (error) {
+    } else {
       Alert.alert(
-        "Failed",
-        `Could not reset password: ${
-          error.response?.data || error.message
-        }. Please try again later.`
+        "Error",
+        response.msg || "Something went wrong. Please try again."
       );
     }
+  } catch (error) {
+    Alert.alert(
+      "Failed",
+      `Could not reset password: ${
+        error.response?.data?.msg || error.message
+      }. Please try again later.`
+    );
   }
+}
+
 
   return (
     <LinearGradient style={{ flex: 1 }} colors={[COLORS.white, COLORS.white]}>

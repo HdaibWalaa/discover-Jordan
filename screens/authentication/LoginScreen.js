@@ -80,20 +80,26 @@ function LoginScreen() {
     }
   }
 
-  async function handleResendVerification() {
-    try {
-      await resendVerificationEmail(token);
-      Alert.alert(
-        "Verification Email Sent",
-        "A new verification email has been sent to your email address."
-      );
-    } catch (error) {
-      Alert.alert(
-        "Resend Failed",
-        "An error occurred while resending the verification email. Please try again later."
+async function handleResendVerification() {
+  try {
+    if (!token) {
+      throw new Error(
+        "Token is not available for resending verification email."
       );
     }
+    await resendVerificationEmail(token);
+    Alert.alert(
+      "Verification Email Sent",
+      "A new verification email has been sent to your email address."
+    );
+  } catch (error) {
+    console.error("Error while resending verification email:", error);
+    Alert.alert(
+      "Resend Failed",
+      "An error occurred while resending the verification email. Please try again later."
+    );
   }
+}
 
   if (isAuthenticating) {
     return <LoadingOverlay message="Logging you in..." />;

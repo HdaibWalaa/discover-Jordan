@@ -33,7 +33,5 @@ const CreatePostScreen = ({ navigation }) => {
 
 export default CreatePostScreen;
 const styles = StyleSheet.create({
-  container: {
-    paddingHorizontal: 20,
-  },
+
 });

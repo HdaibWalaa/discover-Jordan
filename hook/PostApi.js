@@ -63,14 +63,16 @@ async function createPost(
   formData.append("visitable_type", visitableType);
   formData.append("visitable_id", visitableId);
   formData.append("content", content);
+  formData.append("privacy", privacy);
+
   media.forEach((file, index) => {
+    const type = file.type === "video" ? "video/mp4" : "image/jpg";
     formData.append("media[]", {
-      uri: file,
-      name: `media_${index}.jpg`,
-      type: "image/jpg",
+      uri: file.uri,
+      name: `media_${index}.${file.type === "video" ? "mp4" : "jpg"}`,
+      type,
     });
   });
-  formData.append("privacy", privacy);
 
   const response = await fetch(url, {
     method: "POST",
@@ -82,6 +84,7 @@ async function createPost(
   });
   return response.json();
 }
+
 
 async function updatePost(
   token,

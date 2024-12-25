@@ -59,12 +59,14 @@ const styles = StyleSheet.create({
     backgroundColor: "rgba(0, 0, 0, 0.5)",
   },
   modalContainer: {
-    width: wp("80%"),
-    padding: wp("5%"),
     backgroundColor: "white",
-    borderRadius: wp("4%"),
+    padding: 20,
+    borderRadius: 10,
     alignItems: "center",
-    position: "relative",
+    justifyContent: "center",
+    width: "90%",
+    minHeight: 200, // Ensure there's enough height for all content
+    alignSelf: "center",
   },
   closeButton: {
     position: "absolute",
@@ -94,6 +96,16 @@ const styles = StyleSheet.create({
     color: "white",
     fontWeight: "bold",
     fontSize: wp("4%"),
+  },
+  input: {
+    height: 40, // Define a proper height
+    width: "90%", // Use a percentage or fixed width
+    borderColor: "gray", // Add a visible border
+    borderWidth: 1, // Ensure the border is visible
+    borderRadius: 5, // Add rounded corners
+    paddingHorizontal: 10, // Add padding for better usability
+    marginVertical: 10, // Add margin for spacing
+    backgroundColor: "white", // Make the background visible
   },
 });
 

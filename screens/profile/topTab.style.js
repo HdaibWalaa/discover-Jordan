@@ -6,6 +6,17 @@ import {
 } from "react-native-responsive-screen";
 
 const styles = StyleSheet.create({
+  actionButton: {
+    backgroundColor: "rgba(255, 255, 255, 0.7)",
+    padding: wp("2.5%"),
+    borderRadius: wp("3%"),
+    zIndex: 2,
+  },
+  icon: {
+    width: wp("6%"),
+    height: wp("6%"),
+    resizeMode: "contain",
+  },
   headerImage: {
     width: wp("100%"),
     height: hp("35%"),
@@ -18,21 +29,23 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
-    paddingHorizontal: wp("7%"),
-    paddingTop: hp("8%"),
+    paddingHorizontal: wp("4%"),
+    paddingTop: hp("7%"),
     zIndex: 1,
-  },
-  iconButtonLeft: {
-    backgroundColor: "rgba(255, 255, 255, 0.7)",
-    padding: wp("2.5%"),
-    borderRadius: wp("3%"),
-    zIndex: 2,
   },
   iconButtonRight: {
     backgroundColor: "rgba(255, 255, 255, 0.7)",
     padding: wp("2.5%"),
     borderRadius: wp("3%"),
     zIndex: 2,
+    left: 2,
+  },
+  buttonRowLeft: {
+    flexDirection: "row",
+    justifyContent: "flex-start",
+    alignItems: "center",
+    gap: wp("1%"),
+   
   },
   profile: {
     justifyContent: "center",
@@ -81,7 +94,7 @@ const styles = StyleSheet.create({
   scrollContainer: {
     paddingBottom: hp("2%"),
     padding: wp("3%"),
-    top: hp("2%"),
+    top: hp("-2%"),
   },
   bottomSpacing: {
     height: hp("10%"),
@@ -110,7 +123,6 @@ const styles = StyleSheet.create({
     padding: 10,
     backgroundColor: COLORS.primary,
     borderRadius: 5,
-   
   },
   closeButtonText: {
     color: COLORS.white,

@@ -5,12 +5,20 @@ import {
   TouchableOpacity,
   Text,
   StyleSheet,
+  Image,
 } from "react-native";
-import { COLORS } from "../../constants/theme";
+import { COLORS, TEXT } from "../../constants/theme";
 import {
   widthPercentageToDP as wp,
   heightPercentageToDP as hp,
 } from "react-native-responsive-screen";
+import ReusableText from "../../components/Reusable/ReusableText";
+import ReusableBtn from "../Buttons/ReusableBtn";
+
+// Icon imports phoneIcon
+import PeopleIcon from "../../assets/images/icons/people.png";
+import DateIcon from "../../assets/images/icons/datecalender.png";
+import phoneIcon from "../../assets/images/icons/telephone.png";
 
 const PersonalInfoForm = ({
   firstName,
@@ -31,243 +39,220 @@ const PersonalInfoForm = ({
   birthdayWarning,
 }) => {
   return (
-    <View>
-      <View style={styles.inputContainer}>
-        <TextInput
-          style={styles.input}
-          placeholder="First Name"
-          value={firstName}
-          onChangeText={setFirstName}
+    <View style={styles.container}>
+      {/* Header Section */}
+      <View style={styles.headerContainer}>
+        <ReusableText
+          text={"Personal Information Registration"}
+          family={"Bold"}
+          size={TEXT.medium}
+          color={COLORS.black}
+          align={"left"}
+        />
+        <View style={styles.stepIndicator}>
+          <Text style={styles.stepText}>1/2</Text>
+        </View>
+      </View>
+
+      {/* Form Section */}
+      <View>
+        <View style={styles.inputGroup}>
+          <Text style={styles.inputTitle}>First Name</Text>
+          <View style={styles.inputContainer}>
+            <Image source={PeopleIcon} style={styles.icon} />
+            <TextInput
+              style={styles.input}
+              placeholder="Enter your first name"
+              value={firstName}
+              onChangeText={setFirstName}
+            />
+          </View>
+        </View>
+        <View style={styles.inputGroup}>
+          <Text style={styles.inputTitle}>Last Name</Text>
+          <View style={styles.inputContainer}>
+            <Image source={PeopleIcon} style={styles.icon} />
+            <TextInput
+              style={styles.input}
+              placeholder="Enter your last name"
+              value={lastName}
+              onChangeText={setLastName}
+            />
+          </View>
+        </View>
+        <View style={styles.inputGroup}>
+          <Text style={styles.inputTitle}>Username</Text>
+          <View style={styles.inputContainer}>
+            <Image source={PeopleIcon} style={styles.icon} />
+            <TextInput
+              style={styles.input}
+              placeholder="Enter your username"
+              value={username}
+              onChangeText={setUsername}
+            />
+          </View>
+        </View>
+        <View style={styles.inputGroup}>
+          <Text style={styles.inputTitle}>Birthday</Text>
+          <View style={styles.inputContainer}>
+            <Image source={DateIcon} style={styles.icon} />
+            <TextInput
+              style={styles.input}
+              placeholder="YYYY-MM-DD"
+              value={birthday}
+              onChangeText={setBirthday}
+            />
+          </View>
+          {birthdayWarning ? (
+            <Text style={styles.warningText}>{birthdayWarning}</Text>
+          ) : null}
+        </View>
+        <View style={styles.genderContainer}>
+          <Text style={styles.inputTitle}>Gender</Text>
+          <View style={styles.genderButtons}>
+            <TouchableOpacity
+              style={[
+                styles.genderButton,
+                gender === "1" ? styles.genderSelected : null,
+              ]}
+              onPress={() => setGender("1")}
+            >
+              <Text style={styles.genderText}>Male</Text>
+            </TouchableOpacity>
+            <TouchableOpacity
+              style={[
+                styles.genderButton,
+                gender === "2" ? styles.genderSelected : null,
+              ]}
+              onPress={() => setGender("2")}
+            >
+              <Text style={styles.genderText}>Female</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+        <View style={styles.inputGroup}>
+          <Text style={styles.inputTitle}>Phone Number</Text>
+          <View style={styles.inputContainer}>
+            <Image source={phoneIcon} style={styles.icon} />
+            <TextInput
+              style={styles.input}
+              placeholder="Enter your phone number"
+              value={phoneNumber}
+              onChangeText={setPhoneNumber}
+            />
+          </View>
+        </View>
+        <View style={styles.inputGroup}>
+          <Text style={styles.inputTitle}>Description</Text>
+          <View style={styles.inputContainer}>
+            <TextInput
+              style={styles.input}
+              placeholder="Enter a short description"
+              value={description}
+              onChangeText={setDescription}
+              multiline={true}
+            />
+          </View>
+        </View>
+        <ReusableBtn
+          btnText={"Next"}
+          backgroundColor={COLORS.primary}
+          width={75}
+          height={6}
+          borderColor={COLORS.primary}
+          borderWidth={0}
+          textColor={COLORS.black}
+          onPress={handleNext} // Directly pass the onPress event
         />
       </View>
-      <View style={styles.inputContainer}>
-        <TextInput
-          style={styles.input}
-          placeholder="Last Name"
-          value={lastName}
-          onChangeText={setLastName}
-        />
-      </View>
-      <View style={styles.inputContainer}>
-        <TextInput
-          style={styles.input}
-          placeholder="Username"
-          value={username}
-          onChangeText={setUsername}
-        />
-      </View>
-      <View style={styles.inputContainer}>
-        <TextInput
-          style={styles.input}
-          placeholder="Birthday (YYYY-MM-DD)"
-          value={birthday}
-          onChangeText={setBirthday}
-        />
-        {birthdayWarning ? (
-          <Text style={styles.warningText}>{birthdayWarning}</Text>
-        ) : null}
-      </View>
-      <View style={styles.genderContainer}>
-        <TouchableOpacity
-          style={[
-            styles.genderButton,
-            gender === "1" ? styles.genderSelected : null,
-          ]}
-          onPress={() => setGender("1")}
-        >
-          <Text style={styles.genderText}>Male</Text>
-        </TouchableOpacity>
-        <TouchableOpacity
-          style={[
-            styles.genderButton,
-            gender === "2" ? styles.genderSelected : null,
-          ]}
-          onPress={() => setGender("2")}
-        >
-          <Text style={styles.genderText}>Female</Text>
-        </TouchableOpacity>
-      </View>
-      <View style={styles.inputContainer}>
-        <TextInput
-          style={styles.input}
-          placeholder="Phone Number"
-          value={phoneNumber}
-          onChangeText={setPhoneNumber}
-        />
-      </View>
-      <View style={styles.inputContainer}>
-        <TextInput
-          style={styles.input}
-          placeholder="Description"
-          value={description}
-          onChangeText={setDescription}
-          multiline={true}
-        />
-      </View>
-      <TouchableOpacity style={styles.button} onPress={handleNext}>
-        <Text style={styles.buttonText}>Next</Text>
-      </TouchableOpacity>
     </View>
   );
 };
 
 export default PersonalInfoForm;
 
-
-
 const styles = StyleSheet.create({
-  inputContainer: {
-    marginBottom: 10,
+  container: {
+    padding: wp("5%"),
   },
-  header: {
-    fontSize: 24,
+  headerContainer: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    marginBottom: hp("2%"),
+    width: wp(70),
+  },
+  stepIndicator: {
+    backgroundColor: COLORS.black,
+    borderRadius: wp("12.5%"),
+    width: wp("12.5%"),
+    height: wp("12.5%"),
+    alignItems: "center",
+    justifyContent: "center",
+    left: hp("1%"),
+  },
+  stepText: {
+    color: COLORS.white,
+    fontSize: wp("4%"),
     fontWeight: "bold",
-    marginBottom: 20,
-    textAlign: "center", // Center align the header text
-    color: "#000", // Black text color
+  },
+  inputGroup: {
+    marginBottom: hp("2%"),
+  },
+  inputTitle: {
+    fontFamily: "Medium",
+    color: "#858585",
+    fontSize: wp("3.5%"),
+    fontWeight: "400",
+    marginBottom: hp("1%"),
   },
   inputContainer: {
     flexDirection: "row",
     alignItems: "center",
     borderBottomWidth: 1,
-    borderColor: "#D1D1D1", // Lighter grey for borders
-    marginVertical: 15, // More margin between inputs
-    paddingBottom: 5,
-    paddingHorizontal: 10, // Add horizontal padding
-    backgroundColor: "#F9F9F9", // Slight background color for input
-    borderRadius: 10, // Rounded corners
+    borderBottomColor: "#8D8D8D",
+    borderStyle: "solid",
   },
   input: {
-    marginLeft: 10,
-    fontSize: 16,
     flex: 1,
-    paddingVertical: 10,
-    color: "#000", // Black text color
+    fontSize: wp("4%"),
+    paddingVertical: hp("1%"),
+    color: "#000",
+    marginLeft: wp("2%"),
   },
   icon: {
-    width: 20, // Icon size matching the design
-    height: 20,
+    width: wp("5%"),
+    height: wp("5%"),
   },
   genderContainer: {
+    marginBottom: hp("3%"),
+  },
+  genderButtons: {
     flexDirection: "row",
     justifyContent: "space-between",
-    marginVertical: 20,
-    paddingHorizontal: 10,
   },
   genderButton: {
     flexDirection: "row",
     alignItems: "center",
-    padding: 15,
+    padding: wp("4%"),
     borderWidth: 2,
-    borderRadius: 12,
-    width: "45%",
+    borderRadius: wp("3%"),
+    width: wp("35%"),
     justifyContent: "center",
-
-    borderColor: COLORS.gray, // Yellow border for non-selected buttons
+    borderColor: COLORS.gray,
   },
   genderSelected: {
-    borderColor: "#FCD228",
-    backgroundColor: "#FCD22820", // Light transparent yellow when selected
-  },
-  selectedTags: {
-    borderColor: "#FCD228",
-    backgroundColor: "#FCD22820",
+    borderColor: COLORS.primary,
+    backgroundColor: COLORS.primary + "20",
   },
   genderText: {
-    marginLeft: 10,
-    fontSize: 16,
+    fontSize: wp("4%"),
     fontWeight: "600",
-    color: "#000", // Black text color for gender options
-  },
-  button: {
-    backgroundColor: "#FCD228", // Primary yellow button color
-    paddingVertical: hp("2%"),
-    borderRadius: 12,
-    alignItems: "center",
-    marginTop: 30,
-    width: "100%", // Full-width button
-  },
-  buttonText: {
-    fontSize: 18,
-    fontWeight: "bold",
-    color: "#000", // Black text color for button
-  },
-  avatarContainer: {
-    alignItems: "center",
-    marginTop: 30,
-  },
-  avatarImage: {
-    width: 100, // Avatar size
-    height: 100,
-    borderRadius: 50, // Round avatar
-    backgroundColor: "#FCD228", // Background color matching the theme
-  },
-  editIcon: {
-    position: "absolute",
-    bottom: 0,
-    right: 10,
-    backgroundColor: "#fff",
-    padding: 5,
-    borderRadius: 25,
-    borderColor: "#FCD228",
-    borderWidth: 2,
-  },
-  formHeader: {
-    textAlign: "center",
-    fontSize: 18,
-    fontWeight: "600",
-    color: "#000",
-    marginBottom: 10,
-  },
-  tagContainer: {
-    flexDirection: "row",
-    flexWrap: "wrap",
-    justifyContent: "space-evenly",
-    marginTop: 20,
-  },
-  tag: {
-    backgroundColor: "#F5F5F5", // Light gray background for non-selected tags
-    padding: 10,
-    margin: 5,
-    borderRadius: 25, // Rounded shape
-    borderWidth: 2,
-    borderColor: "transparent", // No border by default
-    flexDirection: "row", // Icon and text in row
-    alignItems: "center", // Vertically center the content
-    justifyContent: "center",
-    width: wp("22%"),
-    height: wp("10%"), // Adjust size as needed
-  },
-  selectedTag: {
-    backgroundColor: "#FCD22820", // Light yellow background for selected tag
-    borderColor: "#FCD228", // Yellow border for selected tags
-  },
-  tagIcon: {
-    width: 20, // Adjust icon size
-    height: 20,
-    marginRight: 5, // Space between icon and text
-  },
-  tagText: {
-    fontSize: 14,
-    fontWeight: "600",
-    color: "#000", // Black text color
-  },
-  button: {
-    backgroundColor: "#FCD228",
-    paddingVertical: hp("2%"),
-    borderRadius: 12,
-    alignItems: "center",
-    marginTop: 30,
-    width: "100%",
-  },
-  buttonText: {
-    fontSize: 18,
-    fontWeight: "bold",
     color: "#000",
   },
   warningText: {
     color: "red",
-    fontSize: 12,
-    marginTop: 5,
+    fontSize: wp("3.5%"),
+    marginTop: hp("0.5%"),
   },
 });

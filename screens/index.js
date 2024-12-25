@@ -7,9 +7,6 @@ import WelcomeScreen from "./authentication/WelcomeScreen";
 import ResetPasswordScreen from "./authentication/ResetPasswordScreen";
 import Profile from "./profile/Profile";
 import LoginEmail from "./authentication/LoginEmail";
-import CreatInfo from "./profile/CreatInfo";
-import CreatTags from "./profile/CreatTags";
-import EditProfile from "./profile/EditProfile";
 import TripDetails from "./trips/TripDetails";
 import AllTrip from "./trips/AllTrip";
 import CreatTrip from "./trips/CreatTrip";
@@ -47,11 +44,8 @@ export {
   SignupScreen,
   WelcomeScreen,
   ResetPasswordScreen,
-  CreatInfo,
-  CreatTags,
   Profile,
   LoginEmail,
-  EditProfile,
   TripDetails,
   AllTrip,
   CreatTrip,

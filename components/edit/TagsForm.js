@@ -8,6 +8,11 @@ import {
 } from "react-native";
 import TagSelector from "../Profile/TagSelector";
 import { COLORS } from "../../constants/theme";
+import {
+  widthPercentageToDP as wp,
+  heightPercentageToDP as hp,
+} from "react-native-responsive-screen";
+import ReusableBtn from "../Buttons/ReusableBtn";
 
 const TagsForm = ({ selectedTags, setSelectedTags, handleSubmit }) => {
   return (
@@ -17,13 +22,22 @@ const TagsForm = ({ selectedTags, setSelectedTags, handleSubmit }) => {
         contentContainerStyle={styles.tagScrollContent}
       >
         <TagSelector
-          selectedTags={selectedTags}
-          onTagsChange={setSelectedTags}
+          selectedTags={selectedTags} // Pre-selected tags
+          onTagsChange={setSelectedTags} // Update tags when user modifies selection
         />
       </ScrollView>
-      <TouchableOpacity style={styles.button} onPress={handleSubmit}>
-        <Text style={styles.buttonText}>Submit</Text>
-      </TouchableOpacity>
+     
+        <ReusableBtn
+          btnText={"DONE"}
+          backgroundColor={COLORS.primary}
+          width={75}
+          height={6}
+          borderColor={COLORS.primary}
+          borderWidth={0}
+          textColor={COLORS.black}
+          onPress={handleSubmit} 
+        />
+       
     </View>
   );
 };
@@ -32,12 +46,13 @@ export default TagsForm;
 
 const styles = StyleSheet.create({
   tagScrollView: {
-    maxHeight: 200, // Adjust to your needs
+    maxHeight: 300, // Adjust to your needs
   },
   tagScrollContent: {
     flexDirection: "row",
     flexWrap: "wrap",
     justifyContent: "center",
+    height: hp("55%"),
   },
   button: {
     backgroundColor: COLORS.primary,

@@ -65,10 +65,10 @@ const styles = StyleSheet.create({
     flex: 1,
     padding: wp("3%"),
     backgroundColor: COLORS.white,
-    borderRadius: wp("5%"),
-    marginHorizontal: wp("7.5%"),
+    borderRadius: wp("7%"),
+    marginHorizontal: wp("5.5%"),
     marginTop: hp("-13%"),
-    paddingVertical: hp("2.5%"),
+    paddingVertical: hp("1%"),
   },
   header: {
     fontSize: 24,

@@ -24,15 +24,45 @@ export async function authenticate(
       },
     });
 
-    const token = response.data?.data?.token; // Extract token from the correct path
-    console.log("Login token:", token); // Log the token
+    if (!response.data || !response.data.data) {
+      throw new Error("Invalid response structure from server.");
+    }
+
+    const { token, first_login, verified_email } = response.data.data;
+
+    if (!token) {
+      throw new Error(
+        "Authentication failed: Token is missing in the response."
+      );
+    }
+
+    console.log("Login token:", token); // Log the token for debugging
     return {
-      token, // Return token for further use
-      ...response.data.data, // Spread other user details for additional context
+      token,
+      first_login,
+      verified_email,
     };
   } catch (error) {
-    console.error("Error during authentication:", error.message);
-    throw error;
+    if (error.response) {
+      // Server responded with a status outside of the 2xx range
+      console.error(
+        "Authentication error:",
+        error.response.data?.message || "Unknown server error"
+      );
+      throw new Error(
+        error.response.data?.message || "Server returned an error during login."
+      );
+    } else if (error.request) {
+      // No response received from the server
+      console.error("No response from the server:", error.request);
+      throw new Error(
+        "Unable to connect to the server. Please try again later."
+      );
+    } else {
+      // Error occurred in setting up the request
+      console.error("Error setting up authentication request:", error.message);
+      throw new Error("An unexpected error occurred. Please try again.");
+    }
   }
 }
 
@@ -119,15 +149,16 @@ export async function forgotPassword(email) {
         Accept: "application/json",
       },
     });
-    return response.data;
+    return response.data; // Ensure response data is returned
   } catch (error) {
     console.error(
       "Error occurred during password reset request:",
       error.response?.data || error.message
     );
-    throw error;
+    throw error; // Throw error to be handled in resetPasswordHandler
   }
 }
+
 
 // Function to reset user password
 export async function resetPassword(email, password, confirmPassword, token) {
@@ -155,13 +186,17 @@ export async function resetPassword(email, password, confirmPassword, token) {
 }
 
 // Function to resend verification email
-export async function resendVerificationEmail(token) {
+export async function resendVerificationEmail(token, email) {
   const url = `${BASE_URL}/email/verification-notification`;
 
   try {
+    console.log("API URL:", url); // Log the API URL
+    console.log("Email being sent:", email); // Log the email being sent
+    console.log("Authorization Header:", `Bearer ${token}`); // Log the token in the Authorization header
+
     const response = await axios.post(
       url,
-      {},
+      { email },
       {
         headers: {
           Authorization: `Bearer ${token}`,
@@ -171,14 +206,10 @@ export async function resendVerificationEmail(token) {
     );
     return response.data;
   } catch (error) {
-    console.error(
-      "Error occurred during email verification resend:",
-      error.message
-    );
+    console.error("Resend verification email error:", error.message); // Log the error message
     throw error;
   }
 }
-
 
 
 // Function to fetch user profile
