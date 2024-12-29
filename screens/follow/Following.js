@@ -16,7 +16,7 @@ const Following = () => {
     <ReusableBackground>
       <SafeAreaView style={reusable.container}>
         <View>
-          <View style={[reusable.header1, { marginTop: -5 }]}>
+          <View style={[reusable.header1, { marginTop: 30 }]}>
             <View style={{ width: 200 }}>
               <ReusableText
                 text={"Followed users activities and posts"}

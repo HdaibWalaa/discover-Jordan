@@ -36,7 +36,7 @@ export default ReusableBtn;
 
 const styles = StyleSheet.create({
   btnText: (textColor) => ({
-    fontFamily: "medium",
+    fontFamily: "Medium",
     fontSize: wp(4.5), // Dynamically sized text
     color: textColor,
   }),
@@ -46,7 +46,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
     height: hp(height || 6), // Responsive height with default value
-    borderRadius:SIZES.xSmall,
+    borderRadius: SIZES.xSmall,
     borderColor: borderColor,
     borderWidth: borderWidth,
   }),

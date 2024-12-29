@@ -82,7 +82,7 @@ const Popular = () => {
       <View style={styles.rowWithSpace}>
         <ReusableText
           text={"popular places".toUpperCase()}
-          family={"medium"}
+          family={"Medium"}
           size={TEXT.large}
           color={COLORS.black}
         />

@@ -25,7 +25,7 @@ const FollowersModal = ({ isVisible, onClose, token, userId }) => {
     try {
       setIsLoading(true);
       const response = await axios.get(
-        `${BASE_URL}/follow/followers/${userId}`,
+        `${BASE_URL}/follow/followers/requests/${userId}`,
         {
           headers: {
             Authorization: `Bearer ${token}`,

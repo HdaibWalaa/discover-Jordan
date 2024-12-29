@@ -25,7 +25,7 @@ const AppBar = ({
 
         <ReusableText
           text={title}
-          family={"medium"}
+          family={"Medium"}
           size={TEXT.large}
           color={COLORS.black}
         />

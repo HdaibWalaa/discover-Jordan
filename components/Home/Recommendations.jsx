@@ -67,7 +67,7 @@ const Recommendations = () => {
       >
         <ReusableText
           text={"Recommendations"}
-          family={"medium"}
+          family={"Medium"}
           size={TEXT.large}
           color={COLORS.black}
         />
@@ -77,16 +77,19 @@ const Recommendations = () => {
         </TouchableOpacity>
       </View>
 
-    <FlatList 
-    data={recommendations}
-    horizontal
-    keyExtractor={(item)=> item._id}
-    contentContainerStyle={{columnGap: SIZES.medium}}
-    showsHorizontalScrollIndicator={false}
-    renderItem={({item}) => (
-        <ReusableTile item={item} onPress={()=> navigation.navigate('PlaceDetails', item._id)}/>
-    )}
-    />
+      <FlatList
+        data={recommendations}
+        horizontal
+        keyExtractor={(item) => item._id}
+        contentContainerStyle={{ columnGap: SIZES.medium }}
+        showsHorizontalScrollIndicator={false}
+        renderItem={({ item }) => (
+          <ReusableTile
+            item={item}
+            onPress={() => navigation.navigate("PlaceDetails", item._id)}
+          />
+        )}
+      />
     </View>
   );
 };

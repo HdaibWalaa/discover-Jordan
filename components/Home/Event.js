@@ -69,7 +69,7 @@ const Event = () => {
       >
         <ReusableText
           text={"Events".toUpperCase()}
-          family={"medium"}
+          family={"Medium"}
           size={TEXT.large}
           color={COLORS.black}
         />

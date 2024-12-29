@@ -80,7 +80,7 @@ const styles = StyleSheet.create({
     top: Dimensions.get("window").height * 0.2,
   },
   title: {
-    fontFamily: "Red Hat Display",
+    fontFamily: "Bold",
     fontSize: 40,
     fontWeight: "700",
     lineHeight: 56,
@@ -88,7 +88,7 @@ const styles = StyleSheet.create({
     color: COLORS.black,
   },
   subtitle: {
-    fontFamily: "Red Hat Display",
+    fontFamily: "Bold",
     fontSize: 16,
     fontWeight: "500",
     lineHeight: 24,

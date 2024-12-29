@@ -13,7 +13,7 @@ const Rating = ({ rating }) => {
 
       <ReusableText
         text={rating}
-        family={"medium"}
+        family={"Medium"}
         size={15}
         color={"#FD9942"}
       />

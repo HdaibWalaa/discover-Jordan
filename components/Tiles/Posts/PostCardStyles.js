@@ -1,171 +1,123 @@
-import { StyleSheet } from "react-native";
-import { COLORS } from "../../../constants/theme";
+import { StyleSheet, Dimensions } from "react-native";
+import { COLORS, TEXT } from "../../../constants/theme";
+
+const SCREEN_WIDTH = Dimensions.get("window").width;
 
 const styles = StyleSheet.create({
   cardContainer: {
     backgroundColor: COLORS.white,
     borderRadius: 10,
-    padding: 15,
-    marginVertical: 10,
+    marginBottom: 15,
+    overflow: "hidden",
+    padding: 2,
     shadowColor: COLORS.black,
-    shadowOpacity: 0.1,
-    shadowOffset: { width: 0, height: 5 },
-    shadowRadius: 10,
-    elevation: 5,
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.2,
+    shadowRadius: 4,
+    elevation: 4,
   },
   header: {
     flexDirection: "row",
-    alignItems: "center",
-    marginBottom: 10,
+    alignItems: "flex-start", // Align items to the top
+    paddingVertical: 13,
   },
-  userImage: {
+  avatar: {
     width: 40,
     height: 40,
     borderRadius: 20,
     marginRight: 10,
+  },
+  headerDetails: {
+    flex: 1,
+    justifyContent: "flex-start",
   },
   userInfo: {
-    flex: 1,
-  },
-  userName: {
-    fontSize: 16,
-    fontFamily: "Bold",
-  },
-  postTime: {
-    color: COLORS.gray,
-  },
-  iconButton: {
-    marginLeft: 10,
-  },
-  icon: {
-    width: 20,
-    height: 20,
-  },
-  postTitle: {
-    fontSize: 18,
-    fontFamily: "Bold",
-    marginBottom: 5,
-  },
-  postDescription: {
-    fontSize: 16,
-    marginBottom: 10,
-    fontFamily: "Medium",
-  },
-  imageScrollView: {
-    height: 200, // Ensure this height is defined
-    marginBottom: 10,
-  },
-  postImage: {
-    width: "100%",
-    height: 200,
-    borderRadius: 10,
-    marginBottom: 10,
-  },
-  footer: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-  },
-  footerItem: {
     flexDirection: "row",
     alignItems: "center",
+    marginBottom: 5, // Add space between username/createdAt and title
   },
-  footerIcon: {
-    width: 20,
-    height: 20,
+  username: {
     marginRight: 5,
   },
-  footerText: {
-    fontSize: 14,
+  moreIcon: {
+    marginLeft: 10,
+    padding: 5,
+    alignSelf: "flex-start", // Aligns with the top of the header
   },
-  commentsSection: {
-    marginTop: 10,
-    paddingTop: 10,
-    borderTopWidth: 1,
-    borderTopColor: COLORS.gray,
+  contentContainer: {
+    flexDirection: "row", // Align text and toggle horizontally
+    flexWrap: "wrap", // Allow wrapping if needed
+    marginBottom: 15,
   },
-  comment: {
-    flexDirection: "row",
-    alignItems: "flex-start",
-    marginBottom: 10,
-  },
-  commentUserImage: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    marginRight: 10,
-  },
-  commentContent: {
-    flex: 1,
-  },
-  commentUserName: {
-    fontSize: 14,
-    fontFamily: "Bold",
-    marginBottom: 2,
-  },
-  commentTime: {
-    fontSize: 12,
-    color: COLORS.gray,
-    marginBottom: 5,
-  },
-  commentText: {
-    fontSize: 14,
-    marginBottom: 5,
-  },
-  commentActions: {
-    flexDirection: "row",
-  },
-  commentAction: {
-    fontSize: 12,
-    color: COLORS.secondary,
-    marginRight: 10,
-  },
-  noCommentsText: {
-    fontSize: 14,
+  toggleText: {
+    fontSize: TEXT.xSmall,
     color: COLORS.gray,
   },
-  addCommentSection: {
-    flexDirection: "row",
-    alignItems: "center",
-    marginTop: 10,
+  mediaContainer: {
+    position: "relative",
+    marginVertical: 10,
   },
-  commentInput: {
-    flex: 1,
-    borderWidth: 1,
-    borderColor: COLORS.black,
-    borderRadius: 20,
-    paddingVertical: 5,
-    paddingHorizontal: 10,
-    fontSize: 14,
-    marginRight: 10,
+  media: {
+    width: SCREEN_WIDTH - 55,
+    height: 250,
+    borderRadius: 10,
+    marginHorizontal: 5,
   },
-  replyUserImage: {
-    width: 30,
-    height: 30,
+  fullMedia: {
+    width: SCREEN_WIDTH,
+    height: SCREEN_WIDTH,
+    resizeMode: "contain",
+  },
+  imageCounterContainer: {
+    position: "absolute",
+    bottom: 35,
+    right: 20,
+    backgroundColor: "rgba(0, 0, 0, 0.5)",
     borderRadius: 15,
-    marginRight: 10,
+    paddingHorizontal: 10,
+    paddingVertical: 5,
   },
-  addReplySection: {
+  imageCounterText: {
+    color: COLORS.white,
+    fontSize: TEXT.small,
+    fontWeight: "bold",
+  },
+  dotContainer: {
     flexDirection: "row",
+    justifyContent: "center",
     alignItems: "center",
     marginTop: 10,
   },
-  replyInput: {
-    flex: 1,
-    borderWidth: 1,
-    borderColor: COLORS.black,
-    borderRadius: 20,
-    paddingVertical: 5,
+  dot: {
+    width: 8,
+    height: 8,
+    borderRadius: 4,
+    backgroundColor: "rgba(0, 0, 0, 0.3)",
+    marginHorizontal: 4,
+  },
+  activeDot: {
+    backgroundColor: COLORS.primary,
+  },
+
+  footer: {
+    flexDirection: "row",
+    justifyContent: "space-between", // Ensure spacing between left and right sections
+    alignItems: "center", // Align items vertically in the center
+    marginTop: 15,
     paddingHorizontal: 10,
-    fontSize: 14,
-    marginRight: 10,
   },
-  replyButton: {
-    fontSize: 14,
-    color: COLORS.primary,
+  actionsLeft: {
+    flexDirection: "row",
+    alignItems: "center", // Align "like" and "comments" icons vertically
   },
-  saveEditButton: {
-    alignSelf: "flex-end",
+  iconButton: {
+    flexDirection: "row",
+    alignItems: "center",
+  },
+  footerText: {
+    fontSize: TEXT.medium,
+    color: COLORS.gray,
+    marginLeft: 5, // Space between the icon and text
   },
 });
 

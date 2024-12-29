@@ -46,7 +46,7 @@ const Plans = () => {
       >
         <ReusableText
           text={"Plans".toUpperCase()}
-          family={"medium"}
+          family={"Medium"}
           size={TEXT.large}
           color={COLORS.black}
         />

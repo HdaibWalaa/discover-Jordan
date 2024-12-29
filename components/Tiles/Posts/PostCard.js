@@ -1,264 +1,239 @@
-import React, { useState, useContext, useEffect } from "react";
+import React, { useState, useContext } from "react";
 import {
   View,
   Text,
   Image,
+  StyleSheet,
+  FlatList,
   TouchableOpacity,
-  TextInput,
-  ActivityIndicator,
+  Alert,
 } from "react-native";
-import CommentButton from "../../post/CommentButton";
+import { Video } from "expo-av";
+import { AntDesign, Entypo, Feather } from "@expo/vector-icons";
+import { COLORS, TEXT } from "../../../constants/theme";
 import { AuthContext } from "../../../store/auth-context";
 import styles from "./PostCardStyles";
-import useComments from "../../../hook/useComments";
-import ReplyComment from "../../post/ReplyComment";
-import { COLORS } from "../../../constants/theme";
-
-const defaultAvatar = require("../../../assets/images/default/user.png");
+import { ReusableText } from "../../index";
+import CommentCard from "./CommentCard";
 
 const PostCard = ({ item }) => {
   const { token } = useContext(AuthContext);
-  const {
-    comments,
-    loading,
-    error,
-    fetchComments,
-    createComment,
-    updateComment,
-    deleteComment,
-    likeDislikeComment,
-    createReply,
-    updateReply,
-    deleteReply,
-    likeDislikeReply,
-  } = useComments(token);
-
+  const [liked, setLiked] = useState(
+    item.post_likes.user_likes_info.length > 0
+  );
   const [showComments, setShowComments] = useState(false);
-  const [newComment, setNewComment] = useState("");
-  const [editComment, setEditComment] = useState(null);
-  const [commentsCount, setCommentsCount] = useState(item.comments.length);
-  const [reply, setReply] = useState(null);
-  const [newReply, setNewReply] = useState("");
+  const [comments, setComments] = useState(item.comments);
+  const [showFullContent, setShowFullContent] = useState(false);
+  const [currentIndex, setCurrentIndex] = useState(0); // State to track the current media index
+  const [isFavorite, setIsFavorite] = useState(item.favorite);
 
-  useEffect(() => {
-    if (showComments) {
-      fetchComments(item.id);
-    }
-  }, [showComments, item.id]);
+  const handleFavoriteToggle = async () => {
+    try {
+      const url = isFavorite
+        ? `https://dashboard.discoverjo.com/api/post/favorite/${item.id}/delete`
+        : `https://dashboard.discoverjo.com/api/post/favorite/${item.id}`;
+      const method = isFavorite ? "DELETE" : "POST";
 
-  const toggleComments = () => {
-    setShowComments(!showComments);
-  };
-
-  const handleCreateComment = () => {
-    if (newComment.trim()) {
-      createComment(item.id, newComment).then(() => {
-        setNewComment("");
-        setCommentsCount(commentsCount + 1);
-        fetchComments(item.id); // Fetch comments again to update the list
+      const response = await fetch(url, {
+        method,
+        headers: {
+          Authorization: `Bearer ${token}`,
+          Accept: "application/json",
+        },
       });
+
+      const data = await response.json();
+      if (response.ok) {
+        setIsFavorite(!isFavorite);
+      } else {
+        Alert.alert("Error", data.msg || "Failed to update favorites.");
+      }
+    } catch (error) {
+      console.error("Error toggling favorite:", error.message);
+      Alert.alert("Error", "Something went wrong. Please try again later.");
     }
   };
 
-  const handleLikeDislikeComment = (commentId) => {
-    likeDislikeComment(commentId).then(() => fetchComments(item.id));
-  };
+  const renderMediaItem = ({ item }) => {
+    const isVideo = item.url.endsWith(".mp4");
 
-  const handleEditComment = (commentId, content) => {
-    setEditComment({ id: commentId, content });
-  };
-
-  const handleSaveEditComment = () => {
-    if (editComment.content.trim()) {
-      updateComment(editComment.id, editComment.content).then(() => {
-        setEditComment(null);
-        fetchComments(item.id);
-      });
+    if (isVideo) {
+      return (
+        <Video
+          source={{ uri: item.url }}
+          rate={1.0}
+          volume={1.0}
+          isMuted={false}
+          resizeMode="cover"
+          shouldPlay={false}
+          useNativeControls
+          style={styles.media}
+        />
+      );
     }
+
+    return <Image source={{ uri: item.url }} style={styles.media} />;
   };
 
-  const handleDeleteComment = (commentId) => {
-    deleteComment(commentId).then(() => {
-      setCommentsCount(commentsCount - 1);
-      fetchComments(item.id);
-    });
+  const handleMoreOptions = (postId) => {
+    console.log(`More options for post ID: ${postId}`);
+    // Add logic for edit or delete functionality
   };
 
-  const handleCreateReply = (commentId) => {
-    if (newReply.trim()) {
-      createReply(commentId, newReply).then(() => {
-        setNewReply("");
-        setReply(null);
-        fetchComments(item.id);
-      });
-    }
-  };
+  const isContentTruncated = item.content.length > 100;
+  const contentToShow = showFullContent
+    ? item.content
+    : isContentTruncated
+    ? `${item.content.slice(0, 100)}...`
+    : item.content;
 
   return (
     <View style={styles.cardContainer}>
+      {/* Header */}
       <View style={styles.header}>
-        <Image
-          source={item.user.image ? { uri: item.user.image } : defaultAvatar}
-          style={styles.userImage}
-        />
-        <View style={styles.userInfo}>
-          <Text style={styles.userName}>{item.user.username}</Text>
-          <Text style={styles.postTime}>{item.created_at}</Text>
+        <Image source={{ uri: item.user.image }} style={styles.avatar} />
+        <View style={styles.headerDetails}>
+          <View style={styles.userInfo}>
+            <ReusableText
+              text={item.user.username}
+              family={"Bold"}
+              size={TEXT.medium}
+              color={COLORS.black}
+              style={styles.username}
+            />
+            <ReusableText
+              text={item.created_at}
+              family={"Bold"}
+              size={TEXT.small}
+              color={COLORS.lightGrey}
+              style={styles.createdAt}
+            />
+          </View>
+          <ReusableText
+            text={item.name}
+            family={"Medium"}
+            size={TEXT.small}
+            color={COLORS.gray}
+            style={styles.createdAt}
+          />
         </View>
-        <TouchableOpacity style={styles.iconButton}>
-          <Image
-            source={require("../../../assets/images/icons/heart.png")}
-            style={styles.icon}
-          />
-        </TouchableOpacity>
-        <TouchableOpacity style={styles.iconButton}>
-          <Image
-            source={require("../../../assets/images/icons/more.png")}
-            style={styles.icon}
-          />
+        <TouchableOpacity
+          style={styles.moreIcon}
+          onPress={() => handleMoreOptions(item.id)}
+        >
+          <Entypo name="dots-three-horizontal" size={20} color={COLORS.gray} />
         </TouchableOpacity>
       </View>
-      <Text style={styles.postTitle}>{item.name}</Text>
-      <Text style={styles.postDescription}>{item.content}</Text>
-      {item.images.length > 0 && (
-        <Image source={{ uri: item.images[0].url }} style={styles.postImage} />
-      )}
-      <View style={styles.footer}>
-        <TouchableOpacity style={styles.footerItem}>
-          <Image
-            source={require("../../../assets/images/icons/like.png")}
-            style={styles.footerIcon}
+
+      {/* Content */}
+      <View style={styles.contentContainer}>
+        <Text>
+          <ReusableText
+            text={contentToShow}
+            family={"Medium"}
+            size={TEXT.medium}
+            color={COLORS.dark}
           />
-          <Text style={styles.footerText}>
-            You and {item.post_likes.total_likes} Likes
-          </Text>
-        </TouchableOpacity>
-        <CommentButton
-          postId={item.id}
-          commentsCount={commentsCount}
-          likeDislikeComment={handleLikeDislikeComment}
-          onPress={toggleComments}
-        />
-      </View>
-      {showComments && (
-        <View style={styles.commentsSection}>
-          {loading ? (
-            <ActivityIndicator size="large" color={COLORS.primary} />
-          ) : error ? (
-            <Text>{error}</Text>
-          ) : comments.length > 0 ? (
-            comments.map((comment, index) => (
-              <View key={index} style={styles.comment}>
-                <Image
-                  source={
-                    comment.avatar ? { uri: comment.avatar } : defaultAvatar
-                  }
-                  style={styles.commentUserImage}
-                />
-                <View style={styles.commentContent}>
-                  <Text style={styles.commentUserName}>{comment.username}</Text>
-                  <Text style={styles.commentTime}>{comment.created_at}</Text>
-                  {editComment && editComment.id === comment.id ? (
-                    <TextInput
-                      style={styles.commentInput}
-                      value={editComment.content}
-                      onChangeText={(text) =>
-                        setEditComment({ ...editComment, content: text })
-                      }
-                    />
-                  ) : (
-                    <Text style={styles.commentText}>{comment.content}</Text>
-                  )}
-                  <View style={styles.commentActions}>
-                    <TouchableOpacity
-                      onPress={() => handleLikeDislikeComment(comment.id)}
-                    >
-                      <Text style={styles.commentAction}>
-                        {comment.liked ? "Dislike" : "Like"}
-                      </Text>
-                    </TouchableOpacity>
-                    <TouchableOpacity
-                      onPress={() =>
-                        handleEditComment(comment.id, comment.content)
-                      }
-                    >
-                      <Text style={styles.commentAction}>Edit</Text>
-                    </TouchableOpacity>
-                    <TouchableOpacity
-                      onPress={() => handleDeleteComment(comment.id)}
-                    >
-                      <Text style={styles.commentAction}>Delete</Text>
-                    </TouchableOpacity>
-                    <TouchableOpacity onPress={() => setReply(comment.id)}>
-                      <Text style={styles.commentAction}>Reply</Text>
-                    </TouchableOpacity>
-                  </View>
-                  {reply === comment.id && (
-                    <View style={styles.addReplySection}>
-                      <Image
-                        source={
-                          item.user.image
-                            ? { uri: item.user.image }
-                            : defaultAvatar
-                        }
-                        style={styles.replyUserImage}
-                      />
-                      <TextInput
-                        style={styles.replyInput}
-                        placeholder="Type your reply..."
-                        value={newReply}
-                        onChangeText={setNewReply}
-                      />
-                      <TouchableOpacity
-                        onPress={() => handleCreateReply(comment.id)}
-                      >
-                        <Text style={styles.replyButton}>Reply</Text>
-                      </TouchableOpacity>
-                    </View>
-                  )}
-                  {editComment && editComment.id === comment.id && (
-                    <TouchableOpacity
-                      onPress={handleSaveEditComment}
-                      style={styles.saveEditButton}
-                    >
-                      <Text style={styles.commentAction}>Save</Text>
-                    </TouchableOpacity>
-                  )}
-                  {comment.replies &&
-                    comment.replies.map((reply, replyIndex) => (
-                      <ReplyComment
-                        key={replyIndex}
-                        reply={reply}
-                        handleEditReply={handleEditComment}
-                        handleSaveEditReply={handleSaveEditComment}
-                        handleDeleteReply={handleDeleteComment}
-                        handleLikeDislikeReply={handleLikeDislikeComment}
-                      />
-                    ))}
-                </View>
-              </View>
-            ))
-          ) : (
-            <Text>No comments yet.</Text>
+          {isContentTruncated && (
+            <Text
+              style={styles.toggleText}
+              onPress={() => setShowFullContent(!showFullContent)}
+            >
+              {showFullContent ? " Show less" : " Show more"}
+            </Text>
           )}
-          <View style={styles.addCommentSection}>
-            <Image
-              source={
-                item.user.image ? { uri: item.user.image } : defaultAvatar
-              }
-              style={styles.commentUserImage}
-            />
-            <TextInput
-              style={styles.commentInput}
-              placeholder="Type your comment..."
-              value={newComment}
-              onChangeText={setNewComment}
-            />
-            <TouchableOpacity onPress={handleCreateComment}>
-              <Text style={styles.commentButton}>Post</Text>
-            </TouchableOpacity>
+        </Text>
+      </View>
+
+      {/* Media Carousel */}
+      {item.images.length > 1 && (
+        <View>
+          <FlatList
+            data={item.images}
+            horizontal
+            pagingEnabled
+            showsHorizontalScrollIndicator={false}
+            renderItem={renderMediaItem}
+            keyExtractor={(mediaItem) => mediaItem.id.toString()}
+            onScroll={(event) => {
+              const offsetX = event.nativeEvent.contentOffset.x;
+              const index = Math.floor(
+                offsetX / event.nativeEvent.layoutMeasurement.width
+              );
+              setCurrentIndex(index);
+            }}
+          />
+          {/* Counter inside the image */}
+          <View style={styles.imageCounterContainer}>
+            <Text style={styles.imageCounterText}>
+              {`${currentIndex + 1}/${item.images.length}`}
+            </Text>
+          </View>
+
+          {/* Dot Indicators below the image */}
+          <View style={styles.dotContainer}>
+            {item.images.map((_, index) => (
+              <View
+                key={index}
+                style={[styles.dot, currentIndex === index && styles.activeDot]}
+              />
+            ))}
           </View>
         </View>
+      )}
+
+      {/* Show single media without carousel */}
+      {item.images.length === 1 && (
+        <View>{renderMediaItem({ item: item.images[0] })}</View>
+      )}
+
+      {/* Footer */}
+      <View style={styles.footer}>
+        <View style={styles.actionsLeft}>
+          <TouchableOpacity
+            style={styles.iconButton}
+            onPress={() => setLiked(!liked)}
+          >
+            <AntDesign
+              name={liked ? "heart" : "hearto"}
+              size={20}
+              color={liked ? COLORS.primary : COLORS.gray}
+            />
+            <Text style={styles.footerText}>
+              {liked
+                ? `${item.post_likes.total_likes + 1}`
+                : `${item.post_likes.total_likes}`}
+            </Text>
+          </TouchableOpacity>
+          <TouchableOpacity
+            style={[styles.iconButton, { marginLeft: 10 }]}
+            onPress={() => setShowComments(!showComments)}
+          >
+            <AntDesign name="message1" size={20} color={COLORS.gray} />
+            <Text style={styles.footerText}>
+              {comments.length > 0 ? `${comments.length}` : "0"}
+            </Text>
+          </TouchableOpacity>
+        </View>
+        <TouchableOpacity
+          style={styles.iconButton}
+          onPress={handleFavoriteToggle}
+        >
+          <Feather
+            name="bookmark" // Feather only supports the 'bookmark' icon
+            size={20}
+            color={isFavorite ? COLORS.primary : COLORS.gray} // Change the color dynamically
+          />
+        </TouchableOpacity>
+      </View>
+
+      {/* Comment Section */}
+      {showComments && (
+        <CommentCard
+          postId={item.id}
+          comments={comments}
+          setComments={setComments}
+        />
       )}
     </View>
   );

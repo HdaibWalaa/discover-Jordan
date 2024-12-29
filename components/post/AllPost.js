@@ -5,13 +5,14 @@ import {
   StyleSheet,
   ActivityIndicator,
   Text,
+  Platform,
+  NativeModules,
 } from "react-native";
 import { COLORS, SIZES } from "../../constants/theme";
 import HeightSpacer from "../Reusable/HeightSpacer";
 import PostCard from "../Tiles/Posts/PostCard";
-import axios from "axios";
 import { AuthContext } from "../../store/auth-context";
-import BASE_URL from "../../hook/apiConfig";
+import fetchAllPosts from "../../hook/posts/fetchAllPosts";
 
 const AllPostsCard = () => {
   const [posts, setPosts] = useState([]);
@@ -23,38 +24,39 @@ const AllPostsCard = () => {
 
   const { token } = useContext(AuthContext);
 
+  // Determine the device language
+  const deviceLanguage =
+    Platform.OS === "ios"
+      ? NativeModules.SettingsManager.settings.AppleLocale ||
+        NativeModules.SettingsManager.settings.AppleLanguages[0]
+      : NativeModules.I18nManager.localeIdentifier;
+
+  const language = deviceLanguage?.split(/[_-]/)[0] || "en"; // Default to 'en'
+
   useEffect(() => {
-    const fetchPosts = async (page = 1) => {
-      if (!hasMore && page > 1) return; // If no more posts, don't fetch
-
+    const loadPosts = async () => {
       try {
-        const response = await axios.get(
-          `${BASE_URL}/post/followings?page=${page}`,
-          {
-            headers: {
-              Authorization: `Bearer ${token}`,
-            },
-          }
+        const { posts: newPosts, hasMore: moreAvailable } = await fetchAllPosts(
+          token,
+          page,
+          language // Pass the language to the fetchAllPosts function
         );
-
-        const newPosts = response.data.data.posts;
-        const nextPageUrl = response.data.data.pagination.next_page_url;
 
         setPosts((prevPosts) =>
           page === 1 ? newPosts : [...prevPosts, ...newPosts]
         );
-        setHasMore(!!nextPageUrl);
-      } catch (error) {
+        setHasMore(moreAvailable);
+      } catch (err) {
         setError("Failed to fetch posts");
-        console.error("Failed to fetch posts:", error);
+        console.error(err.message);
       } finally {
         setLoading(false);
         setLoadingMore(false);
       }
     };
 
-    fetchPosts(page);
-  }, [token, page, hasMore]);
+    loadPosts();
+  }, [token, page, language]);
 
   const loadMorePosts = () => {
     if (loadingMore || !hasMore) return; // Prevent loading more if already loading or no more posts
@@ -81,13 +83,9 @@ const AllPostsCard = () => {
         showsVerticalScrollIndicator={false}
         getItemCount={(data) => data.length}
         getItem={getItem}
-        renderItem={({ item }) => (
-          <View style={styles.itemContainer}>
-            <PostCard item={item} />
-          </View>
-        )}
+        renderItem={({ item }) => <PostCard item={item} />}
         onEndReached={loadMorePosts}
-        onEndReachedThreshold={0.5} // Load more when 50% away from the end
+        onEndReachedThreshold={0.5}
         ListFooterComponent={() =>
           loadingMore ? (
             <ActivityIndicator size="small" color={COLORS.primary} />
