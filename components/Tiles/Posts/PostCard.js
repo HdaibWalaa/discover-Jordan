@@ -9,12 +9,17 @@ import {
   Alert,
 } from "react-native";
 import { Video } from "expo-av";
-import { AntDesign, Entypo, Feather } from "@expo/vector-icons";
+import { AntDesign, Entypo, FontAwesome } from "@expo/vector-icons";
 import { COLORS, TEXT } from "../../../constants/theme";
 import { AuthContext } from "../../../store/auth-context";
 import styles from "./PostCardStyles";
 import { ReusableText } from "../../index";
 import CommentCard from "./CommentCard";
+import EditDeletePost from "./EditDeletePost";
+import {
+  addFavorite,
+  deleteFavorite,
+} from "../../../hook/posts/fetchFavoritepost";
 
 const PostCard = ({ item }) => {
   const { token } = useContext(AuthContext);
@@ -24,68 +29,50 @@ const PostCard = ({ item }) => {
   const [showComments, setShowComments] = useState(false);
   const [comments, setComments] = useState(item.comments);
   const [showFullContent, setShowFullContent] = useState(false);
-  const [currentIndex, setCurrentIndex] = useState(0); // State to track the current media index
+  const [currentIndex, setCurrentIndex] = useState(0);
   const [isFavorite, setIsFavorite] = useState(item.favorite);
+  const [modalVisible, setModalVisible] = useState(false);
 
   const handleFavoriteToggle = async () => {
     try {
-      const url = isFavorite
-        ? `https://dashboard.discoverjo.com/api/post/favorite/${item.id}/delete`
-        : `https://dashboard.discoverjo.com/api/post/favorite/${item.id}`;
-      const method = isFavorite ? "DELETE" : "POST";
-
-      const response = await fetch(url, {
-        method,
-        headers: {
-          Authorization: `Bearer ${token}`,
-          Accept: "application/json",
-        },
-      });
-
-      const data = await response.json();
-      if (response.ok) {
-        setIsFavorite(!isFavorite);
+      if (isFavorite) {
+        await deleteFavorite(item.id, token);
       } else {
-        Alert.alert("Error", data.msg || "Failed to update favorites.");
+        await addFavorite(item.id, token);
       }
+      setIsFavorite(!isFavorite);
     } catch (error) {
-      console.error("Error toggling favorite:", error.message);
-      Alert.alert("Error", "Something went wrong. Please try again later.");
+      Alert.alert("Error", "Unable to update favorites. Please try again.");
     }
+  };
+
+  const handleEditPost = () => {
+    setModalVisible(false);
+    Alert.alert("Edit Post", "Edit post functionality here.");
+  };
+
+  const handleDeletePost = () => {
+    console.log("Post deleted"); // Replace with delete logic
+    setModalVisible(false);
   };
 
   const renderMediaItem = ({ item }) => {
     const isVideo = item.url.endsWith(".mp4");
-
-    if (isVideo) {
-      return (
-        <Video
-          source={{ uri: item.url }}
-          rate={1.0}
-          volume={1.0}
-          isMuted={false}
-          resizeMode="cover"
-          shouldPlay={false}
-          useNativeControls
-          style={styles.media}
-        />
-      );
-    }
-
-    return <Image source={{ uri: item.url }} style={styles.media} />;
+    return isVideo ? (
+      <Video
+        source={{ uri: item.url }}
+        rate={1.0}
+        volume={1.0}
+        isMuted={false}
+        resizeMode="cover"
+        shouldPlay={false}
+        useNativeControls
+        style={styles.media}
+      />
+    ) : (
+      <Image source={{ uri: item.url }} style={styles.media} />
+    );
   };
-
-  const handleMoreOptions = (postId) => {
-    console.log(`More options for post ID: ${postId}`);
-    // Add logic for edit or delete functionality
-  };
-
-  const isContentTruncated = item.content.length > 100;
-  const contentToShow = showFullContent
-    ? item.content
-    : isContentTruncated
-    ? `${item.content.slice(0, 100)}...`
-    : item.content;
 
   return (
     <View style={styles.cardContainer}>
@@ -119,22 +106,39 @@ const PostCard = ({ item }) => {
         </View>
         <TouchableOpacity
           style={styles.moreIcon}
-          onPress={() => handleMoreOptions(item.id)}
+          onPress={() => setModalVisible(true)}
         >
           <Entypo name="dots-three-horizontal" size={20} color={COLORS.gray} />
         </TouchableOpacity>
       </View>
 
+      {/* Edit/Delete Modal */}
+      <EditDeletePost
+        visible={modalVisible}
+        onClose={() => setModalVisible(false)}
+        onEdit={() => console.log("Edit Post")}
+        onDelete={() => {
+          // Update the UI after deletion
+          console.log("Post deleted");
+        }}
+        token={token} // Pass the user token
+        postId={item.id} // Pass the post ID
+      />
+
       {/* Content */}
       <View style={styles.contentContainer}>
         <Text>
           <ReusableText
-            text={contentToShow}
+            text={
+              showFullContent || item.content.length <= 100
+                ? item.content
+                : `${item.content.slice(0, 100)}...`
+            }
             family={"Medium"}
             size={TEXT.medium}
             color={COLORS.dark}
           />
-          {isContentTruncated && (
+          {item.content.length > 100 && (
             <Text
               style={styles.toggleText}
               onPress={() => setShowFullContent(!showFullContent)}
@@ -146,45 +150,21 @@ const PostCard = ({ item }) => {
       </View>
 
       {/* Media Carousel */}
-      {item.images.length > 1 && (
-        <View>
-          <FlatList
-            data={item.images}
-            horizontal
-            pagingEnabled
-            showsHorizontalScrollIndicator={false}
-            renderItem={renderMediaItem}
-            keyExtractor={(mediaItem) => mediaItem.id.toString()}
-            onScroll={(event) => {
-              const offsetX = event.nativeEvent.contentOffset.x;
-              const index = Math.floor(
-                offsetX / event.nativeEvent.layoutMeasurement.width
-              );
-              setCurrentIndex(index);
-            }}
-          />
-          {/* Counter inside the image */}
-          <View style={styles.imageCounterContainer}>
-            <Text style={styles.imageCounterText}>
-              {`${currentIndex + 1}/${item.images.length}`}
-            </Text>
-          </View>
-
-          {/* Dot Indicators below the image */}
-          <View style={styles.dotContainer}>
-            {item.images.map((_, index) => (
-              <View
-                key={index}
-                style={[styles.dot, currentIndex === index && styles.activeDot]}
-              />
-            ))}
-          </View>
-        </View>
-      )}
-
-      {/* Show single media without carousel */}
-      {item.images.length === 1 && (
-        <View>{renderMediaItem({ item: item.images[0] })}</View>
+      {item.images.length > 0 && (
+        <FlatList
+          data={item.images}
+          horizontal
+          pagingEnabled
+          showsHorizontalScrollIndicator={false}
+          renderItem={renderMediaItem}
+          keyExtractor={(mediaItem) => mediaItem.id.toString()}
+          onScroll={(event) => {
+            const offsetX = event.nativeEvent.contentOffset.x;
+            setCurrentIndex(
+              Math.floor(offsetX / event.nativeEvent.layoutMeasurement.width)
+            );
+          }}
+        />
       )}
 
       {/* Footer */}
@@ -201,8 +181,8 @@ const PostCard = ({ item }) => {
             />
             <Text style={styles.footerText}>
               {liked
-                ? `${item.post_likes.total_likes + 1}`
-                : `${item.post_likes.total_likes}`}
+                ? item.post_likes.total_likes + 1
+                : item.post_likes.total_likes}
             </Text>
           </TouchableOpacity>
           <TouchableOpacity
@@ -211,7 +191,7 @@ const PostCard = ({ item }) => {
           >
             <AntDesign name="message1" size={20} color={COLORS.gray} />
             <Text style={styles.footerText}>
-              {comments.length > 0 ? `${comments.length}` : "0"}
+              {comments.length > 0 ? comments.length : "0"}
             </Text>
           </TouchableOpacity>
         </View>
@@ -219,10 +199,10 @@ const PostCard = ({ item }) => {
           style={styles.iconButton}
           onPress={handleFavoriteToggle}
         >
-          <Feather
-            name="bookmark" // Feather only supports the 'bookmark' icon
+          <FontAwesome
+            name={isFavorite ? "bookmark" : "bookmark-o"}
             size={20}
-            color={isFavorite ? COLORS.primary : COLORS.gray} // Change the color dynamically
+            color={isFavorite ? COLORS.primary : COLORS.gray}
           />
         </TouchableOpacity>
       </View>

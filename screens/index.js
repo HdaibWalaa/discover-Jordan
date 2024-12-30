@@ -36,6 +36,9 @@ import OtherUserProfile from "./profile/OtherUserProfile";
 import PlacesFilter from "./search/PlacesFilter";
 import ContactUs from "./Sitting/ContactUs";
 import EditUserProfile from "./Edit/EditUserProfile";
+import AllUserPosts from "./Posts/AllUserPosts";
+import EditUserPost from "./Posts/EditUserPost";
+
 export {
   Home,
   Onboarding,
@@ -75,4 +78,6 @@ export {
   OtherUserProfile,
   PlacesFilter,
   EditUserProfile,
+  AllUserPosts,
+  EditUserPost,
 };

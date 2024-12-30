@@ -10,7 +10,10 @@ const OverView = () => {
     <View style={styles.container}>
       <Text style={styles.sectionTitle}>Overview</Text>
       <View style={styles.gridContainer}>
-        <TouchableOpacity style={styles.card}>
+        <TouchableOpacity
+          style={styles.card}
+          onPress={() => navigation.navigate("AllUserPosts")}
+        >
           <Ionicons name="list-outline" size={24} color="#00aaff" />
           <View style={styles.cardText}>
             <Text style={styles.cardTitle}>My Posts</Text>
@@ -19,26 +22,12 @@ const OverView = () => {
         </TouchableOpacity>
         <TouchableOpacity
           style={styles.card}
-          onPress={() => navigation.navigate("SuggestPlace")} // Add this line
+          onPress={() => navigation.navigate("SuggestPlace")}
         >
           <Ionicons name="add-outline" size={24} color="#00aaff" />
           <View style={styles.cardText}>
             <Text style={styles.cardTitle}>Suggest Place</Text>
             <Text style={styles.cardSubtitle}>Suggest new place</Text>
-          </View>
-        </TouchableOpacity>
-        <TouchableOpacity style={styles.card}>
-          <Ionicons name="list-outline" size={24} color="#00aaff" />
-          <View style={styles.cardText}>
-            <Text style={styles.cardTitle}>My Posts</Text>
-            <Text style={styles.cardSubtitle}>120 Posts</Text>
-          </View>
-        </TouchableOpacity>
-        <TouchableOpacity style={styles.card}>
-          <Ionicons name="list-outline" size={24} color="#00aaff" />
-          <View style={styles.cardText}>
-            <Text style={styles.cardTitle}>My Posts</Text>
-            <Text style={styles.cardSubtitle}>120 Posts</Text>
           </View>
         </TouchableOpacity>
       </View>
@@ -49,7 +38,9 @@ const OverView = () => {
 export default OverView;
 
 const styles = StyleSheet.create({
-  container: {},
+  container: {
+    padding: 16,
+  },
   sectionTitle: {
     fontSize: 18,
     fontWeight: "bold",
@@ -61,9 +52,9 @@ const styles = StyleSheet.create({
     justifyContent: "space-between",
   },
   card: {
-    width: "48%", // Adjust the width to make two cards per row
+    width: "48%",
     backgroundColor: "#fff",
-    borderRadius: 20,
+    borderRadius: 10,
     padding: 15,
     marginBottom: 15,
     flexDirection: "row",

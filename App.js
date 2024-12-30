@@ -21,6 +21,7 @@ import {
   PlaceDetails,
   OtherUserProfile,
   PlacesFilter,
+  EditUserPost
 } from "./screens";
 import DrawerNavigation from "./navigation/DrawerNavigation";
 import AuthContextProvider, { AuthContext } from "./store/auth-context";
@@ -103,6 +104,11 @@ function AuthStack() {
       <Stack.Screen
         name="PlaceDetails"
         component={PlaceDetails}
+        options={{ headerShown: false }}
+      />
+      <Stack.Screen
+        name="EditUserPost"
+        component={EditUserPost}
         options={{ headerShown: false }}
       />
     </Stack.Navigator>
@@ -198,6 +204,11 @@ function AppStack() {
         <Stack.Screen
           name="PlacesFilter"
           component={PlacesFilter}
+          options={{ headerShown: false }}
+        />
+        <Stack.Screen
+          name="EditUserPost"
+          component={EditUserPost}
           options={{ headerShown: false }}
         />
       </Stack.Navigator>

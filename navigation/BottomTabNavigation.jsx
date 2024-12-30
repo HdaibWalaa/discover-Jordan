@@ -33,7 +33,8 @@ import {
   TripDetails,
   EditTrip,
   CreatActivies,
-  CreatPlan
+  CreatPlan,
+  AllUserPosts,
 } from "../screens";
 import { COLORS } from "../constants/theme";
 import Header from "../components/header/Header";
@@ -42,7 +43,6 @@ import PrivacyPolicyHeader from "../components/header/privacyPolicyHeader";
 import ContactusHeader from "../components/header/ContactusHeader";
 import NotificationHeader from "../components/header/NotificationHeader";
 import CustomDrawerContent from "../components/Drawer/CustomDrawerContent";
-
 
 const Tab = createBottomTabNavigator();
 const Stack = createStackNavigator();
@@ -245,6 +245,7 @@ const HomeStack = () => {
             ),
           }}
         />
+
         <Stack.Screen
           name="CreatTrip"
           component={CreatTrip}
@@ -285,8 +286,35 @@ const HomeStack = () => {
             ),
           }}
         />
+        <Stack.Screen
+          name="AllUserPosts"
+          component={AllUserPosts}
+          options={{
+            header: () => (
+              <ReusableHeader headerText={"All User Posts".toUpperCase()} />
+            ),
+          }}
+        />
       </Stack.Navigator>
     </PlanProvider>
+  );
+};
+const FollowingStack = () => {
+  return (
+    <Stack.Navigator
+      screenOptions={({ navigation, route }) => ({
+        header: (props) => (
+          <Header {...props} route={route} navigation={navigation} />
+        ),
+        headerShown: false,
+      })}
+    >
+      <Stack.Screen
+        name="FollowingScreen"
+        component={Following}
+        options={{ headerShown: false }}
+      />
+    </Stack.Navigator>
   );
 };
 
@@ -327,10 +355,10 @@ const BottomTabNavigation = () => {
       />
       <Tab.Screen
         name="Following"
-        component={Following}
+        component={FollowingStack}
         options={{
           tabBarShowLabel: false,
-          headerShown: false, // Set to true if you want the header in the tab
+          headerShown: false,
         }}
       />
       <Tab.Screen
