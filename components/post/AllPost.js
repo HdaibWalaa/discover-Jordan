@@ -86,11 +86,14 @@ const AllPostsCard = () => {
         renderItem={({ item }) => <PostCard item={item} />}
         onEndReached={loadMorePosts}
         onEndReachedThreshold={0.5}
-        ListFooterComponent={() =>
-          loadingMore ? (
-            <ActivityIndicator size="small" color={COLORS.primary} />
-          ) : null
-        }
+        ListFooterComponent={() => (
+          <View style={{ alignItems: "center", justifyContent: "center" }}>
+            {loadingMore && (
+              <ActivityIndicator size="small" color={COLORS.primary} />
+            )}
+            <View style={{ height: 200 }} />
+          </View>
+        )}
       />
     </View>
   );

@@ -8,34 +8,28 @@ import {
   Image,
   StyleSheet,
 } from "react-native";
-import { AntDesign, Entypo } from "@expo/vector-icons";
+import { AntDesign } from "@expo/vector-icons";
 import { COLORS } from "../../../constants/theme";
 import { AuthContext } from "../../../store/auth-context";
 import defaultUserImage from "../../../assets/images/icons/userdefault.png";
 import CommentReply from "./CommentReply";
+import EditDeleteComment from "./EditDeleteComment";
 import {
   addComment,
   replyToComment,
-} from "../../../hook/posts/fetchAllComments"; 
+} from "../../../hook/posts/fetchAllComments";
 
 const CommentCard = ({ postId, comments, setComments }) => {
   const { token } = useContext(AuthContext);
   const [newComment, setNewComment] = useState("");
-  const [replyTo, setReplyTo] = useState(null); // Track which comment the user is replying to
+  const [replyTo, setReplyTo] = useState(null);
 
   const handleAddComment = async () => {
     if (!newComment.trim()) return;
 
     try {
       const newCommentData = await addComment(postId, newComment, token);
-
-      setComments((prevComments) => {
-        if (prevComments.some((comment) => comment.id === newCommentData.id)) {
-          return prevComments;
-        }
-        return [...prevComments, newCommentData];
-      });
-
+      setComments((prevComments) => [...prevComments, newCommentData]);
       setNewComment("");
     } catch (error) {
       console.error("Error adding comment:", error.message);
@@ -45,7 +39,6 @@ const CommentCard = ({ postId, comments, setComments }) => {
   const handleReplyComment = async (commentId, content) => {
     try {
       const newReplyData = await replyToComment(commentId, content, token);
-
       setComments((prevComments) => {
         const updatedComments = prevComments.map((comment) =>
           comment.id === commentId
@@ -57,11 +50,26 @@ const CommentCard = ({ postId, comments, setComments }) => {
         );
         return updatedComments;
       });
-
-      setReplyTo(null); // Close the reply section after sending
+      setReplyTo(null);
     } catch (error) {
       console.error("Error replying to comment:", error.message);
     }
+  };
+
+  const handleCommentUpdate = (commentId, updatedContent) => {
+    setComments((prevComments) =>
+      prevComments.map((comment) =>
+        comment.id === commentId
+          ? { ...comment, content: updatedContent }
+          : comment
+      )
+    );
+  };
+
+  const handleCommentDelete = (commentId) => {
+    setComments((prevComments) =>
+      prevComments.filter((comment) => comment.id !== commentId)
+    );
   };
 
   const renderComment = ({ item }) => (
@@ -77,13 +85,12 @@ const CommentCard = ({ postId, comments, setComments }) => {
           <Text style={styles.commentAuthor}>
             {item.username || "Anonymous"}
           </Text>
-          <TouchableOpacity onPress={() => {}}>
-            <Entypo
-              name="dots-three-vertical"
-              size={18}
-              color={COLORS.darkGray}
-            />
-          </TouchableOpacity>
+          <EditDeleteComment
+            commentId={item.id}
+            initialContent={item.content}
+            onCommentUpdated={handleCommentUpdate}
+            onCommentDeleted={handleCommentDelete}
+          />
         </View>
         <Text style={styles.commentText}>{item.content}</Text>
         <View style={styles.actionsContainer}>
@@ -96,9 +103,6 @@ const CommentCard = ({ postId, comments, setComments }) => {
             commentId={item.id}
             handleReply={handleReplyComment}
             replies={item.replies}
-            handleLike={(replyId) => {
-              console.log(`Liked reply with ID: ${replyId}`);
-            }}
           />
         )}
       </View>
@@ -110,9 +114,7 @@ const CommentCard = ({ postId, comments, setComments }) => {
       <FlatList
         data={comments}
         renderItem={renderComment}
-        keyExtractor={(item, index) =>
-          item.id ? `${item.id}-${index}` : `${index}`
-        }
+        keyExtractor={(item) => item.id.toString()}
       />
       <View style={styles.addCommentContainer}>
         <TextInput
@@ -199,6 +201,5 @@ const styles = StyleSheet.create({
     borderRadius: 20,
   },
 });
-
 
 export default CommentCard;

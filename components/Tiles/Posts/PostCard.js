@@ -78,7 +78,10 @@ const PostCard = ({ item }) => {
     <View style={styles.cardContainer}>
       {/* Header */}
       <View style={styles.header}>
-        <Image source={{ uri: item.user.image }} style={styles.avatar} />
+        <Image
+          source={{ uri: item.user.image || "https://via.placeholder.com/100" }}
+          style={styles.avatar}
+        />
         <View style={styles.headerDetails}>
           <View style={styles.userInfo}>
             <ReusableText

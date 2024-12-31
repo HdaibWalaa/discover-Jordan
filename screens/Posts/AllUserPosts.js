@@ -85,6 +85,12 @@ const AllUserPosts = () => {
         ListEmptyComponent={
           <Text style={styles.noPostsText}>No posts available.</Text>
         }
+        ListFooterComponent={() => (
+          <View style={{ alignItems: "center", justifyContent: "center" }}>
+            {/* Add space below the posts */}
+            <View style={{ height: 100 }} />
+          </View>
+        )}
       />
     </ReusableBackground>
   );
