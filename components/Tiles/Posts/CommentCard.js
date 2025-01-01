@@ -103,6 +103,37 @@ const CommentCard = ({ postId, comments, setComments }) => {
             commentId={item.id}
             handleReply={handleReplyComment}
             replies={item.replies}
+            handleLike={(replyId) => console.log(`Liked reply: ${replyId}`)}
+            onReplyUpdated={(replyId, updatedContent) => {
+              setComments((prevComments) =>
+                prevComments.map((comment) =>
+                  comment.id === item.id
+                    ? {
+                        ...comment,
+                        replies: comment.replies.map((reply) =>
+                          reply.id === replyId
+                            ? { ...reply, content: updatedContent } // Update the reply content
+                            : reply
+                        ),
+                      }
+                    : comment
+                )
+              );
+            }}
+            onReplyDeleted={(replyId) => {
+              setComments((prevComments) =>
+                prevComments.map((comment) =>
+                  comment.id === item.id
+                    ? {
+                        ...comment,
+                        replies: comment.replies.filter(
+                          (reply) => reply.id !== replyId
+                        ),
+                      }
+                    : comment
+                )
+              );
+            }}
           />
         )}
       </View>

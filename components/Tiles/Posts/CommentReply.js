@@ -9,8 +9,16 @@ import {
 } from "react-native";
 import { COLORS } from "../../../constants/theme";
 import { AntDesign } from "@expo/vector-icons";
+import EditDeleteReply from "./EditDeleteReply";
 
-const CommentReply = ({ commentId, handleReply, replies, handleLike }) => {
+const CommentReply = ({
+  commentId,
+  handleReply,
+  replies,
+  handleLike,
+  onReplyUpdated,
+  onReplyDeleted,
+}) => {
   const [newReply, setNewReply] = useState(""); // Reply content
 
   const handleSendReply = () => {
@@ -31,19 +39,31 @@ const CommentReply = ({ commentId, handleReply, replies, handleLike }) => {
                 style={styles.replyAvatar}
               />
               <View style={styles.replyContent}>
-                <Text style={styles.replyAuthor}>{reply.username}</Text>
-                <Text style={styles.replyText}>{reply.content}</Text>
-                <View style={styles.replyActions}>
-                  <TouchableOpacity
-                    onPress={() => handleLike(reply.id)}
-                    style={styles.likeButton}
-                  >
-                    <AntDesign name="like2" size={16} color={COLORS.primary} />
-                    <Text style={styles.likeCount}>
-                      {reply.reply_likes.total_likes}
-                    </Text>
-                  </TouchableOpacity>
+                <View style={styles.replyHeader}>
+                  <Text style={styles.replyAuthor}>{reply.username}</Text>
+                  <EditDeleteReply
+                    replyId={reply.id}
+                    initialContent={reply.content}
+                    onReplyUpdated={(replyId, updatedContent) => {
+                      console.log(
+                        "Reply updated with ID:",
+                        replyId,
+                        "Content:",
+                        updatedContent
+                      );
+
+                      // Call the parent's handler to update the replies in the parent state
+                      onReplyUpdated(replyId, updatedContent);
+                    }}
+                    onReplyDeleted={() => {
+                      console.log("Reply deleted with ID:", reply.id);
+
+                      // Call the parent's handler to delete the reply from the parent state
+                      onReplyDeleted(reply.id);
+                    }}
+                  />
                 </View>
+                <Text style={styles.replyText}>{reply.content}</Text>
               </View>
             </View>
           ))}
@@ -108,6 +128,11 @@ const styles = StyleSheet.create({
   },
   replyContent: {
     flex: 1,
+  },
+  replyHeader: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
   },
   replyAuthor: {
     fontWeight: "bold",
