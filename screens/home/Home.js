@@ -11,6 +11,7 @@ import Volunteer from "../../components/Home/Volunteer";
 import Plans from "../../components/Home/Plans";
 import TopTen from "../../components/Home/TopTen";
 import Popular from "../../components/Home/Popular";
+import Guides from "../../components/Home/Guides";
 import { COLORS, SIZES, TEXT } from "../../constants/theme";
 
 const Home = ({ navigation }) => {
@@ -22,6 +23,7 @@ const Home = ({ navigation }) => {
             <Categories />
             <TopTen />
             <Trips />
+            <Guides />
             <Plans />
             <Popular />
             <Event />

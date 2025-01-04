@@ -21,12 +21,13 @@ import {
   PlaceDetails,
   OtherUserProfile,
   PlacesFilter,
-  EditUserPost
+  EditUserPost,
 } from "./screens";
 import DrawerNavigation from "./navigation/DrawerNavigation";
 import AuthContextProvider, { AuthContext } from "./store/auth-context";
 import BottomTabNavigation from "./navigation/BottomTabNavigation";
 import { TripProvider } from "./store/trip-context";
+import { GuideTripProvider } from "./store/guide-trip-context";
 import { Provider } from "react-redux";
 import * as Location from "expo-location";
 import Loader from "./components/Shimmers/Loader";
@@ -118,100 +119,102 @@ function AuthStack() {
 function AppStack() {
   return (
     <TripProvider>
-      <Stack.Navigator
-        screenOptions={{
-          headerStyle: { backgroundColor: COLORS.white },
-          headerTintColor: "white",
-          contentStyle: { backgroundColor: COLORS.white },
-        }}
-      >
-        <Stack.Screen
-          name="DrawerNavigation"
-          component={DrawerNavigation}
-          options={{ headerShown: false }}
-        />
-        <Stack.Screen
-          name="AllPopular"
-          component={AllPopular}
-          options={{ headerShown: false }}
-        />
-        <Stack.Screen
-          name="Search"
-          component={Search}
-          options={{
-            header: () => (
-              <ReusableHeader headerText={"Search".toUpperCase()} />
-            ),
+      <GuideTripProvider>
+        <Stack.Navigator
+          screenOptions={{
+            headerStyle: { backgroundColor: COLORS.white },
+            headerTintColor: "white",
+            contentStyle: { backgroundColor: COLORS.white },
           }}
-        />
-        <Stack.Screen
-          name="EditUserProfile"
-          component={EditUserProfile}
-          options={{ headerShown: false }}
-        />
-        <Stack.Screen
-          name="BottomTabs"
-          component={BottomTabNavigation}
-          options={{ headerShown: false }}
-        />
-        <Stack.Screen
-          name="Onboarding"
-          component={Onboarding}
-          options={{ headerShown: false }}
-        />
-        <Stack.Screen
-          name="ChatScreen"
-          component={ChatScreen}
-          options={{
-            header: () => (
-              <ChatHeader
-                tripName="Trip Chat Group"
-                avatar="https://gravatar.com/avatar/HASH"
-                users={[
-                  {
-                    id: 1,
-                    name: "Adil",
-                    avatar:
-                      "https://gravatar.com/avatar/27205e5c51cb03f862138b22bcb5dc20f94a342e744ff6df1b8dc8af3c865109.jpg",
-                  },
-                  {
-                    id: 2,
-                    name: "Maria",
-                    avatar:
-                      "https://gravatar.com/avatar/27205e5c51cb03f862138b22bcb5dc20f94a342e744ff6df1b8dc8af3c865109.jpg",
-                  },
-                  {
-                    id: 3,
-                    name: "Adil",
-                    avatar:
-                      "https://gravatar.com/avatar/27205e5c51cb03f862138b22bcb5dc20f94a342e744ff6df1b8dc8af3c865109.jpg",
-                  },
-                ]}
-              />
-            ),
-          }}
-        />
-        <Stack.Screen
-          name="PlaceDetails"
-          component={PlaceDetails}
-          options={{ headerShown: false }}
-        />
-        <Stack.Screen
-          name="OtherUserProfile"
-          component={OtherUserProfile}
-          options={{ headerShown: false }}
-        />
-        <Stack.Screen
-          name="PlacesFilter"
-          component={PlacesFilter}
-          options={{ headerShown: false }}
-        />
-        <Stack.Screen
-          name="EditUserPost"
-          component={EditUserPost}
-          options={{ headerShown: false }}
-        />
-      </Stack.Navigator>
+        >
+          <Stack.Screen
+            name="DrawerNavigation"
+            component={DrawerNavigation}
+            options={{ headerShown: false }}
+          />
+          <Stack.Screen
+            name="AllPopular"
+            component={AllPopular}
+            options={{ headerShown: false }}
+          />
+          <Stack.Screen
+            name="Search"
+            component={Search}
+            options={{
+              header: () => (
+                <ReusableHeader headerText={"Search".toUpperCase()} />
+              ),
+            }}
+          />
+          <Stack.Screen
+            name="EditUserProfile"
+            component={EditUserProfile}
+            options={{ headerShown: false }}
+          />
+          <Stack.Screen
+            name="BottomTabs"
+            component={BottomTabNavigation}
+            options={{ headerShown: false }}
+          />
+          <Stack.Screen
+            name="Onboarding"
+            component={Onboarding}
+            options={{ headerShown: false }}
+          />
+          <Stack.Screen
+            name="ChatScreen"
+            component={ChatScreen}
+            options={{
+              header: () => (
+                <ChatHeader
+                  tripName="Trip Chat Group"
+                  avatar="https://gravatar.com/avatar/HASH"
+                  users={[
+                    {
+                      id: 1,
+                      name: "Adil",
+                      avatar:
+                        "https://gravatar.com/avatar/27205e5c51cb03f862138b22bcb5dc20f94a342e744ff6df1b8dc8af3c865109.jpg",
+                    },
+                    {
+                      id: 2,
+                      name: "Maria",
+                      avatar:
+                        "https://gravatar.com/avatar/27205e5c51cb03f862138b22bcb5dc20f94a342e744ff6df1b8dc8af3c865109.jpg",
+                    },
+                    {
+                      id: 3,
+                      name: "Adil",
+                      avatar:
+                        "https://gravatar.com/avatar/27205e5c51cb03f862138b22bcb5dc20f94a342e744ff6df1b8dc8af3c865109.jpg",
+                    },
+                  ]}
+                />
+              ),
+            }}
+          />
+          <Stack.Screen
+            name="PlaceDetails"
+            component={PlaceDetails}
+            options={{ headerShown: false }}
+          />
+          <Stack.Screen
+            name="OtherUserProfile"
+            component={OtherUserProfile}
+            options={{ headerShown: false }}
+          />
+          <Stack.Screen
+            name="PlacesFilter"
+            component={PlacesFilter}
+            options={{ headerShown: false }}
+          />
+          <Stack.Screen
+            name="EditUserPost"
+            component={EditUserPost}
+            options={{ headerShown: false }}
+          />
+        </Stack.Navigator>
+      </GuideTripProvider>
     </TripProvider>
   );
 }

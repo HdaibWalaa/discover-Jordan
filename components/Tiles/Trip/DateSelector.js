@@ -1,87 +1,123 @@
-import React, { useState, useEffect } from "react";
+import React from "react";
 import {
   View,
   Text,
-  FlatList,
-  TouchableOpacity,
   StyleSheet,
+  TouchableOpacity,
+  ScrollView,
 } from "react-native";
-import { COLORS } from "../../../constants/theme";
+import { COLORS, TEXT } from "../../../constants/theme";
+import { AntDesign } from "@expo/vector-icons";
 
-const DateSelector = ({ dates, onSelectDate }) => {
-  const today = new Date().toISOString().split("T")[0]; // Get today's date in 'YYYY-MM-DD' format
-  const defaultDate = dates.includes(today) ? today : dates[dates.length - 1]; // Default to today if available, else the most recent date
+const DateSelector = ({
+  selectedMonth = new Date(), // Default value
+  selectedDate = "",
+  onChangeMonth,
+  onSelectDate,
+}) => {
+  const daysInMonth = new Date(
+    selectedMonth.getFullYear(),
+    selectedMonth.getMonth() + 1,
+    0
+  ).getDate();
 
-  const [selectedDate, setSelectedDate] = useState(defaultDate);
+  const handlePrevMonth = () => {
+    const prevMonth = new Date(
+      selectedMonth.getFullYear(),
+      selectedMonth.getMonth() - 1,
+      1
+    );
+    onChangeMonth(prevMonth);
+  };
 
-  useEffect(() => {
-    onSelectDate(selectedDate); // Trigger the onSelectDate callback when the component mounts
-  }, [selectedDate, onSelectDate]);
-
-  const handleDatePress = (date) => {
-    setSelectedDate(date);
-    onSelectDate(date);
+  const handleNextMonth = () => {
+    const nextMonth = new Date(
+      selectedMonth.getFullYear(),
+      selectedMonth.getMonth() + 1,
+      1
+    );
+    onChangeMonth(nextMonth);
   };
 
   return (
-    <FlatList
-      horizontal
-      showsHorizontalScrollIndicator={false}
-      data={dates.sort((a, b) => new Date(a) - new Date(b))} // Sort dates from past to future
-      keyExtractor={(item) => item}
-      renderItem={({ item }) => (
-        <TouchableOpacity onPress={() => handleDatePress(item)}>
-          <View
-            style={[
-              styles.dateContainer,
-              item === selectedDate ? styles.selectedDate : null,
-            ]}
-          >
-            <Text
-              style={[
-                styles.dateText,
-                item === selectedDate ? styles.selectedDateText : null,
-              ]}
-            >
-              {new Date(item).getDate()}
-            </Text>
-          </View>
+    <View style={styles.container}>
+      <View style={styles.header}>
+        <TouchableOpacity onPress={handlePrevMonth}>
+          <AntDesign name="left" size={20} color={COLORS.black} />
         </TouchableOpacity>
-      )}
-      contentContainerStyle={styles.dateSelectorContainer}
-    />
+        <Text style={styles.monthText}>
+          {selectedMonth.toLocaleString("default", { month: "long" })}{" "}
+          {selectedMonth.getFullYear()}
+        </Text>
+        <TouchableOpacity onPress={handleNextMonth}>
+          <AntDesign name="right" size={20} color={COLORS.black} />
+        </TouchableOpacity>
+      </View>
+      <ScrollView horizontal showsHorizontalScrollIndicator={false}>
+        {Array.from({ length: daysInMonth }, (_, i) => i + 1).map((day) => {
+          const dateStr = `${selectedMonth.getFullYear()}-${(
+            selectedMonth.getMonth() + 1
+          )
+            .toString()
+            .padStart(2, "0")}-${day.toString().padStart(2, "0")}`;
+
+          const isSelected = selectedDate === dateStr;
+
+          return (
+            <TouchableOpacity
+              key={day}
+              style={[
+                styles.day,
+                isSelected && styles.selectedDay, // Apply selected style if the day matches selectedDate
+              ]}
+              onPress={() => onSelectDate(dateStr)}
+            >
+              <Text
+                style={[styles.dayText, isSelected && styles.selectedDayText]}
+              >
+                {day}
+              </Text>
+            </TouchableOpacity>
+          );
+        })}
+      </ScrollView>
+    </View>
   );
 };
 
+export default DateSelector;
+
 const styles = StyleSheet.create({
-  dateSelectorContainer: {
+  container: {
+    marginBottom: 20,
+  },
+  header: {
+    flexDirection: "row",
+    justifyContent: "space-between",
     alignItems: "center",
+    marginBottom: 10,
   },
-  dateContainer: {
-    paddingHorizontal: 10,
-    paddingVertical: 5,
-    marginHorizontal: 5,
-    borderRadius: 20,
-    backgroundColor: COLORS.lightGray,
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  selectedDate: {
-    backgroundColor: COLORS.primary,
-    paddingHorizontal: 20,
-    paddingVertical: 10,
-    borderRadius: 25,
-  },
-  dateText: {
-    color: COLORS.black,
-    fontSize: 18,
+  monthText: {
+    fontSize: TEXT.large,
     fontWeight: "bold",
+    color: COLORS.black,
   },
-  selectedDateText: {
+  day: {
+    padding: 10,
+    marginHorizontal: 5,
+    borderRadius: 5,
+    backgroundColor: COLORS.lightGray,
+  },
+  selectedDay: {
+    backgroundColor: COLORS.primary,
+    borderRadius: 50, // Make it circular
+  },
+  dayText: {
+    fontSize: TEXT.medium,
+    color: COLORS.black,
+  },
+  selectedDayText: {
     color: COLORS.white,
-    fontSize: 18,
     fontWeight: "bold",
   },
 });
-
-export default DateSelector;

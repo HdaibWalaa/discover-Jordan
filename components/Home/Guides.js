@@ -2,7 +2,6 @@ import React from "react";
 import {
   FlatList,
   StyleSheet,
-  TouchableOpacity,
   View,
   ActivityIndicator,
   Platform,
@@ -14,10 +13,10 @@ import ReusableText from "../Reusable/ReusableText";
 import { COLORS, SIZES, TEXT } from "../../constants/theme";
 import { useNavigation } from "@react-navigation/native";
 import ReusableArrow from "../Buttons/ReusableArrow";
-import TripCard from "../Tiles/Trip/TripCard";
-import fetchunauthenticatedTrips from "../../hook/trip/fetchunauthenticatedTrips";
+import GuideTripCard from "../Tiles/Trip/guideTripCard";
+import fetchAllGuideTrips from "../../hook/trip/fetchAllGuideTrips";
 
-const Trips = () => {
+const Guides = () => {
   const navigation = useNavigation();
   const deviceLanguage =
     Platform.OS === "ios"
@@ -30,7 +29,7 @@ const Trips = () => {
     : deviceLanguage.split("-")[0];
 
   language = language || "en";
-  const { tripData, isLoading, error } = fetchunauthenticatedTrips(language);
+  const { guidTripData, isLoading, error } = fetchAllGuideTrips(language);
 
   if (isLoading) {
     return <ActivityIndicator color="black" size={60} />;
@@ -38,8 +37,8 @@ const Trips = () => {
 
   if (error) {
     return (
-      <View>
-        <Text>Error occurred: {error.message}</Text>
+      <View style={styles.errorContainer}>
+        <Text style={styles.errorText}>Error occurred: {error.message}</Text>
       </View>
     );
   }
@@ -50,37 +49,48 @@ const Trips = () => {
         style={[reusable.rowWithSpace("space-between"), { paddingBottom: 20 }]}
       >
         <ReusableText
-          text={"Trips".toUpperCase()}
+          text={"Guide".toUpperCase()}
           family={"Medium"}
           size={TEXT.large}
           color={COLORS.black}
         />
         <ReusableArrow
-          onPress={() => navigation.navigate("AllTrip")}
+          onPress={() => navigation.navigate("AllGuideTrip")}
           size={24}
           color="black"
         />
       </View>
-      <View>
-        <FlatList
-          data={tripData}
-          horizontal
-          keyExtractor={(item) => item.id.toString()}
-          showsHorizontalScrollIndicator={false}
-          contentContainerStyle={{ columnGap: SIZES.medium }}
-          renderItem={({ item }) => (
-            <TripCard
-              item={item}
-              margin={5}
-              onPress={() =>
-                navigation.navigate("TripDetails", { tripId: item.id })
-              }
-            />
-          )}
-        />
-      </View>
+      <FlatList
+        data={guidTripData}
+        horizontal
+        keyExtractor={(item) => item.name}
+        showsHorizontalScrollIndicator={false}
+        contentContainerStyle={{ columnGap: SIZES.medium }}
+        renderItem={({ item }) => (
+          <GuideTripCard
+            item={item}
+            margin={5}
+            onPress={() => {
+              console.log("Navigating to GuideTripDetails with item:", item);
+              navigation.navigate("guideTripDetails", { tripId: item.id });
+            }}
+          />
+        )}
+      />
     </View>
   );
 };
 
-export default Trips;
+const styles = StyleSheet.create({
+  errorContainer: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  errorText: {
+    fontSize: TEXT.medium,
+    color: COLORS.red,
+  },
+});
+
+export default Guides;

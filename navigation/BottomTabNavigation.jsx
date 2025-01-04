@@ -35,6 +35,8 @@ import {
   CreatActivies,
   CreatPlan,
   AllUserPosts,
+  AllGuideTrip,
+  guideTripDetails,
 } from "../screens";
 import { COLORS } from "../constants/theme";
 import Header from "../components/header/Header";
@@ -205,6 +207,11 @@ const HomeStack = () => {
           options={{ headerShown: false }}
         />
         <Stack.Screen
+          name="guideTripDetails"
+          component={guideTripDetails}
+          options={{ headerShown: false }}
+        />
+        <Stack.Screen
           name="AllPlans"
           component={AllPlans}
           options={{ headerShown: true }}
@@ -294,6 +301,11 @@ const HomeStack = () => {
               <ReusableHeader headerText={"All User Posts".toUpperCase()} />
             ),
           }}
+        />
+        <Stack.Screen
+          name="AllGuideTrip"
+          component={AllGuideTrip}
+          options={{ headerShown: true }}
         />
       </Stack.Navigator>
     </PlanProvider>

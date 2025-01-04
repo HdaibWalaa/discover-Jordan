@@ -38,7 +38,8 @@ import ContactUs from "./Sitting/ContactUs";
 import EditUserProfile from "./Edit/EditUserProfile";
 import AllUserPosts from "./Posts/AllUserPosts";
 import EditUserPost from "./Posts/EditUserPost";
-
+import AllGuideTrip from "./trips/AllGuideTrip";
+import guideTripDetails from "./trips/guideTripDetails";
 export {
   Home,
   Onboarding,
@@ -80,4 +81,6 @@ export {
   EditUserProfile,
   AllUserPosts,
   EditUserPost,
+  AllGuideTrip,
+  guideTripDetails,
 };
