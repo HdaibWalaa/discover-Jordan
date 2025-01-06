@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
 import {
   View,
   Text,
@@ -6,17 +6,140 @@ import {
   StyleSheet,
   Image,
   FlatList,
+  TextInput,
+  Button,
+  Alert,
+  TouchableOpacity,
 } from "react-native";
 import useFetchGuideTrip from "../../hook/trip/useFetchGuideTrip";
+import axios from "axios";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import BASE_URL from "../../hook/apiConfig";
 
-const guideTripDetails = ({ route }) => {
+const GuideTripDetails = ({ route }) => {
   const { tripId } = route.params;
-  const { guideTripDetails, isLoading, error } = useFetchGuideTrip(tripId);
+  const { GuideTripDetails, isLoading, error } = useFetchGuideTrip(tripId);
 
-  console.log("GuideTripDetails Component - tripId:", tripId);
-  console.log("Loading Status:", isLoading);
-  console.log("Guide Trip Data:", guideTripDetails);
-  console.log("Error:", error);
+  const [rating, setRating] = useState("");
+  const [comment, setComment] = useState("");
+  const [reviews, setReviews] = useState([]);
+  const [token, setToken] = useState("");
+
+  useEffect(() => {
+    // Fetch token from AsyncStorage
+    const fetchToken = async () => {
+      const storedToken = await AsyncStorage.getItem("token");
+      setToken(storedToken);
+    };
+    fetchToken();
+  }, []);
+
+  // Add review
+  const handleAddReview = async () => {
+    if (!rating || !comment) {
+      Alert.alert("Error", "Please provide both rating and comment.");
+      return;
+    }
+
+    try {
+      const formData = new FormData();
+      formData.append("rating", parseInt(rating, 10)); // Ensure rating is a number
+      formData.append("comment", comment);
+
+      console.log("Submitting review:", {
+        rating: parseInt(rating, 10),
+        comment,
+      });
+
+      const response = await axios.post(
+        `${BASE_URL}/user/guide-trip/add/review/${tripId}`,
+        formData,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            Accept: "application/json",
+          },
+        }
+      );
+
+      Alert.alert("Success", "Review added successfully!");
+      setReviews([...reviews, { id: response.data.id, rating, comment }]); // Update reviews list locally
+      setRating("");
+      setComment("");
+    } catch (error) {
+      if (error.response) {
+        console.error("Error response:", error.response.data);
+        Alert.alert(
+          "Error",
+          error.response.data.message || "Failed to add review."
+        );
+      } else {
+        console.error("Error adding review:", error);
+        Alert.alert("Error", "Failed to add review.");
+      }
+    }
+  };
+
+  // Delete review
+  const handleDeleteReview = async (reviewId) => {
+    try {
+      await axios.delete(
+        `${BASE_URL}/user/guide-trip/delete/review/${reviewId}`,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            Accept: "application/json",
+          },
+        }
+      );
+
+      Alert.alert("Success", "Review deleted successfully!");
+      setReviews(reviews.filter((review) => review.id !== reviewId));
+    } catch (error) {
+      if (error.response) {
+        console.error("Error response:", error.response.data);
+        Alert.alert(
+          "Error",
+          error.response.data.message || "Failed to delete review."
+        );
+      } else {
+        console.error("Error deleting review:", error);
+        Alert.alert("Error", "Failed to delete review.");
+      }
+    }
+  };
+
+  // Like/Dislike review
+  const handleLikeDislikeReview = async (reviewId, action) => {
+    try {
+      await axios.post(
+        `${BASE_URL}/user/guide-trip/review/${action}/${reviewId}`,
+        {},
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            Accept: "application/json",
+          },
+        }
+      );
+
+      Alert.alert(
+        "Success",
+        `${action === "like" ? "Liked" : "Disliked"} review!`
+      );
+    } catch (error) {
+      if (error.response) {
+        console.error(`Error ${action}ing review:`, error.response.data);
+        Alert.alert(
+          "Error",
+          error.response.data.message || `Failed to ${action} review.`
+        );
+      } else {
+        console.error(`Error ${action}ing review:`, error);
+        Alert.alert("Error", `Failed to ${action} review.`);
+      }
+    }
+  };
 
   if (isLoading) {
     return (
@@ -34,7 +157,7 @@ const guideTripDetails = ({ route }) => {
     );
   }
 
-  if (!guideTripDetails) {
+  if (!GuideTripDetails) {
     return (
       <View style={styles.centered}>
         <Text>No trip details available.</Text>
@@ -44,55 +167,76 @@ const guideTripDetails = ({ route }) => {
 
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>{guideTripDetails.name}</Text>
-      <Text style={styles.description}>{guideTripDetails.description}</Text>
+      <Text style={styles.title}>{GuideTripDetails.name}</Text>
+      <Text style={styles.description}>{GuideTripDetails.description}</Text>
       <Text style={styles.info}>
-        Start Date: {guideTripDetails.start_datetime}
+        Start Date: {GuideTripDetails.start_datetime}
       </Text>
-      <Text style={styles.info}>End Date: {guideTripDetails.end_datetime}</Text>
-      <Text style={styles.info}>Price: {guideTripDetails.price} JOD</Text>
+      <Text style={styles.info}>End Date: {GuideTripDetails.end_datetime}</Text>
+      <Text style={styles.info}>Price: {GuideTripDetails.price} JOD</Text>
       <Text style={styles.info}>
-        Max Attendance: {guideTripDetails.max_attendance}
+        Max Attendance: {GuideTripDetails.max_attendance}
       </Text>
       <Text style={styles.info}>
-        Guide: {guideTripDetails.guide_username} (
-        {guideTripDetails.guide_phone_number})
+        Guide: {GuideTripDetails.guide_username} (
+        {GuideTripDetails.guide_phone_number})
       </Text>
 
       <Text style={styles.subtitle}>Activities:</Text>
       <FlatList
-        data={guideTripDetails.activities}
+        data={GuideTripDetails.activities}
         keyExtractor={(item, index) => index.toString()}
         renderItem={({ item }) => <Text style={styles.listItem}>• {item}</Text>}
       />
 
-      <Text style={styles.subtitle}>Assemblies:</Text>
+      <Text style={styles.subtitle}>Reviews:</Text>
       <FlatList
-        data={guideTripDetails.assemblies}
+        data={reviews}
         keyExtractor={(item, index) => index.toString()}
         renderItem={({ item }) => (
-          <Text style={styles.listItem}>
-            • {item.place} at {item.time}
-          </Text>
+          <View style={styles.reviewItem}>
+            <Text style={styles.listItem}>
+              {item.rating}★ - {item.comment}
+            </Text>
+            <View style={styles.reviewActions}>
+              <TouchableOpacity
+                onPress={() => handleLikeDislikeReview(item.id, "like")}
+              >
+                <Text style={styles.likeButton}>Like</Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                onPress={() => handleLikeDislikeReview(item.id, "dislike")}
+              >
+                <Text style={styles.dislikeButton}>Dislike</Text>
+              </TouchableOpacity>
+              <TouchableOpacity onPress={() => handleDeleteReview(item.id)}>
+                <Text style={styles.deleteButton}>Delete</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
         )}
       />
 
-      <Text style={styles.subtitle}>Gallery:</Text>
-      <FlatList
-        horizontal
-        data={guideTripDetails.gallery}
-        keyExtractor={(item, index) => index.toString()}
-        renderItem={({ item }) => (
-          <Image source={{ uri: item }} style={styles.image} />
-        )}
+      <Text style={styles.subtitle}>Add a Review:</Text>
+      <TextInput
+        style={styles.input}
+        placeholder="Rating (1-5)"
+        keyboardType="numeric"
+        value={rating}
+        onChangeText={setRating}
       />
+      <TextInput
+        style={styles.input}
+        placeholder="Comment"
+        value={comment}
+        onChangeText={setComment}
+      />
+      <Button title="Add Review" onPress={handleAddReview} />
     </View>
   );
 };
 
-export default guideTripDetails;
-
-
+export default GuideTripDetails;
 
 const styles = StyleSheet.create({
   container: {
@@ -127,10 +271,28 @@ const styles = StyleSheet.create({
     fontSize: 16,
     marginLeft: 10,
   },
-  image: {
-    width: 100,
-    height: 100,
-    marginRight: 10,
-    borderRadius: 8,
+  reviewItem: {
+    marginBottom: 10,
+  },
+  reviewActions: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    marginTop: 5,
+  },
+  likeButton: {
+    color: "green",
+  },
+  dislikeButton: {
+    color: "red",
+  },
+  deleteButton: {
+    color: "orange",
+  },
+  input: {
+    borderWidth: 1,
+    borderColor: "#ccc",
+    padding: 10,
+    marginBottom: 10,
+    borderRadius: 5,
   },
 });

@@ -36,7 +36,8 @@ import {
   CreatPlan,
   AllUserPosts,
   AllGuideTrip,
-  guideTripDetails,
+  GuideTripDetails,
+  CreateGuideTrip,
 } from "../screens";
 import { COLORS } from "../constants/theme";
 import Header from "../components/header/Header";
@@ -207,8 +208,8 @@ const HomeStack = () => {
           options={{ headerShown: false }}
         />
         <Stack.Screen
-          name="guideTripDetails"
-          component={guideTripDetails}
+          name="GuideTripDetails"
+          component={GuideTripDetails}
           options={{ headerShown: false }}
         />
         <Stack.Screen
@@ -270,6 +271,16 @@ const HomeStack = () => {
             tabBarShowLabel: false,
             header: () => (
               <ReusableHeader headerText={"EditTrip".toUpperCase()} />
+            ),
+          }}
+        />
+        <Stack.Screen
+          name="CreateGuideTrip"
+          component={CreateGuideTrip}
+          options={{
+            tabBarShowLabel: false,
+            header: () => (
+              <ReusableHeader headerText={"CreateGuideTrip".toUpperCase()} />
             ),
           }}
         />

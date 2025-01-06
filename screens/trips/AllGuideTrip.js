@@ -8,77 +8,44 @@ import {
   Image,
   TouchableOpacity,
   SafeAreaView,
-  Platform,
-  NativeModules,
 } from "react-native";
-import reusable from "../../components/Reusable/reusable.style";
 import { AuthContext } from "../../store/auth-context";
 import { GuideTripContext } from "../../store/guide-trip-context";
-import AllTripCard from "../../components/Tiles/Trip/AllTripCard";
+import AllGuideCard from "../../components/Tiles/Trip/AllGuideCard";
 import { COLORS, SIZES, TEXT } from "../../constants/theme";
-import { ReusableText, ReusableBackground } from "../../components";
 import { useNavigation } from "@react-navigation/native";
 import DateSelector from "../../components/Tiles/Trip/DateSelector";
 
-const AllGuidetrip = () => {
-  const capitalize = (str) =>
-    str
-      .split(" ")
-      .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
-      .join(" ");
-  const { token } = useContext(AuthContext);
+const AllGuideTrip = () => {
+  const { token, user } = useContext(AuthContext);
   const { guideTrips, isLoading, error, fetchGuideTrips } =
     useContext(GuideTripContext);
   const navigation = useNavigation();
   const [filteredTrips, setFilteredTrips] = useState([]);
   const [selectedDate, setSelectedDate] = useState(
-    new Date().toISOString().split("T")[0] // Default to today's date
+    new Date().toISOString().split("T")[0]
   );
   const [selectedMonth, setSelectedMonth] = useState(new Date());
 
-  // Get device language
-  const deviceLanguage =
-    Platform.OS === "ios"
-      ? NativeModules.SettingsManager.settings.AppleLocale ||
-        NativeModules.SettingsManager.settings.AppleLanguages[0]
-      : NativeModules.I18nManager.localeIdentifier;
-
-  const language = deviceLanguage.includes("_")
-    ? deviceLanguage.split("_")[0]
-    : deviceLanguage.split("-")[0];
-
-  // Fetch guide trips when the token or language changes
   useEffect(() => {
     if (token) {
-      fetchGuideTrips(token, language);
+      fetchGuideTrips(token, user.lang);
     }
-  }, [token, language]);
+  }, [token, user.lang]);
 
-  // Update filtered trips when selected date or guide trips change
   useEffect(() => {
     if (selectedDate) {
       const tripsOnSelectedDate = guideTrips.filter(
-        (trip) =>
-          trip &&
-          trip.start_time &&
-          trip.start_time.split(" ")[0] === selectedDate
+        (trip) => trip.start_time.split(" ")[0] === selectedDate
       );
-
       setFilteredTrips(tripsOnSelectedDate);
-    } else {
-      setFilteredTrips([]);
     }
   }, [selectedDate, guideTrips]);
 
-  // Set the selected date to the first of the month when the user changes the month
-  useEffect(() => {
-    const firstDayOfMonth = `${selectedMonth.getFullYear()}-${(
-      selectedMonth.getMonth() + 1
-    )
-      .toString()
-      .padStart(2, "0")}-01`;
-    setSelectedDate(firstDayOfMonth);
-  }, [selectedMonth]);
+  const handleMonthChange = (newMonth) => {
+    console.log("Month changed to:", newMonth.toISOString().slice(0, 7));
+    setSelectedMonth(newMonth);
+  };
 
   if (isLoading) {
     return (
@@ -97,117 +64,84 @@ const AllGuidetrip = () => {
   }
 
   return (
-    <ReusableBackground>
-      <SafeAreaView style={[reusable.container, styles.safeArea]}>
-        <View style={{ gap: 30 }}>
-          <View style={reusable.header1}>
-            <View style={styles.headerTextContainer}>
-              <ReusableText
-                text={capitalize("Pick your perfect trip day")}
-                family="Bold"
-                size={TEXT.large}
-                color={COLORS.black}
-              />
-            </View>
+    <SafeAreaView style={styles.container}>
+      <View style={styles.header}>
+        <Text style={styles.title}>Pick your perfect trip day</Text>
 
-            <View style={styles.createButtonContainer}>
-              <TouchableOpacity
-                onPress={() => navigation.navigate("CreatTrip")}
-              >
-                <View style={styles.createButtonContent}>
-                  <Image
-                    source={require("../../assets/images/icons/creat.png")}
-                    style={styles.createIcon}
-                  />
-                  <ReusableText
-                    text={capitalize("create")}
-                    family="SemiBold"
-                    size={SIZES.small}
-                    color={COLORS.black}
-                  />
-                </View>
-              </TouchableOpacity>
-            </View>
-          </View>
-          <DateSelector
-            selectedMonth={selectedMonth}
-            selectedDate={selectedDate}
-            onChangeMonth={setSelectedMonth}
-            onSelectDate={setSelectedDate}
-          />
-          {filteredTrips.length > 0 ? (
-            <FlatList
-              data={filteredTrips}
-              showsVerticalScrollIndicator={false}
-              keyExtractor={(item, index) =>
-                item.id ? item.id.toString() : index.toString()
-              }
-              renderItem={({ item, index }) => (
-                <AllTripCard item={item} isFirst={index === 0} />
-              )}
-              contentContainerStyle={styles.listContainer}
+        {user?.is_guide === 1 && (
+          <TouchableOpacity
+            style={styles.createButton}
+            onPress={() => navigation.navigate("CreateGuideTrip")}
+          >
+            <Image
+              source={require("../../assets/images/icons/creat.png")}
+              style={styles.createIcon}
             />
-          ) : (
-            <View style={styles.centeredMessage}>
-              <Text style={styles.noTripText}>
-                There are no trips for this day. Please choose another day.
-              </Text>
-            </View>
-          )}
+            <Text style={styles.createText}>Create</Text>
+          </TouchableOpacity>
+        )}
+      </View>
+
+      <DateSelector
+        selectedMonth={selectedMonth}
+        selectedDate={selectedDate}
+        onChangeMonth={handleMonthChange}
+        onSelectDate={setSelectedDate}
+      />
+
+      {filteredTrips.length > 0 ? (
+        <FlatList
+          data={filteredTrips}
+          keyExtractor={(item) => item.id.toString()}
+          renderItem={({ item }) => <AllGuideCard item={item} />}
+        />
+      ) : (
+        <View style={styles.centered}>
+          <Text>No trips available for this day.</Text>
         </View>
-      </SafeAreaView>
-    </ReusableBackground>
+      )}
+    </SafeAreaView>
   );
 };
 
-export default AllGuidetrip;
+export default AllGuideTrip;
 
 const styles = StyleSheet.create({
-  safeArea: {
-    marginTop: 50,
+  container: {
+    flex: 1,
+    padding: 30,
+    top: 50,
+    paddingHorizontal: 30,
   },
-  headerTextContainer: {
-    width: 170,
+  header: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    marginBottom: 20,
   },
-  createButtonContainer: {
+  title: {
+    fontSize: 24,
+    fontWeight: "bold",
+  },
+  createButton: {
     flexDirection: "row",
     alignItems: "center",
-  },
-  createButtonContent: {
-    flexDirection: "row",
-    alignItems: "center",
+    backgroundColor: COLORS.primary,
     padding: 10,
-    borderWidth: 1,
     borderRadius: 8,
-    borderColor: COLORS.gray,
-    overflow: "hidden",
-    marginLeft: 3,
-    marginRight: 5,
-    backgroundColor: COLORS.white,
   },
   createIcon: {
     width: 20,
     height: 20,
     marginRight: 5,
-    transform: [{ rotate: "90deg" }],
   },
-  listContainer: {
-    paddingVertical: 20,
+  createText: {
+    color: COLORS.white,
+    fontWeight: "bold",
   },
   centered: {
     flex: 1,
     justifyContent: "center",
     alignItems: "center",
-  },
-  centeredMessage: {
-    flex: 1,
-    justifyContent: "center",
-    alignItems: "center",
-    padding: 20,
-  },
-  noTripText: {
-    fontSize: TEXT.medium,
-    color: COLORS.black,
-    textAlign: "center",
   },
 });

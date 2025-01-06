@@ -63,7 +63,7 @@ const Guides = () => {
       <FlatList
         data={guidTripData}
         horizontal
-        keyExtractor={(item) => item.name}
+        keyExtractor={(item) => item.id}
         showsHorizontalScrollIndicator={false}
         contentContainerStyle={{ columnGap: SIZES.medium }}
         renderItem={({ item }) => (
@@ -71,8 +71,7 @@ const Guides = () => {
             item={item}
             margin={5}
             onPress={() => {
-              console.log("Navigating to GuideTripDetails with item:", item);
-              navigation.navigate("guideTripDetails", { tripId: item.id });
+              navigation.navigate("GuideTripDetails", { tripId: item.id });
             }}
           />
         )}

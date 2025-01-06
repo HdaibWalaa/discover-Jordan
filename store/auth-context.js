@@ -1,43 +1,31 @@
-import React, { useState, useEffect } from "react";
+import React, { createContext, useEffect, useState } from "react";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { getUserProfile } from "../util/auth";
 
-export const AuthContext = React.createContext({
+export const AuthContext = createContext({
   token: null,
-  userId: null,
-  firstLogin: null,
-  verifiedEmail: null,
+  user: null, // Store user object, including is_guide
   isAuthenticated: false,
-  authenticate: (token, firstLogin, verifiedEmail) => {},
+  authenticate: (token) => {},
   logout: () => {},
 });
 
 const AuthContextProvider = ({ children }) => {
   const [token, setToken] = useState(null);
-  const [userId, setUserId] = useState(null);
-  const [firstLogin, setFirstLogin] = useState(null);
-  const [verifiedEmail, setVerifiedEmail] = useState(null);
+  const [user, setUser] = useState(null);
 
-  const authenticate = async (token, isFirstLogin, isVerifiedEmail) => {
+  const authenticate = async (token) => {
     try {
       setToken(token);
-      setFirstLogin(!!isFirstLogin); // Ensure boolean value
-      setVerifiedEmail(!!isVerifiedEmail); // Ensure boolean value
 
-      // Save data to AsyncStorage
-      await AsyncStorage.multiSet([
-        ["token", token],
-        ["firstLogin", (!!isFirstLogin).toString()],
-        ["verifiedEmail", (!!isVerifiedEmail).toString()],
-      ]);
-
-      // Fetch user profile
+      // Fetch the user profile using the token
       const userProfile = await getUserProfile(token);
-      if (userProfile && userProfile.data && userProfile.data.id) {
-        setUserId(userProfile.data.id);
-        await AsyncStorage.setItem("userId", userProfile.data.id.toString());
-      } else {
-        throw new Error("Invalid user profile data");
+      if (userProfile && userProfile.data) {
+        setUser(userProfile.data); // Set user object, including is_guide
+        await AsyncStorage.multiSet([
+          ["token", token],
+          ["user", JSON.stringify(userProfile.data)],
+        ]);
       }
     } catch (error) {
       console.error("Error during authentication:", error);
@@ -45,58 +33,37 @@ const AuthContextProvider = ({ children }) => {
   };
 
   const logout = async () => {
-    try {
-      setToken(null);
-      setUserId(null);
-      setFirstLogin(null);
-      setVerifiedEmail(null);
-
-      // Remove all stored keys
-      await AsyncStorage.multiRemove([
-        "token",
-        "userId",
-        "firstLogin",
-        "verifiedEmail",
-      ]);
-    } catch (error) {
-      console.error("Error during logout:", error);
-    }
+    setToken(null);
+    setUser(null);
+    await AsyncStorage.clear();
   };
 
   useEffect(() => {
     const fetchAuthData = async () => {
-      try {
-        const storedToken = await AsyncStorage.getItem("token");
-        const storedFirstLogin = await AsyncStorage.getItem("firstLogin");
-        const storedUserId = await AsyncStorage.getItem("userId");
-        const storedVerifiedEmail = await AsyncStorage.getItem("verifiedEmail");
+      const storedToken = await AsyncStorage.getItem("token");
+      const storedUser = await AsyncStorage.getItem("user");
 
-        if (storedToken) {
-          setToken(storedToken);
-          setFirstLogin(storedFirstLogin === "true");
-          setVerifiedEmail(storedVerifiedEmail === "true");
-          setUserId(storedUserId);
-        }
-      } catch (error) {
-        console.error("Error fetching authentication data:", error);
+      if (storedToken && storedUser) {
+        setToken(storedToken);
+        setUser(JSON.parse(storedUser));
       }
     };
 
     fetchAuthData();
   }, []);
 
-  const contextValue = {
-    token,
-    userId,
-    firstLogin,
-    verifiedEmail,
-    isAuthenticated: !!token,
-    authenticate,
-    logout,
-  };
-
   return (
-    <AuthContext.Provider value={contextValue}>{children}</AuthContext.Provider>
+    <AuthContext.Provider
+      value={{
+        token,
+        user,
+        isAuthenticated: !!token,
+        authenticate,
+        logout,
+      }}
+    >
+      {children}
+    </AuthContext.Provider>
   );
 };
 

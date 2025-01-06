@@ -12,8 +12,8 @@ import {
   heightPercentageToDP as hp,
 } from "react-native-responsive-screen";
 import { ProgressBar } from "react-native-paper";
-import AddTripFavorite from "./AddTripFavorite";
 import { COLORS, TEXT } from "../../../constants/theme";
+import FavoritedGuideTrip from "./FavoritedGuideTrip";
 
 const GuideTripCard = ({ item, onPress }) => {
   // Calculate attendance percentage
@@ -39,7 +39,13 @@ const GuideTripCard = ({ item, onPress }) => {
                 .toUpperCase()}
             </Text>
           </View>
-          <AddTripFavorite size={24} color="white" favorite={item.favorite} />
+          <FavoritedGuideTrip
+            tripId={item.id} // Correctly pass the tripId
+            favorite={item.favorite}
+            onFavoriteToggle={(id, status) => {
+              console.log(`Trip ${id} favorite status changed to ${status}`);
+            }}
+          />
         </View>
       </ImageBackground>
 

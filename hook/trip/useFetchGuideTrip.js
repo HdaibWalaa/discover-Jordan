@@ -3,7 +3,7 @@ import axios from "axios";
 import BASE_URL from "../apiConfig";
 
 const useFetchGuideTrip = (tripId, language = "en") => {
-  const [guideTripDetails, setGuideTripDetails] = useState(null);
+  const [GuideTripDetails, setGuideTripDetails] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
 
@@ -46,7 +46,7 @@ const useFetchGuideTrip = (tripId, language = "en") => {
     }
   }, [tripId, language]);
 
-  return { guideTripDetails, isLoading, error };
+  return { GuideTripDetails, isLoading, error };
 };
 
 export default useFetchGuideTrip;
