@@ -1,13 +1,18 @@
 import React, { useState, useContext } from "react";
 import { TouchableOpacity, StyleSheet, Image, Alert } from "react-native";
 import axios from "axios";
-import { AuthContext } from "../../../store/auth-context"; // Import AuthContext
+import { AuthContext } from "../../../store/auth-context";
 import BASE_URL from "../../../hook/apiConfig";
 import { COLORS } from "../../../constants/theme";
 
-const FavoritedGuideTrip = ({ tripId, favorite, onFavoriteToggle }) => {
-  const { token } = useContext(AuthContext); // Retrieve token from context
-  const [isFavorite, setIsFavorite] = useState(favorite); // Local state for favorite status
+const FavoritedGuideTrip = ({
+  tripId,
+  favorite,
+  onFavoriteToggle,
+  size = 30,
+}) => {
+  const { token } = useContext(AuthContext);
+  const [isFavorite, setIsFavorite] = useState(favorite);
 
   const toggleFavorite = async () => {
     try {
@@ -15,10 +20,7 @@ const FavoritedGuideTrip = ({ tripId, favorite, onFavoriteToggle }) => {
         ? `${BASE_URL}/user/guide-trip/favorite/${tripId}/delete`
         : `${BASE_URL}/user/guide-trip/favorite/${tripId}`;
 
-      const method = isFavorite ? "delete" : "post"; // Decide the method based on current state
-
-      console.log("Request Method:", method);
-      console.log("Request URL:", url);
+      const method = isFavorite ? "delete" : "post";
 
       const response = await axios({
         method,
@@ -27,28 +29,29 @@ const FavoritedGuideTrip = ({ tripId, favorite, onFavoriteToggle }) => {
           Authorization: `Bearer ${token}`,
           Accept: "application/json",
         },
-        data: {}, // Include empty object for POST request body
+        data: {},
       });
 
-      setIsFavorite(!isFavorite); // Update local favorite state
-      onFavoriteToggle(tripId, !isFavorite); // Notify parent component
+      setIsFavorite(!isFavorite);
+      onFavoriteToggle(tripId, !isFavorite);
       Alert.alert("Success", response.data.msg);
     } catch (error) {
       if (error.response) {
-        console.error("Error response:", error.response.data);
         Alert.alert(
           "Error",
           error.response.data.message || "Failed to toggle favorite status."
         );
       } else {
-        console.error("Error toggling favorite:", error);
         Alert.alert("Error", "Failed to toggle favorite status.");
       }
     }
   };
 
   return (
-    <TouchableOpacity style={styles.favoriteIcon} onPress={toggleFavorite}>
+    <TouchableOpacity
+      style={[styles.favoriteIcon, { width: size, height: size }]}
+      onPress={toggleFavorite}
+    >
       <Image
         source={require("../../../assets/images/icons/heart.png")}
         style={[styles.icon, { tintColor: isFavorite ? "red" : "black" }]}
@@ -61,8 +64,6 @@ export default FavoritedGuideTrip;
 
 const styles = StyleSheet.create({
   favoriteIcon: {
-    width: 30,
-    height: 30,
     justifyContent: "center",
     alignItems: "center",
   },

@@ -3,8 +3,8 @@ const { height, width } = Dimensions.get('window');
 
 const COLORS = {
   blue: "#4267B2",
-  red: "#EB6A58",
-  green: "#449282",
+  red: "#FF4D4D",
+  green: "#2DE78D",
   white: "#FFFFFF",
   lightWhite: "#FFFFFF",
   lightBlue: "#EEEEEE",
