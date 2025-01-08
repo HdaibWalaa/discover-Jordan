@@ -6,7 +6,13 @@ import {
   heightPercentageToDP as hp,
 } from "react-native-responsive-screen";
 
-const GuideDate = ({ start_datetime, end_datetime, price }) => {
+const GuideDate = ({
+  start_datetime,
+  end_datetime,
+  price,
+  maxAttendance,
+  joinRequests,
+}) => {
   // Format date and time
   const startDate = new Date(start_datetime).toLocaleDateString("en-GB");
   const endDate = new Date(end_datetime).toLocaleDateString("en-GB");
@@ -20,6 +26,9 @@ const GuideDate = ({ start_datetime, end_datetime, price }) => {
     minute: "2-digit",
     hour12: true,
   });
+
+  // Attendance info
+  const joinedCount = joinRequests.length;
 
   return (
     <View style={styles.container}>
@@ -49,6 +58,15 @@ const GuideDate = ({ start_datetime, end_datetime, price }) => {
         />
         <Text style={styles.text}>{`${price} JOD`}</Text>
       </View>
+
+      {/* Attendance Section */}
+      <View style={styles.Attendancesection}>
+        <Image
+          source={require("../../../assets/images/icons/capacity.png")}
+          style={styles.Attendanceicon}
+        />
+        <Text style={styles.text}>{`${maxAttendance} Attendees`}</Text>
+      </View>
     </View>
   );
 };
@@ -68,7 +86,17 @@ const styles = StyleSheet.create({
     alignItems: "center",
     marginBottom: hp("1%"),
   },
+  Attendancesection: {
+    flexDirection: "row",
+    alignItems: "center",
+    top: -12,
+  },
   icon: {
+    width: wp("5%"),
+    height: wp("5%"),
+    resizeMode: "contain",
+  },
+  Attendanceicon: {
     width: wp("5%"),
     height: wp("5%"),
     resizeMode: "contain",
@@ -77,5 +105,8 @@ const styles = StyleSheet.create({
     fontSize: TEXT.small,
     color: COLORS.dark,
     marginLeft: wp("1%"),
+  },
+  priceSection: {
+    marginBottom: hp("2%"),
   },
 });

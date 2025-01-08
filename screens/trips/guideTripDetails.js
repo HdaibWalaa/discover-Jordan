@@ -2,6 +2,8 @@ import React from "react";
 import { View, ActivityIndicator, FlatList, StyleSheet } from "react-native";
 import useFetchGuideTrip from "../../hook/trip/useFetchGuideTrip"; // Import custom hook
 import GuideTripDetailCard from "../../components/Guide/DetailTrip.js/GuideTripDetailcard";
+import { COLORS } from "../../constants/theme";
+import { RusableWhite, ReusableText, HeightSpacer } from "../../components"; // Import RusableWhite and other components
 
 const GuideTripDetail = ({ route }) => {
   const { tripId } = route.params; // Get tripId from route params
@@ -9,34 +11,54 @@ const GuideTripDetail = ({ route }) => {
 
   if (isLoading) {
     return (
-      <View style={styles.centered}>
-        <ActivityIndicator size="large" color="blue" />
-      </View>
+      <RusableWhite>
+        <View style={styles.centered}>
+          <ActivityIndicator size="large" color="blue" />
+        </View>
+      </RusableWhite>
     );
   }
 
   if (error) {
     return (
-      <View style={styles.centered}>
-        <Text>Error: {error.message}</Text>
-      </View>
+      <RusableWhite>
+        <View style={styles.centered}>
+          <ReusableText
+            text={`Error: ${error.message}`}
+            family="Medium"
+            size={16}
+            color={COLORS.red}
+          />
+        </View>
+      </RusableWhite>
     );
   }
 
   if (!GuideTripDetails) {
     return (
-      <View style={styles.centered}>
-        <Text>No trip details available.</Text>
-      </View>
+      <RusableWhite>
+        <View style={styles.centered}>
+          <ReusableText
+            text="No trip details available."
+            family="Medium"
+            size={16}
+            color={COLORS.gray}
+          />
+        </View>
+      </RusableWhite>
     );
   }
 
   return (
-    <FlatList
-      data={[GuideTripDetails]} // Pass trip details as an array with one item
-      keyExtractor={(item) => item.name}
-      renderItem={({ item }) => <GuideTripDetailCard trip={item} />}
-    />
+    <RusableWhite>
+      <FlatList
+        data={[GuideTripDetails]} // Pass trip details as an array with one item
+        keyExtractor={(item) => item.name}
+        renderItem={({ item }) => <GuideTripDetailCard trip={item} />}
+        showsHorizontalScrollIndicator={false}
+        showsVerticalScrollIndicator={false}
+      />
+    </RusableWhite>
   );
 };
 

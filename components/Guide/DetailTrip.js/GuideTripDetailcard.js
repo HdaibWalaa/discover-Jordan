@@ -1,5 +1,5 @@
-import React from "react";
-import { StyleSheet, View, FlatList, Text } from "react-native";
+import React, { useContext } from "react";
+import { StyleSheet, View } from "react-native";
 import {
   widthPercentageToDP as wp,
   heightPercentageToDP as hp,
@@ -8,11 +8,16 @@ import GalleryTrip from "./GalleryTrip";
 import DetailTripHeader from "./DetailTripHeader";
 import GuideInfo from "./GuideInfo";
 import GuideDate from "./GuideDate";
-import TripAttendance from "./TripAttendance";
+import TripTabs from "./TripTabs";
 import ReusableText from "../../Reusable/ReusableText";
-import { COLORS, TEXT,SIZES } from "../../../constants/theme";
+import GuideTripJoin from "./GuideTripJoin"; // Import the join section
+import GuideTripReview from "./GuideTripReview"; // Import the review section
+import { COLORS, TEXT, SIZES } from "../../../constants/theme";
+import { AuthContext } from "../../../store/auth-context"; // Import AuthContext
 
 const GuideTripDetailCard = ({ trip }) => {
+  const { token } = useContext(AuthContext); // Get the token from AuthContext
+
   return (
     <View style={styles.card}>
       {/* Header Section */}
@@ -37,10 +42,6 @@ const GuideTripDetailCard = ({ trip }) => {
         start_datetime={trip.start_datetime}
         end_datetime={trip.end_datetime}
         price={trip.price}
-      />
-
-      {/* Trip Attendance Section */}
-      <TripAttendance
         maxAttendance={trip.max_attendance}
         joinRequests={trip.join_request}
       />
@@ -62,6 +63,16 @@ const GuideTripDetailCard = ({ trip }) => {
           style={styles.subTitleText}
         />
       </View>
+
+      {/* Trip Tabs Section */}
+      <TripTabs trip={trip} />
+
+      {/* Conditionally Render Join Section or Review Section */}
+      {trip.status === 0 ? (
+        <GuideTripReview reviews={trip.reviews} tripId={trip.id} />
+      ) : (
+        <GuideTripJoin trip={trip} token={token} />
+      )}
     </View>
   );
 };
@@ -80,5 +91,6 @@ const styles = StyleSheet.create({
     paddingHorizontal: wp("4%"),
     backgroundColor: COLORS.lightGray,
     borderRadius: SIZES.base,
+    paddingVertical: hp("1.5%"),
   },
 });
