@@ -20,15 +20,21 @@ const DetailsHeader = ({
   isCreator,
   onEdit,
   onDelete,
+  // new props from parent
   onHandPress,
+  onLeaveTrip,
+  isUserJoined,
 }) => {
   return (
     <View style={styles.header}>
       <View style={styles.TopHeader}>
         <GoBack style={styles.goBack} />
         <View style={styles.rightButtonsContainer}>
-          {isCreator && (
+          {isCreator ? (
             <>
+              {/*
+                Creator sees the More Menu and the Requests (Hand) button.
+              */}
               <Menu>
                 <MenuTrigger customStyles={triggerStyles}>
                   <Image
@@ -53,7 +59,19 @@ const DetailsHeader = ({
                 />
               </TouchableOpacity>
             </>
+          ) : (
+            // Non-Creator: If user is joined, show "Leave Trip" button
+            isUserJoined && (
+              <TouchableOpacity
+                style={styles.leaveButton}
+                onPress={onLeaveTrip}
+              >
+                <Text style={styles.leaveButtonText}>Leave Trip</Text>
+              </TouchableOpacity>
+            )
           )}
+
+          {/* Everyone sees the Favorite button (if you want) */}
           <TouchableOpacity style={styles.favoriteButton}>
             <Image
               source={require("../../assets/images/icons/heart.png")}
@@ -62,6 +80,7 @@ const DetailsHeader = ({
           </TouchableOpacity>
         </View>
       </View>
+
       <View style={styles.ButtomHeader}>
         <ReusableText
           text={tripDetails.name.toUpperCase()}
@@ -77,7 +96,6 @@ const DetailsHeader = ({
 };
 
 export default DetailsHeader;
-
 
 const styles = StyleSheet.create({
   header: {
@@ -136,6 +154,16 @@ const styles = StyleSheet.create({
   moreIcon: {
     width: wp("5%"),
     height: hp("2%"),
+  },
+  leaveButton: {
+    padding: wp("2%"),
+    backgroundColor: "red",
+    borderRadius: wp("3%"),
+    marginLeft: wp("2%"),
+  },
+  leaveButtonText: {
+    color: "#fff",
+    fontSize: SIZES.small,
   },
   ButtomHeader: {
     alignItems: "center",

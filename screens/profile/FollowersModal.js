@@ -8,7 +8,6 @@ import {
   ActivityIndicator,
   Alert,
 } from "react-native";
-import { FancyAlert } from "react-native-expo-fancy-alerts";
 import axios from "axios";
 import { COLORS } from "../../constants/theme";
 import styles from "./followersModal.style";
@@ -17,8 +16,6 @@ import BASE_URL from "../../hook/apiConfig";
 const FollowersModal = ({ isVisible, onClose, token, userId }) => {
   const [followers, setFollowers] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
-  const [alertVisible, setAlertVisible] = useState(false);
-  const [alertMessage, setAlertMessage] = useState("");
 
   // Fetch followers
   const fetchFollowers = async () => {
@@ -65,8 +62,8 @@ const FollowersModal = ({ isVisible, onClose, token, userId }) => {
       );
 
       if (response.status === 200) {
-        setAlertMessage("Follow request accepted.");
-        setAlertVisible(true);
+        Alert.alert("Success", "Follow request accepted.");
+        // Remove the accepted user from the list
         setFollowers((prev) =>
           prev.filter((follower) => follower.follower_id !== followerId)
         );
@@ -91,8 +88,8 @@ const FollowersModal = ({ isVisible, onClose, token, userId }) => {
       );
 
       if (response.status === 200) {
-        setAlertMessage("Follow request rejected.");
-        setAlertVisible(true);
+        Alert.alert("Success", "Follow request rejected.");
+        // Remove the rejected user from the list
         setFollowers((prev) =>
           prev.filter((follower) => follower.follower_id !== followerId)
         );
@@ -159,41 +156,6 @@ const FollowersModal = ({ isVisible, onClose, token, userId }) => {
           </TouchableOpacity>
         </View>
       </View>
-
-      {/* Fancy Alert */}
-      <FancyAlert
-        visible={alertVisible}
-        icon={
-          <View
-            style={{
-              flex: 1,
-              justifyContent: "center",
-              alignItems: "center",
-              backgroundColor: COLORS.primary,
-              borderRadius: 50,
-              width: "100%",
-            }}
-          >
-            <Text style={{ color: "white", fontSize: 24 }}>🎉</Text>
-          </View>
-        }
-        style={{ backgroundColor: "white" }}
-      >
-        <Text style={{ marginTop: -16, marginBottom: 32, textAlign: "center" }}>
-          {alertMessage}
-        </Text>
-        <TouchableOpacity
-          style={{
-            backgroundColor: COLORS.primary,
-            padding: 10,
-            borderRadius: 5,
-            marginTop: 10,
-          }}
-          onPress={() => setAlertVisible(false)}
-        >
-          <Text style={{ color: "white", fontSize: 16 }}>OK</Text>
-        </TouchableOpacity>
-      </FancyAlert>
     </Modal>
   );
 };

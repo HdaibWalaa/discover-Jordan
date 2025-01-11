@@ -1,5 +1,6 @@
-import React, { useContext } from "react";
-import { StyleSheet, View } from "react-native";
+import React, { useContext, useState } from "react";
+import { StyleSheet, View, Alert } from "react-native";
+import axios from "axios";
 import {
   widthPercentageToDP as wp,
   heightPercentageToDP as hp,
@@ -10,13 +11,15 @@ import GuideInfo from "./GuideInfo";
 import GuideDate from "./GuideDate";
 import TripTabs from "./TripTabs";
 import ReusableText from "../../Reusable/ReusableText";
-import GuideTripJoin from "./GuideTripJoin"; // Import the join section
-import GuideTripReview from "./GuideTripReview"; // Import the review section
+import GuideTripJoin from "./GuideTripJoin";
+import AddReview from "./Review/AddReview";
 import { COLORS, TEXT, SIZES } from "../../../constants/theme";
-import { AuthContext } from "../../../store/auth-context"; // Import AuthContext
+import { AuthContext } from "../../../store/auth-context";
+import { BASE_URL } from "../../../hook/PostApi";
 
 const GuideTripDetailCard = ({ trip }) => {
-  const { token } = useContext(AuthContext); // Get the token from AuthContext
+  const { token } = useContext(AuthContext);
+  const [reviewList, setReviewList] = useState(trip.reviews || []);
 
   return (
     <View style={styles.card}>
@@ -67,9 +70,9 @@ const GuideTripDetailCard = ({ trip }) => {
       {/* Trip Tabs Section */}
       <TripTabs trip={trip} />
 
-      {/* Conditionally Render Join Section or Review Section */}
+      {/* Conditionally Render Join Section or AddReview Component */}
       {trip.status === 0 ? (
-        <GuideTripReview reviews={trip.reviews} tripId={trip.id} />
+        <AddReview trip={trip} token={token} />
       ) : (
         <GuideTripJoin trip={trip} token={token} />
       )}

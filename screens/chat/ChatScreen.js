@@ -1,173 +1,115 @@
-import React from "react";
-import {
-  StyleSheet,
-  Text,
-  View,
-  Image,
-  FlatList,
-  TextInput,
-  TouchableOpacity,
-} from "react-native";
+import React, { useEffect, useState } from "react";
+import { View, Text, StyleSheet, ScrollView, Image } from "react-native";
+import axios from "axios";
+import Pusher from "pusher-js";
+import BASE_URL from "../../hook/apiConfig"; // Ensure this points to your API base URL
 
-const ChatScreen = () => {
-  const messages = [
-    {
-      id: "1",
-      user: "Samer Salameh",
-      message: "It was a very beautiful trip",
-      time: "09:25 AM",
-      type: "text",
-    },
-    {
-      id: "2",
-      user: "Maria Tareq",
-      message: "https://example.com/audio.mp3",
-      time: "09:25 AM",
-      type: "audio",
-      duration: "00:16",
-    },
-    {
-      id: "3",
-      user: "You",
-      message: "You did your job well!",
-      time: "09:25 AM",
-      type: "text",
-      self: true,
-    },
-  ];
+export default function GroupChatScreen({ route }) {
+  const { tripId, userToken } = route.params || { tripId: 18, userToken: null };
 
-  const renderMessage = ({ item }) => {
-    if (item.type === "text") {
-      return (
-        <View
-          style={[styles.messageContainer, item.self && styles.selfMessage]}
-        >
-          <View style={[styles.messageBubble, item.self && styles.selfBubble]}>
-            <Text style={styles.messageText}>{item.message}</Text>
-          </View>
-          <Text style={[styles.timeText, item.self && styles.selfTimeText]}>
-            {item.time}
-          </Text>
-        </View>
-      );
-    } else if (item.type === "audio") {
-      return (
-        <View style={styles.messageContainer}>
-          <View style={styles.audioBubble}>
-            <View style={styles.audioWave}></View>
-            <Text style={styles.audioDuration}>{item.duration}</Text>
-          </View>
-          <Text style={styles.timeText}>{item.time}</Text>
-        </View>
-      );
-    }
-  };
+  const [groupMembers, setGroupMembers] = useState([]);
+  const [updates, setUpdates] = useState([]);
+
+  useEffect(() => {
+    console.log("User token:", userToken);
+
+    // 1) Fetch existing group members using the provided API
+    axios
+      .get(`${BASE_URL}/chat/members/${tripId}`, {
+        headers: {
+          Authorization: `Bearer ${userToken}`,
+          Accept: "application/json",
+          "Content-Language": "en",
+        },
+      })
+      .then((res) => {
+        console.log("Fetch members response:", res.data);
+        const members = res.data?.data?.members || [];
+        setGroupMembers(members);
+      })
+      .catch((err) => console.error("Error fetching members:", err));
+
+    // 2) Initialize Pusher and subscribe to the private channel
+    const pusher = new Pusher("239f28d2e3151e572e3e", {
+      cluster: "ap2",
+      authEndpoint: `${BASE_URL}/broadcasting/auth`,
+      auth: {
+        headers: {
+          Authorization: `Bearer ${userToken}`,
+          Accept: "application/json",
+        },
+      },
+    });
+
+    const channel = pusher.subscribe(`private-group-channel.${tripId}`);
+
+    // 3) Bind to "group-member" events for real-time updates
+    channel.bind("group-member", (data) => {
+      console.log("group-member event data:", data);
+      setUpdates((prev) => [...prev, data]);
+
+      // Handle join action
+      if (data.action === "join" && data.user) {
+        setGroupMembers((prev) => {
+          const exists = prev.some((member) => member.id === data.user.id);
+          return exists ? prev : [...prev, data.user]; // Add user if not already in the list
+        });
+      }
+
+      // Handle leave action
+      if (data.action === "leave" && data.user) {
+        setGroupMembers(
+          (prev) => prev.filter((member) => member.id !== data.user.id) // Remove user from the list
+        );
+      }
+    });
+
+    // Cleanup on unmount
+    return () => {
+      channel.unbind("group-member");
+      channel.unsubscribe();
+      pusher.disconnect();
+    };
+  }, [tripId, userToken]);
 
   return (
     <View style={styles.container}>
-      <FlatList
-        data={messages}
-        renderItem={renderMessage}
-        keyExtractor={(item) => item.id}
-        style={styles.chatList}
-        contentContainerStyle={styles.chatListContent}
-      />
-      <View style={styles.inputContainer}>
-        <TouchableOpacity>
-          <Image
-            source={require("../../assets/images/icons/microphone.png")}
-            style={styles.icon}
-          />
-        </TouchableOpacity>
-        <TextInput style={styles.textInput} placeholder="Write your message" />
-        <TouchableOpacity>
-          <Image
-            source={require("../../assets/images/icons/microphone.png")}
-            style={styles.icon}
-          />
-        </TouchableOpacity>
-        <TouchableOpacity>
-          <Image
-            source={require("../../assets/images/icons/microphone.png")}
-            style={styles.icon}
-          />
-        </TouchableOpacity>
-      </View>
+      <Text style={styles.headerText}>
+        Private channel: private-group-channel.{tripId}
+      </Text>
+
+      <Text style={styles.title}>Group Members</Text>
+      <ScrollView horizontal style={styles.membersContainer}>
+        {groupMembers.map((mem) => (
+          <View key={mem.id} style={styles.memberBox}>
+            {mem.image ? (
+              <Image source={{ uri: mem.image }} style={styles.avatar} />
+            ) : (
+              <View style={[styles.avatar, styles.placeholder]} />
+            )}
+            <Text style={styles.memberName}>{mem.username}</Text>
+          </View>
+        ))}
+      </ScrollView>
+
+      <Text style={styles.title}>Updates (raw events):</Text>
+      {updates.map((item, idx) => (
+        <Text key={idx} style={styles.updateText}>
+          user: {item.user?.username}, action: {item.action}
+        </Text>
+      ))}
     </View>
   );
-};
-
-export default ChatScreen;
+}
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: "#fff",
-  },
-  messageContainer: {
-    marginBottom: 10,
-    alignItems: "flex-start",
-    padding: 15,
-  },
-  selfMessage: {
-    alignItems: "flex-end",
-  },
-  messageBubble: {
-    backgroundColor: "#F0F0F0",
-    borderRadius: 20,
-    paddingHorizontal: 20,
-    paddingVertical: 10,
-    maxWidth: "75%",
-  },
-  selfBubble: {
-    backgroundColor: "#3AAFB9",
-  },
-  messageText: {
-    fontSize: 16,
-  },
-  timeText: {
-    fontSize: 12,
-    color: "#888",
-    marginTop: 5,
-    marginLeft: 10,
-  },
-  selfTimeText: {
-    marginLeft: 0,
-    marginRight: 10,
-  },
-  audioBubble: {
-    flexDirection: "row",
-    alignItems: "center",
-    backgroundColor: "#F0F0F0",
-    borderRadius: 20,
-    paddingHorizontal: 15,
-    paddingVertical: 10,
-    maxWidth: "75%",
-  },
-  audioWave: {
-    flex: 1,
-    height: 10,
-    backgroundColor: "#3AAFB9",
-    marginRight: 10,
-  },
-  audioDuration: {
-    fontSize: 16,
-  },
-  inputContainer: {
-    flexDirection: "row",
-    alignItems: "center",
-    padding: 20,
-    borderTopWidth: 1,
-    borderTopColor: "#EEE",
-  },
-  textInput: {
-    flex: 1,
-    paddingHorizontal: 10,
-    fontSize: 16,
-  },
-  icon: {
-    width: 24,
-    height: 24,
-    marginHorizontal: 5,
-  },
+  container: { padding: 20, flex: 1 },
+  headerText: { fontSize: 14, marginBottom: 10, color: "gray" },
+  title: { fontWeight: "bold", fontSize: 16, marginBottom: 150 },
+  membersContainer: { marginBottom: 20 },
+  memberBox: { alignItems: "center", marginRight: 15 },
+  avatar: { width: 50, height: 50, borderRadius: 25, marginBottom: 5 },
+  placeholder: { backgroundColor: "#ccc" },
+  memberName: { fontSize: 14, color: "#333" },
+  updateText: { fontSize: 14, marginBottom: 150 },
 });

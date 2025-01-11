@@ -44,6 +44,7 @@ const styles = StyleSheet.create({
     backgroundColor: COLORS.lightGray,
     borderRadius: 10,
   },
+  
 });
 
 export default styles;

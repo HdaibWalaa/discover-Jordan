@@ -6,11 +6,12 @@ import {
   TouchableOpacity,
   Image,
   FlatList,
+  Alert, // <-- Use standard RN Alert
 } from "react-native";
 import * as ImagePicker from "expo-image-picker";
 import { createPost } from "../../hook/PostApi";
 import { AuthContext } from "../../store/auth-context";
-import { FancyAlert } from "react-native-expo-fancy-alerts";
+// Removed: import { FancyAlert } from "react-native-expo-fancy-alerts";
 import styles from "./post.style";
 import VisitableType from "./VisitableType";
 import PostPrivacy from "./PostPrivacy";
@@ -28,8 +29,8 @@ const CreatePostForm = ({ navigation }) => {
   const [privacy, setPrivacy] = useState(1);
   const [visitableType, setVisitableType] = useState("Trip");
   const [visitableId, setVisitableId] = useState("");
-  const [isAlertVisible, setIsAlertVisible] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+
   const { token } = useContext(AuthContext);
 
   // Pick media (images or videos)
@@ -66,13 +67,16 @@ const CreatePostForm = ({ navigation }) => {
       );
 
       if (response.status === 200) {
-        setIsAlertVisible(true); // Show Fancy Alert
-
-        // Automatically navigate to Following screen after 2 seconds
-        setTimeout(() => {
-          setIsAlertVisible(false);
-          navigation.navigate("Following");
-        }, 2000);
+        // Show a simple Alert
+        Alert.alert("Success", "Post created successfully!", [
+          {
+            text: "OK",
+            onPress: () => {
+              // Navigate to the Following screen
+              navigation.navigate("Following");
+            },
+          },
+        ]);
       } else {
         Alert.alert("Error", "Failed to create post.");
       }
@@ -192,36 +196,6 @@ const CreatePostForm = ({ navigation }) => {
         keyExtractor={(item) => item.id}
         renderItem={({ item }) => <View>{item.component}</View>}
       />
-      {/* Fancy Alert */}
-      <FancyAlert
-        visible={isAlertVisible}
-        icon={
-          <View
-            style={{
-              flex: 1,
-              justifyContent: "center",
-              alignItems: "center",
-              backgroundColor: COLORS.primary,
-              borderRadius: 50,
-              width: "100%",
-            }}
-          >
-            <Text style={{ color: "white", fontSize: 24 }}>🎉</Text>
-          </View>
-        }
-        style={{ backgroundColor: "white" }}
-      >
-        <Text
-          style={{
-            marginTop: -16,
-            marginBottom: 32,
-            textAlign: "center",
-            fontSize: 16,
-          }}
-        >
-          Post created successfully!
-        </Text>
-      </FancyAlert>
     </View>
   );
 };

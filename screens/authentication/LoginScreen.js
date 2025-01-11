@@ -1,3 +1,4 @@
+// LoginScreen.js
 import React, { useState, useContext } from "react";
 import {
   View,
@@ -25,7 +26,6 @@ import {
 
 function LoginScreen() {
   const [isAuthenticating, setIsAuthenticating] = useState(false);
-  const [showVerificationModal, setShowVerificationModal] = useState(false);
   const [token, setToken] = useState(null);
   const authCtx = useContext(AuthContext);
   const navigation = useNavigation();
@@ -49,7 +49,7 @@ function LoginScreen() {
       );
 
       if (verified_email) {
-        authCtx.authenticate(token, first_login);
+        await authCtx.authenticate(token, first_login);
 
         if (first_login) {
           navigation.reset({ index: 0, routes: [{ name: "EditUserProfile" }] });
@@ -80,26 +80,30 @@ function LoginScreen() {
     }
   }
 
-async function handleResendVerification() {
-  try {
-    if (!token) {
-      throw new Error(
-        "Token is not available for resending verification email."
+  async function handleResendVerification() {
+    try {
+      if (!token) {
+        throw new Error(
+          "Token is not available for resending verification email."
+        );
+      }
+      const email = authCtx.user?.email;
+      if (!email) {
+        throw new Error("Email is not available.");
+      }
+      await resendVerificationEmail(token, email);
+      Alert.alert(
+        "Verification Email Sent",
+        "A new verification email has been sent to your email address."
+      );
+    } catch (error) {
+      console.error("Error while resending verification email:", error);
+      Alert.alert(
+        "Resend Failed",
+        "An error occurred while resending the verification email. Please try again later."
       );
     }
-    await resendVerificationEmail(token);
-    Alert.alert(
-      "Verification Email Sent",
-      "A new verification email has been sent to your email address."
-    );
-  } catch (error) {
-    console.error("Error while resending verification email:", error);
-    Alert.alert(
-      "Resend Failed",
-      "An error occurred while resending the verification email. Please try again later."
-    );
   }
-}
 
   if (isAuthenticating) {
     return <LoadingOverlay message="Logging you in..." />;
@@ -162,31 +166,10 @@ async function handleResendVerification() {
       </View>
       <Modal
         transparent={true}
-        visible={showVerificationModal}
+        visible={false} // Hide modal since it's not used now
         animationType="slide"
       >
-        <View style={styles.modalBackground}>
-          <View style={styles.modalContainer}>
-            <Pressable
-              style={styles.closeButton}
-              onPress={() => setShowVerificationModal(false)}
-            >
-              <Text style={styles.closeButtonText}>X</Text>
-            </Pressable>
-            <Text style={styles.modalTitle}>Email Verification</Text>
-            <Text style={styles.modalMessage}>
-              You should verify your email to login.
-            </Text>
-            <Pressable
-              style={styles.resendButton}
-              onPress={handleResendVerification}
-            >
-              <Text style={styles.resendButtonText}>
-                RESEND VERIFICATION LINK
-              </Text>
-            </Pressable>
-          </View>
-        </View>
+        {/* Modal content */}
       </Modal>
     </LinearGradient>
   );

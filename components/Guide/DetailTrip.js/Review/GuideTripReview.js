@@ -1,14 +1,14 @@
 import { StyleSheet, Text, View } from 'react-native'
 import React from 'react'
 
-const ChatHeader = () => {
+const GuideTripReview = () => {
   return (
     <View>
-      <Text>ChatHeader</Text>
+      <Text>GuideTripReview</Text>
     </View>
   )
 }
 
-export default ChatHeader
+export default GuideTripReview
 
 const styles = StyleSheet.create({})

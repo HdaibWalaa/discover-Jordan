@@ -164,34 +164,7 @@ function AppStack() {
           <Stack.Screen
             name="ChatScreen"
             component={ChatScreen}
-            options={{
-              header: () => (
-                <ChatHeader
-                  tripName="Trip Chat Group"
-                  avatar="https://gravatar.com/avatar/HASH"
-                  users={[
-                    {
-                      id: 1,
-                      name: "Adil",
-                      avatar:
-                        "https://gravatar.com/avatar/27205e5c51cb03f862138b22bcb5dc20f94a342e744ff6df1b8dc8af3c865109.jpg",
-                    },
-                    {
-                      id: 2,
-                      name: "Maria",
-                      avatar:
-                        "https://gravatar.com/avatar/27205e5c51cb03f862138b22bcb5dc20f94a342e744ff6df1b8dc8af3c865109.jpg",
-                    },
-                    {
-                      id: 3,
-                      name: "Adil",
-                      avatar:
-                        "https://gravatar.com/avatar/27205e5c51cb03f862138b22bcb5dc20f94a342e744ff6df1b8dc8af3c865109.jpg",
-                    },
-                  ]}
-                />
-              ),
-            }}
+            options={{ headerShown: true }}
           />
           <Stack.Screen
             name="PlaceDetails"
