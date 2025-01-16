@@ -15,7 +15,8 @@ const fetchTrips = (language, token) => {
       const response = await axios.get(url, {
         headers: {
           "Content-Language": language,
-          ...(token && { Authorization: `Bearer ${token}` }), // Add token if available
+          ...(token && { Authorization: `Bearer ${token}` }),
+          "X-API-KEY": "DISCOVERJO91427", 
         },
       });
       setTripData(response.data.data.trips);

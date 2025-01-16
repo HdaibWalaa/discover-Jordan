@@ -15,6 +15,7 @@ const fetchCategory = (language) => {
       const response = await axios.get(`${BASE_URL}/all-categories`, {
         headers: {
           "Content-Language": language,
+          "X-API-KEY": "DISCOVERJO91427",
         },
       });
       setCategoryData(response.data.data);

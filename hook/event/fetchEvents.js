@@ -20,7 +20,7 @@ const fetchEvents = (language) => {
       const response = await axios.get(fetchUrl, {
         headers: {
           "Content-Language": language,
-          Authorization: `Bearer ${authCtx.token}`, // Send the user token
+          "X-API-KEY": "DISCOVERJO91427",
         },
       });
       setEventData(response.data.data.events);

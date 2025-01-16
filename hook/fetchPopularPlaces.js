@@ -18,6 +18,7 @@ const fetchPopularPlaces = (language, userLocation) => {
         },
         headers: {
           "Content-Language": language,
+          "X-API-KEY": "DISCOVERJO91427",
         },
       });
 

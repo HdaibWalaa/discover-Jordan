@@ -13,6 +13,7 @@ const fetchTopTenPlaces = (language) => {
       const response = await axios.get(`${BASE_URL}/top-ten-places`, {
         headers: {
           "Content-Language": language,
+          "X-API-KEY": "DISCOVERJO91427",
         },
       });
       setTopTenData(response.data.data);

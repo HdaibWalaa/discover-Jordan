@@ -22,6 +22,7 @@ const fetchCategoryPlace = (id, language, userLatitude, userLongitude) => {
         {
           headers: {
             "Content-Language": language,
+            "X-API-KEY":"DISCOVERJO91427",
           },
           params: {
             lat: userLatitude, // Sending the user's latitude

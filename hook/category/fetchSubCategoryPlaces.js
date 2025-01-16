@@ -14,6 +14,7 @@ const fetchSubCategoryPlaces = async (
       {
         headers: {
           "Content-Language": language,
+          "X-API-KEY": "DISCOVERJO91427",
         },
         params: {
           lat: userLatitude,

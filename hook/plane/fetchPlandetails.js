@@ -14,6 +14,7 @@ const fetchPlanDetails = async (id, token, language) => {
         Authorization: `Bearer ${token}`,
         Accept: "application/json",
         "Content-Language": language, 
+        
       },
     });
 

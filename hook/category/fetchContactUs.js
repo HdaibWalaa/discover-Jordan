@@ -1,6 +1,7 @@
 // fetchContactUs.js
 import { useState } from "react";
 import axios from "axios";
+import BASE_URL from "../apiConfig";
 
 const fetchContactUs = () => {
   const [isLoading, setIsLoading] = useState(false);
@@ -24,11 +25,12 @@ const fetchContactUs = () => {
       });
 
       const response = await axios.post(
-        "http://rehletna-jo.com/api/en/contact-us",
+       `${BASE_URL}/contact-us`,
         formData,
         {
           headers: {
-            "Content-Type": "multipart/form-data", 
+            "Content-Type": "multipart/form-data",
+            "X-API-KEY": "DISCOVERJO91427",
           },
         }
       );

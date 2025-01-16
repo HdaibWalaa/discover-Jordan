@@ -14,6 +14,7 @@ const fetchAllGuideTrips = (language) => {
       const response = await axios.get(url, {
         headers: {
           "Content-Language": language,
+          "X-API-KEY": "DISCOVERJO91427",
         },
       });
       if (response.data && response.data.data && response.data.data.trips) {

@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { StyleSheet, View, ActivityIndicator } from "react-native";
+import { StyleSheet, View, ActivityIndicator ,Text} from "react-native";
 import React from "react";
 import { SafeAreaView } from "react-native-safe-area-context";
 import reusable from "../../components/Reusable/reusable.style";
@@ -38,7 +38,10 @@ const CategoryList = () => {
     setIsLoading(true);
     try {
       const response = await axios.get(`${BASE_URL}/all-categories`, {
-        headers: { "Content-Language": language },
+        headers: {
+          "Content-Language": language,
+          "X-API-KEY": "DISCOVERJO91427",
+        },
       });
       setCategories(response.data.data);
     } catch (err) {

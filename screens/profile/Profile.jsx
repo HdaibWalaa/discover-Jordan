@@ -10,7 +10,7 @@ import {
 import { createMaterialTopTabNavigator } from "@react-navigation/material-top-tabs";
 import Following from "../follow/Following";
 import AllPlans from "../plan/AllPlans";
-import AllTrip from "../trips/AllTrip";
+import AllPersonalTrip from "../trips/AllPersonalTrip";
 import TopInfo from "./TopInfo";
 import { COLORS, SIZES } from "../../constants/theme";
 import { ReusableText } from "../../components";
@@ -161,7 +161,7 @@ const Profile = () => {
             />
             <Tab.Screen name="POSTS" component={Following} />
             <Tab.Screen name="REVIEW" component={AllPlans} />
-            <Tab.Screen name="Trips" component={AllTrip} />
+            <Tab.Screen name="Trips" component={AllPersonalTrip} />
           </Tab.Navigator>
         </View>
       </View>
