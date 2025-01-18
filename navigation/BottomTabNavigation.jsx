@@ -37,7 +37,6 @@ import {
   AllUserPosts,
   AllGuideTrip,
   CreateGuideTrip,
-  guideTripDetails,
 } from "../screens";
 import { COLORS } from "../constants/theme";
 import Header from "../components/header/Header";
@@ -46,6 +45,7 @@ import PrivacyPolicyHeader from "../components/header/privacyPolicyHeader";
 import ContactusHeader from "../components/header/ContactusHeader";
 import NotificationHeader from "../components/header/NotificationHeader";
 import CustomDrawerContent from "../components/Drawer/CustomDrawerContent";
+import GuideTripDetails from "../screens/trips/GuideTripDetails";
 
 const Tab = createBottomTabNavigator();
 const Stack = createStackNavigator();
@@ -208,8 +208,8 @@ const HomeStack = () => {
           options={{ headerShown: false }}
         />
         <Stack.Screen
-          name="guideTripDetails"
-          component={guideTripDetails}
+          name="GuideTripDetails"
+          component={GuideTripDetails}
           options={{ headerShown: false }}
         />
         <Stack.Screen

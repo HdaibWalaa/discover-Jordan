@@ -26,7 +26,11 @@ const HotelCard = ({ item, margin, onPress }) => {
         <View style={{ padding: 10 }}>
           <ReusableText
             text={item.title}
+<<<<<<< HEAD
             family={"Medium"}
+=======
+            family={"medium"}
+>>>>>>> 0f8657994a28fdeb552e3fca7805c04abb1437f7
             size={SIZES.medium}
             color={COLORS.black}
           />
@@ -35,7 +39,11 @@ const HotelCard = ({ item, margin, onPress }) => {
 
           <ReusableText
             text={item.location}
+<<<<<<< HEAD
             family={"Medium"}
+=======
+            family={"medium"}
+>>>>>>> 0f8657994a28fdeb552e3fca7805c04abb1437f7
             size={SIZES.medium}
             color={COLORS.gray}
           />

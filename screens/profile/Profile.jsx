@@ -117,7 +117,7 @@ const Profile = () => {
           />
           <ReusableText
             text={`${profile?.first_name} ${profile?.last_name}`}
-            family={"Black"}
+            family={"Bold"}
             size={SIZES.large}
             color={COLORS.black}
           />

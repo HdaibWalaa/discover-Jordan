@@ -63,7 +63,7 @@ const Volunteer = () => {
       >
         <ReusableText
           text={"Volunteer".toUpperCase()}
-          family={"medium"}
+          family={"Medium"}
           size={TEXT.large}
           color={COLORS.black}
         />

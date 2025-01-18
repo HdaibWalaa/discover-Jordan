@@ -22,6 +22,7 @@ const fetchPlace = (id, language, userLatitude, userLongitude) => {
         headers: {
           "Content-Language": language,
           Authorization: `Bearer ${token}`,
+          "X-API-KEY": "DISCOVERJO91427",
         },
       });
 

@@ -71,7 +71,7 @@ const Guides = () => {
             item={item}
             margin={5}
             onPress={() => {
-              navigation.navigate("guideTripDetails", { tripId: item.id });
+              navigation.navigate("GuideTripDetails", { tripId: item.id });
             }}
           />
         )}

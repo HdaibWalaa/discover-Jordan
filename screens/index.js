@@ -40,7 +40,7 @@ import AllUserPosts from "./Posts/AllUserPosts";
 import EditUserPost from "./Posts/EditUserPost";
 import AllGuideTrip from "./trips/AllGuideTrip";
 import CreateGuideTrip from "./trips/CreateGuideTrip";
-import guideTripDetails from "./trips/guideTripDetails";
+import GuideTripDetails from "./trips/GuideTripDetails";
 export {
   Home,
   Onboarding,
@@ -84,5 +84,5 @@ export {
   EditUserPost,
   AllGuideTrip,
   CreateGuideTrip,
-  guideTripDetails,
+  GuideTripDetails,
 };

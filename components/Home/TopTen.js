@@ -50,7 +50,7 @@ const TopTen = () => {
       >
         <ReusableText
           text={"Top 10 Places".toUpperCase()}
-          family={"medium"}
+          family={"Medium"}
           size={TEXT.large}
           color={COLORS.black}
         />

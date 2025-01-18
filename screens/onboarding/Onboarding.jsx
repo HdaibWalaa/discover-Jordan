@@ -45,6 +45,7 @@ const Onboarding = ({ navigation }) => {
             "Content-Language": language,
             "X-API-KEY": "DISCOVERJO91427",
           }, // Send language header
+          headers: { "Content-Language": language }, // Send language header
         });
         const apiSlides = response.data.data.map((item) => ({
           id: item.id,

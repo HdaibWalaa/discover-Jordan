@@ -23,11 +23,19 @@ const ReviewTle = ({ review }) => {
 
           <WidthSpacer width={20} />
 
+<<<<<<< HEAD
           <View style={{ width: "80%" }}>
             <View style={reusable.rowWithSpace("space-between")}>
               <ReusableText
                 text={review.user.username}
                 family={"Medium"}
+=======
+          <View style={{width: "80%"}}>
+            <View style={reusable.rowWithSpace("space-between")}>
+              <ReusableText
+                text={review.user.username}
+                family={"medium"}
+>>>>>>> 0f8657994a28fdeb552e3fca7805c04abb1437f7
                 size={SIZES.small + 2}
                 color={COLORS.black}
               />
@@ -38,15 +46,26 @@ const ReviewTle = ({ review }) => {
                 <WidthSpacer width={10} />
                 <ReusableText
                   text={review.updatedAt}
+<<<<<<< HEAD
                   family={"Medium"}
+=======
+                  family={"medium"}
+>>>>>>> 0f8657994a28fdeb552e3fca7805c04abb1437f7
                   size={SIZES.small + 2}
                   color={COLORS.black}
                 />
               </View>
             </View>
 
+<<<<<<< HEAD
             <DescriptionText text={review.review} lines={2} />
           </View>
+=======
+            <DescriptionText text={review.review} lines={2}/>
+          </View>
+
+          
+>>>>>>> 0f8657994a28fdeb552e3fca7805c04abb1437f7
         </View>
       </View>
     </View>

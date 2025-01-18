@@ -15,12 +15,12 @@ const Category = ({ item }) => {
   // Function to truncate the text
   const truncateText = (text, maxLength) => {
     if (text.length <= maxLength) return text;
-    return text.substr(0, maxLength) + "...";
+    return text.substr(0, maxLength) + "..";
   };
 
   // Calculate responsive size
-  const containerSize = width * 0.22; 
-  const textMaxLength = containerSize / 16; 
+  const containerSize = width * 0.22;
+  const textMaxLength = containerSize / 16;
 
   return (
     <TouchableOpacity

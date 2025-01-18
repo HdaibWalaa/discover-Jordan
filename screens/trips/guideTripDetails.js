@@ -5,7 +5,7 @@ import GuideTripDetailCard from "../../components/Guide/DetailTrip.js/GuideTripD
 import { COLORS } from "../../constants/theme";
 import { RusableWhite, ReusableText, HeightSpacer } from "../../components"; // Import RusableWhite and other components
 
-const guideTripDetails = ({ route }) => {
+const GuideTripDetails = ({ route }) => {
   const { tripId } = route.params; // Get tripId from route params
   const { GuideTripDetails, isLoading, error } = useFetchGuideTrip(tripId); // Use custom hook to fetch trip details
 
@@ -62,7 +62,7 @@ const guideTripDetails = ({ route }) => {
   );
 };
 
-export default guideTripDetails;
+export default GuideTripDetails;
 
 const styles = StyleSheet.create({
   centered: {
