@@ -15,35 +15,58 @@ const ReusableFavorite = ({
   placeId,
   refresh,
   style,
+  onToggle,
 }) => {
   const authCtx = useContext(AuthContext);
+  const token = authCtx?.token;
 
   const handleFavoriteToggle = async () => {
-    if (!authCtx.token) {
+    if (!token) {
       console.error("No authentication token found.");
       return;
     }
 
+    const url = favorite
+      ? `${BASE_URL}/favorite/place/${placeId}/delete`
+      : `${BASE_URL}/favorite/place/${placeId}`;
+    const method = favorite ? "DELETE" : "POST";
+
     try {
-      const url = favorite
-        ? `${BASE_URL}/favorite/place/${placeId}/delete`
-        : `${BASE_URL}/favorite/place/${placeId}`;
-      const method = favorite ? "DELETE" : "POST";
+      console.log("Request URL:", url);
+      console.log("Request Method:", method);
+      console.log("Authorization Token:", token);
 
       await axios({
         method,
         url,
         headers: {
-          Authorization: `Bearer ${authCtx.token}`,
+          Authorization: `Bearer ${token}`,
           Accept: "application/json",
         },
       });
 
+      // Update UI immediately
+      if (onToggle) {
+        onToggle();
+      }
+
       if (refresh) {
-        refresh(); // Refresh parent data to reflect favorite status
+        refresh(); // Optional: Refresh parent data
       }
     } catch (error) {
-      console.error("Error toggling favorite status:", error);
+      const errorMessage = error.response?.data?.msg || error.message;
+
+      if (
+        error.response?.status === 400 &&
+        errorMessage === "لقد قمت بالفعل بإضافة هذا إلى المفضلة."
+      ) {
+        console.log("Already added to favorites; updating UI locally.");
+        if (onToggle) {
+          onToggle(); // Update UI even if the item is already in favorites
+        }
+      } else {
+        console.error("Error toggling favorite status:", errorMessage);
+      }
     }
   };
 

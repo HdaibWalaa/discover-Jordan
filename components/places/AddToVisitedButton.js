@@ -14,6 +14,7 @@ import {
   widthPercentageToDP as wp,
   heightPercentageToDP as hp,
 } from "react-native-responsive-screen";
+import BASE_URL from "../../hook/apiConfig";
 
 const AddToVisitedButton = ({ placeId, visited, refreshProfile }) => {
   const authCtx = useContext(AuthContext);
@@ -21,12 +22,13 @@ const AddToVisitedButton = ({ placeId, visited, refreshProfile }) => {
   const handleAddPlace = async () => {
     try {
       await axios.post(
-        `https://dashboard.discoverjo.com/api/visited/place/${placeId}`,
+        `${BASE_URL}/visited/place/${placeId}`,
         {},
         {
           headers: {
             Authorization: `Bearer ${authCtx.token}`,
             Accept: "application/json",
+            "X-API-KEY": "DISCOVERJO91427",
           },
         }
       );
@@ -79,7 +81,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
     marginRight: wp(2),
-    width: wp("60%"), // Adjust the width as needed
+    width: wp("70%"), // Adjust the width as needed
   },
   buttonText: {
     fontSize: wp("4.5%"), // Responsive font size

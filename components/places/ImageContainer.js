@@ -8,6 +8,7 @@ import {
   heightPercentageToDP as hp,
 } from "react-native-responsive-screen";
 import styles from "./ImageContainer.styles";
+import { COLORS } from "../../constants/theme";
 
 const ImageContainer = ({
   mainImage,
@@ -42,6 +43,20 @@ const ImageContainer = ({
         </TouchableOpacity>
 
         {/* Favorite Button */}
+
+        {/* Direction Button */}
+        {/* <TouchableOpacity
+          onPress={handleDirectionPress} // Call the handleDirectionPress function
+          style={styles.directionButton}
+        >
+          <View style={styles.directionButtonContent}>
+            <Image
+              source={require("../../assets/images/icons/direction.png")} // Replace with your direction icon
+              style={styles.icon}
+              resizeMode="contain"
+            />
+          </View>
+        </TouchableOpacity> */}
         <TouchableOpacity
           style={styles.favoriteButton}
           onPress={() => {
@@ -52,7 +67,7 @@ const ImageContainer = ({
             favorite={placeData.favorite}
             placeId={placeData.id}
             refresh={refetch}
-            iconColor="white"
+            iconColor="black"
             size={wp("7%")}
             bgColor="rgba(255, 255, 255, 0.7)"
             width={wp("12%")}

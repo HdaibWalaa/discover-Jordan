@@ -19,7 +19,7 @@ const TopTenCard = ({ item, isActive }) => {
         <NetworkImage
           source={item.image}
           width={wp(80)}
-          height={wp(70)}
+          height={wp(75)}
           radius={12}
         />
         <LinearGradient

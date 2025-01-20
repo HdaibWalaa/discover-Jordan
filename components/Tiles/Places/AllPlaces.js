@@ -1,4 +1,4 @@
-import React, { memo } from "react";
+import React, { memo, useState } from "react";
 import { StyleSheet, TouchableOpacity, View, Text } from "react-native";
 import { TEXT, COLORS } from "../../../constants/theme";
 import {
@@ -15,6 +15,11 @@ import {
 
 const AllPlaces = memo(({ item, refetch }) => {
   const navigation = useNavigation();
+  const [isFavorite, setIsFavorite] = useState(item.favorite); // Local state for favorite status
+
+  const handleFavoriteToggle = () => {
+    setIsFavorite((prev) => !prev); // Toggle the favorite state immediately
+  };
 
   return (
     <TouchableOpacity
@@ -34,14 +39,15 @@ const AllPlaces = memo(({ item, refetch }) => {
             </View>
             <View style={styles.favoriteContainer}>
               <ReusableFavorite
-                favorite={item.favorite}
+                favorite={isFavorite} // Bind local state to the component
                 placeId={item.id}
-                refresh={refetch} // Pass the refresh function to update the list
+                refresh={refetch} // Optional: Update the list if needed
                 iconColor="white"
                 size={wp("6%")}
                 bgColor="rgba(0, 0, 0, 0.7)"
                 width={wp("9%")}
                 height={hp("4%")}
+                onToggle={handleFavoriteToggle} // Pass toggle handler
               />
             </View>
           </View>

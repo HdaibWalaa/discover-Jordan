@@ -47,6 +47,7 @@ const styles = StyleSheet.create({
     width: wp("5%"),
     height: hp("3%"),
   },
+  
 });
 
 export default styles;

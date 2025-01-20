@@ -20,7 +20,7 @@ const PlaceForLocation = () => {
   const fetchPlaces = async () => {
     const url = `${BASE_URL}/user/current-location/places`;
     const params = {
-      area: 20,
+      area: 18,
       categories_id: JSON.stringify([1]),
       subcategories_id: JSON.stringify([2]),
       lat: 31.968461,
@@ -96,9 +96,10 @@ export default PlaceForLocation;
 
 const styles = StyleSheet.create({
   container: {
+    top:50,
     flex: 1,
     backgroundColor: "#f5f5f5",
-    paddingHorizontal: 10,
+    paddingHorizontal: 15,
   },
   header: {
     fontSize: 24,

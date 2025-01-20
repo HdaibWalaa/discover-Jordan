@@ -1,4 +1,4 @@
-import React, { useEffect } from "react";
+import React, { useContext } from "react";
 import {
   View,
   ActivityIndicator,
@@ -12,8 +12,11 @@ import { COLORS, SIZES } from "../../constants/theme";
 import TopTenPlaceCard from "../Tiles/Places/TopTenPlaceCard";
 import HeightSpacer from "../Reusable/HeightSpacer";
 import fetchTopTenPlaces from "../../hook/fetchTopTenPlaces";
+import { AuthContext } from "../../store/auth-context";
 
 const AllTopTenPlaces = () => {
+  const authCtx = useContext(AuthContext); // Get token from context
+ 
   const deviceLanguage =
     Platform.OS === "ios"
       ? NativeModules.SettingsManager.settings.AppleLocale ||
@@ -28,22 +31,28 @@ const AllTopTenPlaces = () => {
   // Set default language to "en" if extraction fails
   language = language || "en";
 
-  const { topTenData, isLoading, error } = fetchTopTenPlaces(language);
- 
+  const { topTenData, isLoading, error } = fetchTopTenPlaces(
+    language,
+    authCtx.token
+  ); // Pass token to fetchTopTenPlaces
 
   // Loading and error handling
   if (isLoading) {
-    return <ActivityIndicator color="black" size={60} />;
-  }
-
-  if (error) {
     return (
-      <View>
-        <Text>Error occurred: {error.message}</Text>
+      <View style={styles.centered}>
+        <ActivityIndicator color="black" size={60} />
+        <Text>Loading...</Text>
       </View>
     );
   }
 
+  if (error) {
+    return (
+      <View style={styles.centered}>
+        <Text>Error occurred: {error.message}</Text>
+      </View>
+    );
+  }
 
   return (
     <View>
@@ -55,7 +64,7 @@ const AllTopTenPlaces = () => {
         showsVerticalScrollIndicator={false}
         getItemCount={(data) => data.length}
         getItem={(data, index) => data[index]}
-        renderItem={({ item, index }) => (
+        renderItem={({ item }) => (
           <View style={styles.itemContainer}>
             <TopTenPlaceCard item={item} />
           </View>
@@ -66,7 +75,14 @@ const AllTopTenPlaces = () => {
 };
 
 const styles = StyleSheet.create({
-  itemContainer: {},
+  itemContainer: {
+    marginVertical: 10,
+  },
+  centered: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+  },
 });
 
 export default AllTopTenPlaces;

@@ -16,7 +16,7 @@ const AllTopTen = () => {
   return (
     <ReusableBackground>
       <SafeAreaView style={[reusable.container, { marginTop: 50 }]}>
-        <View style={{ gap: 30 }}>
+        <View>
           <View style={reusable.header1}>
             <View>
               <ReusableText

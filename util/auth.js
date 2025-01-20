@@ -212,11 +212,12 @@ export async function resendVerificationEmail(token, email) {
 // Function to fetch user profile
 export async function getUserProfile(token) {
   const url = `${BASE_URL}/user/profile`;
+
   try {
-    console.log("Sending request with token:", token);
+    console.log("Sending request with token:", token); // Debug log
     const response = await axios.get(url, {
       headers: {
-        Authorization: `Bearer ${token}`,
+        Authorization: `Bearer ${token}`, // Ensure token is included
         Accept: "application/json",
         "Content-Language": "en",
       },
@@ -235,6 +236,7 @@ export async function getUserProfile(token) {
     throw error;
   }
 }
+
 
 // Function to update user profile
 export async function updateUserProfile(data, token) {

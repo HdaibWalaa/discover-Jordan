@@ -32,6 +32,8 @@ import PlaceInfoCards from "../../components/places/PlaceInfoCards";
 import PlaceFeatures from "../../components/places/PlaceFeatures";
 import OpeningHours from "../../components/places/OpeningHoures";
 import BottomSection from "../../components/places/BottomSection"; // Import the new component
+import PostsSection from "../../components/places/PostsSection";
+import ReviewsSection from "../../components/places/ReviewsSection";
 import axios from "axios";
 import * as Location from "expo-location";
 import { AuthContext } from "../../store/auth-context";
@@ -160,13 +162,38 @@ const PlaceDetails = () => {
   const rating =
     placeData.rating !== null ? parseFloat(placeData.rating).toFixed(1) : "N/A";
 
-  const handleDirectionPress = () => {
-    if (placeData.google_map_url) {
-      Linking.openURL(placeData.google_map_url).catch(() =>
-        console.error("Failed to open the map URL")
-      );
+const handleDirectionPress = () => {
+  if (placeData.google_map_url) {
+    Linking.openURL(placeData.google_map_url)
+      .then(() => {
+        console.log(
+          "Opened Google Maps successfully:",
+          placeData.google_map_url
+        );
+      })
+      .catch((error) => {
+        console.error("Failed to open Google Maps:", error);
+        Alert.alert(
+          "Error",
+          "Unable to open Google Maps. Please try again later."
+        );
+      });
+  } else {
+    Alert.alert(
+      "No Map URL",
+      "The Google Maps URL for this location is not available."
+    );
+  }
+};
+const renderTabContent = () => {
+    if (activeTab === "posts") {
+      return <PostsSection posts={placeData.posts} />;
+    } else if (activeTab === "reviews") {
+      return <ReviewsSection reviews={placeData.reviews} />;
     }
+    return null;
   };
+
 
   return (
     <RusableWhite>
@@ -190,43 +217,40 @@ const PlaceDetails = () => {
           <OpeningHours openingHours={placeData.opening_hours} />
           <View style={styles.separator} />
           <PlaceFeatures features={placeData.features} />
-          <View style={styles.tabsContainer}>
-            <TouchableOpacity
-              style={[styles.tab, activeTab === "posts" && styles.activeTab]}
-              onPress={() => setActiveTab("posts")}
-            >
-              <Text
-                style={[
-                  styles.tabText,
-                  activeTab === "posts" && styles.activeTabText,
-                ]}
+               <View style={styles.tabsContainer}>
+              <TouchableOpacity
+                style={[styles.tab, activeTab === "posts" && styles.activeTab]}
+                onPress={() => setActiveTab("posts")}
               >
-                Posts
-              </Text>
-            </TouchableOpacity>
-            <TouchableOpacity
-              style={[styles.tab, activeTab === "reviews" && styles.activeTab]}
-              onPress={() => setActiveTab("reviews")}
-            >
-              <Text
+                <Text
+                  style={[
+                    styles.tabText,
+                    activeTab === "posts" && styles.activeTabText,
+                  ]}
+                >
+                  Posts
+                </Text>
+              </TouchableOpacity>
+              <TouchableOpacity
                 style={[
-                  styles.tabText,
-                  activeTab === "reviews" && styles.activeTabText,
+                  styles.tab,
+                  activeTab === "reviews" && styles.activeTab,
                 ]}
+                onPress={() => setActiveTab("reviews")}
               >
-                Reviews
-              </Text>
-            </TouchableOpacity>
-          </View>
-          <View style={styles.tabContent}>
-            {activeTab === "posts" ? (
-              <Text>NO POSTS YET</Text>
-            ) : (
-              <Text>NO REVIEW YET</Text>
-            )}
-          </View>
-          <HeightSpacer height={hp("8%")} />
-        </View>
+                <Text
+                  style={[
+                    styles.tabText,
+                    activeTab === "reviews" && styles.activeTabText,
+                  ]}
+                >
+                  Reviews
+                </Text>
+              </TouchableOpacity>
+            </View>
+            <View style={styles.tabContent}>{renderTabContent()}</View>
+            <HeightSpacer height={20} />
+      </View>
       </ScrollView>
 
       <BottomSection
@@ -234,6 +258,7 @@ const PlaceDetails = () => {
         placeId={placeData.id}
         visited={placeData.visited}
         refresh={refetch}
+        handleDirectionPress={handleDirectionPress}
       />
     </RusableWhite>
   );

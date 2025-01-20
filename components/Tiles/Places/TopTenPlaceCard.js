@@ -19,7 +19,7 @@ import {
   heightPercentageToDP as hp,
 } from "react-native-responsive-screen";
 
-const TopTenPlaceCard = ({ item, cardWidth, cardHeight }) => {
+const TopTenPlaceCard = ({ item, cardWidth, cardHeight, refetch }) => {
   const navigation = useNavigation();
   return (
     <TouchableOpacity
@@ -54,7 +54,13 @@ const TopTenPlaceCard = ({ item, cardWidth, cardHeight }) => {
           </View>
 
           <View style={styles.favoriteContainer}>
-            <ReusableFavorite iconColor="white" bgColor="rgba(0, 0, 0, 0.7)" />
+            <ReusableFavorite
+              favorite={item.favorite}
+              placeId={item.place_id}
+              refresh={refetch}
+              iconColor="white"
+              bgColor="rgba(0, 0, 0, 0.7)"
+            />
           </View>
         </View>
       </ImageBackground>

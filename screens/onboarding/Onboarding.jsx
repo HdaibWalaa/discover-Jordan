@@ -38,29 +38,28 @@ const Onboarding = ({ navigation }) => {
 
   useEffect(() => {
     // Fetch the data from the API
-    const fetchSlides = async () => {
-      try {
-        const response = await axios.get(`${BASE_URL}/onboarding/images`, {
-          headers: {
-            "Content-Language": language,
-            "X-API-KEY": "DISCOVERJO91427",
-          }, // Send language header
-          headers: { "Content-Language": language }, // Send language header
-        });
-        const apiSlides = response.data.data.map((item) => ({
-          id: item.id,
-          title: item.title,
-          subTitle: item.content,
-          image: { uri: item.image },
-        }));
-        setSlides(apiSlides);
-      } catch (error) {
-        console.error("Error fetching slides:", error);
-      } finally {
-        setIsLoading(false); // Stop loading indicator
-      }
-    };
+ const fetchSlides = async () => {
+   try {
+     const response = await axios.get(`${BASE_URL}/onboarding/images`, {
+       headers: {
+         "Content-Language": language,
+         "X-API-KEY": "DISCOVERJO91427",
+       },
+     });
 
+     const apiSlides = response.data.data.map((item) => ({
+       id: item.id,
+       title: item.title,
+       subTitle: item.content,
+       image: { uri: item.image },
+     }));
+     setSlides(apiSlides);
+   } catch (error) {
+     console.error("Error fetching slides:", error);
+   } finally {
+     setIsLoading(false);
+   }
+ };
     fetchSlides();
   }, [language]);
 

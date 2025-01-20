@@ -1,11 +1,5 @@
 import React from "react";
-import {
-  View,
-  Image,
-  Text,
-  StyleSheet,
-  Dimensions,
-} from "react-native";
+import { View, Image, Text, StyleSheet, Dimensions } from "react-native";
 import { useNavigation } from "@react-navigation/native";
 import { LinearGradient } from "expo-linear-gradient";
 import { Feather } from "@expo/vector-icons";
@@ -18,8 +12,10 @@ import {
   TruncatedText,
   FiveStar,
 } from "../../index";
-
-const { width, height } = Dimensions.get("window");
+import {
+  widthPercentageToDP as wp,
+  heightPercentageToDP as hp,
+} from "react-native-responsive-screen";
 
 const PopularPlaceDetails = ({ item }) => {
   const navigation = useNavigation();
@@ -41,9 +37,8 @@ const PopularPlaceDetails = ({ item }) => {
           <ReusableText
             text={"PopularPlaces".toUpperCase()}
             family={"Bold"}
-            size={SIZES.xLarge}
+            size={hp(3)} // Responsive font size
             color={COLORS.white}
-            style={styles.title}
           />
         </View>
         <View style={styles.placeholder}></View>
@@ -52,40 +47,40 @@ const PopularPlaceDetails = ({ item }) => {
         <View style={styles.review}>
           <FiveStar rating={item.rating} />
         </View>
-        <HeightSpacer height={SIZES.small} />
+        <HeightSpacer height={hp(1)} />
         <View style={styles.middle}>
           <ReusableText
             text={item.name.toUpperCase()}
             family={"Bold"}
-            size={SIZES.xLarge}
+            size={hp(2.5)} // Responsive font size
             color={COLORS.white}
           />
           <View style={styles.distanceContainer}>
             <ReusableText
               text={`${(item.distance / 1000).toFixed(3)} km away`}
               family={"SemiBold"}
-              size={SIZES.small}
+              size={hp(1.8)} // Responsive font size
               color={COLORS.white}
             />
           </View>
         </View>
-        <HeightSpacer height={SIZES.small} />
+        <HeightSpacer height={hp(1)} />
         <View style={styles.description}>
           <TruncatedText style={styles.descriptionText} numberOfLines={3}>
             {item.description}
           </TruncatedText>
         </View>
-        <HeightSpacer height={SIZES.medium} />
+        <HeightSpacer height={hp(2)} />
         <View style={styles.buttonContainer}>
           <ReusableBtn
             onPress={handleReadMorePress}
             btnText={
               <View style={styles.buttonContent}>
                 <Text style={styles.buttonText}>Read more</Text>
-                <Feather name="arrow-up-right" size={24} color="black" />
+                <Feather name="arrow-up-right" size={hp(2.5)} color="black" />
               </View>
             }
-            width={width * 0.85}
+            width={wp(20)} // Responsive width
             backgroundColor={COLORS.primary}
             borderColor={COLORS.primary}
             borderWidth={0}
@@ -99,24 +94,24 @@ const PopularPlaceDetails = ({ item }) => {
 
 const styles = StyleSheet.create({
   container: {
-    width,
-    height,
+    width: wp(100), // Responsive width
+    height: hp(100), // Responsive height
   },
   imagePopular: {
-    width,
-    height,
+    width: wp(100), // Responsive width
+    height: hp(100), // Responsive height
     resizeMode: "cover",
   },
   overlay: {
     position: "absolute",
-    width,
-    height,
+    width: wp(100), // Responsive width
+    height: hp(100), // Responsive height
   },
   header: {
     position: "absolute",
-    top: 70,
-    left: 20,
-    right: 20,
+    top: hp(7), // Responsive top spacing
+    left: wp(5), // Responsive left spacing
+    right: wp(5), // Responsive right spacing
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
@@ -124,15 +119,16 @@ const styles = StyleSheet.create({
   titleContainer: {
     flex: 1,
     alignItems: "center",
+    left: wp(7),
   },
   placeholder: {
-    width: 30, // Same width as GoBack icon to keep title centered
+    width: wp(10), // Same width as GoBack icon for centering
   },
   contentContainer: {
     position: "absolute",
-    bottom: 50,
-    left: 30,
-    right: 30,
+    bottom: hp(5), // Responsive bottom spacing
+    left: wp(7), // Responsive left spacing
+    right: wp(7), // Responsive right spacing
   },
   review: {
     flexDirection: "row",
@@ -144,18 +140,18 @@ const styles = StyleSheet.create({
   },
   distanceContainer: {
     backgroundColor: "rgba(0, 0, 0, 0.5)",
-    paddingHorizontal: 12,
-    paddingVertical: 6,
-    borderRadius: 6,
+    paddingHorizontal: wp(3), // Responsive padding
+    paddingVertical: hp(0.5), // Responsive padding
+    borderRadius: wp(2), // Responsive border radius
   },
   description: {
-    marginVertical: SIZES.small,
+    marginVertical: hp(1),
   },
   descriptionText: {
     fontFamily: "SemiBold",
-    fontSize: SIZES.small,
+    fontSize: hp(1.8), // Responsive font size
     color: COLORS.white,
-    lineHeight: 20,
+    lineHeight: hp(2.5), // Responsive line height
   },
   buttonContainer: {
     flexDirection: "row",
@@ -168,8 +164,8 @@ const styles = StyleSheet.create({
   buttonText: {
     textTransform: "uppercase",
     fontFamily: "SemiBold",
-    fontSize: SIZES.medium,
-    marginRight: 10,
+    fontSize: hp(2), // Responsive font size
+    marginRight: wp(2), // Responsive margin
   },
 });
 

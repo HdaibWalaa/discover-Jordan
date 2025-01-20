@@ -21,18 +21,19 @@ const BottomSection = ({
         visited={visited}
         refreshProfile={refresh}
       />
-      <TouchableOpacity
-        onPress={handleDirectionPress}
-        style={styles.directionButton}
-      >
-        <View style={styles.directionButtonContent}>
-          <Image
-            source={require("../../assets/images/icons/sendrtip.png")}
-            style={styles.icon}
-            resizeMode="contain"
-          />
-        </View>
-      </TouchableOpacity>
+     <TouchableOpacity
+  onPress={handleDirectionPress}
+  style={styles.directionButton}
+>
+  <View style={styles.directionButtonContent}>
+    <Image
+      source={require("../../assets/images/icons/sendrtip.png")}
+      style={styles.icon}
+      resizeMode="contain"
+    />
+  </View>
+</TouchableOpacity>
+
     </View>
   );
 };
