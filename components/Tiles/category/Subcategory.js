@@ -4,6 +4,11 @@ import { ReusableText } from "../../../components/index";
 import { TEXT, COLORS } from "../../../constants/theme";
 
 const Subcategory = ({ item, isActive, onPress }) => {
+  const fallbackImage = "https://via.placeholder.com/150"; // Fallback image URL
+  const imageUri = isActive
+    ? item.active_image || fallbackImage
+    : item.inactive_image || fallbackImage;
+
   return (
     <TouchableOpacity
       onPress={() => onPress(item.id)}
@@ -16,10 +21,7 @@ const Subcategory = ({ item, isActive, onPress }) => {
         ]}
       >
         <View style={styles.imageContainer}>
-          <Image
-            source={{ uri: isActive ? item.active_image : item.inactive_image }}
-            style={styles.image}
-          />
+          <Image source={{ uri: imageUri }} style={styles.image} />
         </View>
         <View style={styles.overlayContainer}>
           <ReusableText
@@ -60,23 +62,20 @@ const styles = StyleSheet.create({
     flex: 1,
     paddingVertical: 4,
     paddingHorizontal: 15,
-    borderTopWidth: 0,
   },
   activeContainer: {
-    backgroundColor: "#00BCD4",
-    borderColor: "#00BCD4",
+    backgroundColor: COLORS.secondary, // Use primary color for active state
+    borderColor: COLORS.secondary,
   },
   inactiveContainer: {
     backgroundColor: COLORS.lightGray,
     borderColor: COLORS.gray,
   },
- 
   image: {
     width: 20,
     height: 20,
     borderRadius: 12,
   },
-  
 });
 
 export default Subcategory;

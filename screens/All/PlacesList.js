@@ -1,4 +1,10 @@
-import React, { useEffect, useState, memo, useCallback } from "react";
+import React, {
+  useEffect,
+  useState,
+  memo,
+  useCallback,
+  useContext,
+} from "react";
 import {
   View,
   ActivityIndicator,
@@ -21,7 +27,7 @@ import { TEXT, COLORS } from "../../constants/theme";
 import reusable from "../../components/Reusable/reusable.style";
 import * as Location from "expo-location";
 import FilterButton from "../../components/Serach&Filter/FilterButton";
-
+import { AuthContext } from "../../store/auth-context";
 
 const MemoizedSubcategory = memo(Subcategory);
 const MemoizedAllPlaces = memo(AllPlaces);
@@ -29,29 +35,30 @@ const MemoizedAllPlaces = memo(AllPlaces);
 const PlacesList = () => {
   const route = useRoute();
   const navigation = useNavigation();
+  const authCtx = useContext(AuthContext);
+  const token = authCtx.token;
+
   const [places, setPlaces] = useState([]);
-  const [subCategoryPlaces, setSubCategoryPlaces] = useState(null);
-  const [pagination, setPagination] = useState(null);
-  const [isLoadingSub, setIsLoadingSub] = useState(false);
-  const [selectedCategory, setSelectedCategory] = useState(null);
-  const [page, setPage] = useState(1);
-  const [isLoadingMore, setIsLoadingMore] = useState(false);
+  const [subCategoryPlaces, setSubCategoryPlaces] = useState([]);
+  const [selectedSubCategory, setSelectedSubCategory] = useState(null);
+  const [pagination, setPagination] = useState({});
   const [userLocation, setUserLocation] = useState({
     latitude: null,
     longitude: null,
   });
   const [categoryName, setCategoryName] = useState(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [isLoadingMore, setIsLoadingMore] = useState(false);
 
-  // Handle location permissions
+  // Handle location permissions and fetch location
   useEffect(() => {
     (async () => {
-      let { status } = await Location.requestForegroundPermissionsAsync();
+      const { status } = await Location.requestForegroundPermissionsAsync();
       if (status !== "granted") {
-        console.log("Permission to access location was denied");
+        console.error("Permission to access location was denied.");
         return;
       }
-
-      let location = await Location.getCurrentPositionAsync({});
+      const location = await Location.getCurrentPositionAsync({});
       setUserLocation({
         latitude: location.coords.latitude,
         longitude: location.coords.longitude,
@@ -59,91 +66,100 @@ const PlacesList = () => {
     })();
   }, []);
 
-  // Get the device language
+  // Get device language
   const deviceLanguage =
     Platform.OS === "ios"
       ? NativeModules.SettingsManager.settings.AppleLocale ||
         NativeModules.SettingsManager.settings.AppleLanguages[0]
       : NativeModules.I18nManager.localeIdentifier;
 
-  let language = deviceLanguage.includes("_")
-    ? deviceLanguage.split("_")[0]
-    : deviceLanguage.split("-")[0];
-  language = language || "en";
+  const language = deviceLanguage.split(/[-_]/)[0] || "en";
 
-  // Fetch places based on category or subcategory
-  const { categoryPlaces, isLoading, error, loadMoreData } = fetchCategoryPlace(
+  // Fetch category places
+  const { categoryPlaces, loadMoreData } = fetchCategoryPlace(
     route.params.id,
     language,
     userLocation.latitude,
-    userLocation.longitude
+    userLocation.longitude,
+    token
   );
 
   useEffect(() => {
     if (categoryPlaces?.places) {
-      if (page === 1) {
-        setPlaces(categoryPlaces.places);
-        setCategoryName(categoryPlaces.name); // Set category name when first loaded
-      } else {
-        setPlaces((prevPlaces) => [...prevPlaces, ...categoryPlaces.places]);
-      }
+      setPlaces((prevPlaces) =>
+        [...prevPlaces, ...categoryPlaces.places].filter(
+          (place, index, self) =>
+            index === self.findIndex((p) => p.id === place.id)
+        )
+      );
+      setCategoryName(categoryPlaces.name);
+      setPagination(categoryPlaces.pagination);
+      setIsLoading(false);
     }
-  }, [categoryPlaces, page]);
+  }, [categoryPlaces]);
 
-  // Fetch Subcategory Places with Pagination
-  const handleSubcategoryPress = async (subcategoryId, pageNum = 1) => {
-    setIsLoadingSub(true);
-    setSelectedCategory(subcategoryId);
-    setPage(1);
+  // Handle subcategory selection
+  const handleSubcategoryPress = async (subCategoryId) => {
+    setSelectedSubCategory(subCategoryId);
+    setIsLoading(true);
+
     try {
       const { places, pagination, parent } = await fetchSubCategoryPlaces(
-        subcategoryId,
+        subCategoryId,
         language,
+        1,
         userLocation.latitude,
         userLocation.longitude,
-        pageNum
+        token
       );
       setSubCategoryPlaces(places);
-      setCategoryName(parent); // Set the category name (parent) when a subcategory is selected
+      setCategoryName(parent || categoryPlaces.name);
       setPagination(pagination);
-    } catch (err) {
-      console.error(err);
+    } catch (error) {
+      console.error("Error fetching subcategory places:", error);
     } finally {
-      setIsLoadingSub(false);
+      setIsLoading(false);
     }
   };
 
+  // Reset to main category places
   const handleAllPress = () => {
-    setSelectedCategory(null);
-    setSubCategoryPlaces(null);
-    setPage(1);
-    setCategoryName(categoryPlaces.name); // Reset to category name
+    setSelectedSubCategory(null);
+    setSubCategoryPlaces([]);
+    setPlaces(categoryPlaces.places);
+    setPagination(categoryPlaces.pagination);
+    setCategoryName(categoryPlaces.name);
   };
 
-  // Load more places for both categories and subcategories
+  // Load more places (category or subcategory)
   const loadMorePlaces = async () => {
-    if (pagination?.next_page_url && !isLoadingMore) {
-      setIsLoadingMore(true);
-      try {
-        const nextPage = page + 1;
-        setPage(nextPage);
-        if (selectedCategory) {
-          const { places: newPlaces } = await fetchSubCategoryPlaces(
-            selectedCategory,
-            language,
-            nextPage,
-            userLocation.latitude,
-            userLocation.longitude
-          );
-          setSubCategoryPlaces((prevPlaces) => [...prevPlaces, ...newPlaces]);
-        } else {
-          loadMoreData(nextPage);
-        }
-      } catch (err) {
-        console.error(err);
-      } finally {
-        setIsLoadingMore(false);
+    if (!pagination.next_page_url || isLoadingMore) return;
+
+    setIsLoadingMore(true);
+    try {
+      const nextPage = pagination.next_page_url.split("page=")[1].split("&")[0];
+      if (selectedSubCategory) {
+        const { places: newPlaces } = await fetchSubCategoryPlaces(
+          selectedSubCategory,
+          language,
+          nextPage,
+          userLocation.latitude,
+          userLocation.longitude,
+          token
+        );
+        setSubCategoryPlaces((prevPlaces) =>
+          [...prevPlaces, ...newPlaces].filter(
+            (place, index, self) =>
+              index === self.findIndex((p) => p.id === place.id)
+          )
+        );
+      } else {
+        loadMoreData(nextPage, token);
       }
+    } catch (error) {
+      console.error("Error loading more places:", error);
+    } finally {
+      setIsLoadingMore(false);
     }
   };
 
@@ -151,23 +167,22 @@ const PlacesList = () => {
     ({ item }) => (
       <MemoizedSubcategory
         item={item}
+        isActive={selectedSubCategory === item.id}
         onPress={() => handleSubcategoryPress(item.id)}
-        selected={selectedCategory === item.id}
       />
     ),
-    [selectedCategory]
+    [selectedSubCategory]
   );
 
   const renderAllPlaces = useCallback(
-    ({ item }) => <MemoizedAllPlaces item={item} />,
+    ({ item }) => (
+      <MemoizedAllPlaces
+        item={item}
+        imageUri={item.image || "https://via.placeholder.com/150"}
+      />
+    ),
     []
   );
-
-  const getItemLayout = (data, index) => ({
-    length: 100,
-    offset: 100 * index,
-    index,
-  });
 
   return (
     <ReusableBackground>
@@ -175,23 +190,22 @@ const PlacesList = () => {
         <View>
           <View style={reusable.header1}>
             <View style={{ width: 150 }}>
-              {categoryName && (
-                <ReusableText
-                  text={categoryName || "No Name"}
-                  family={"SemiBold"}
-                  size={TEXT.large}
-                  color={COLORS.black}
-                />
-              )}
+              <ReusableText
+                text={categoryName || "Category"}
+                family={"SemiBold"}
+                size={TEXT.large}
+                color={COLORS.black}
+              />
             </View>
-            <FilterButton onPress={() => navigation.navigate("PlacesFilter")} />
+            <FilterButton
+              onPress={() => navigation.navigate("PlaceForLocation")}
+            />
           </View>
-          <HeightSpacer height={20} />
           <View style={{ flexDirection: "row" }}>
             <TouchableOpacity onPress={handleAllPress}>
               <View
                 style={
-                  selectedCategory === null
+                  selectedSubCategory === null
                     ? styles.activeIcon
                     : styles.inactiveIcon
                 }
@@ -210,32 +224,21 @@ const PlacesList = () => {
             )}
           </View>
           <HeightSpacer height={10} />
-          {isLoadingSub ? (
+          {isLoading ? (
             <ActivityIndicator size="large" />
           ) : (
             <FlatList
-              data={subCategoryPlaces ? subCategoryPlaces : places}
+              data={selectedSubCategory ? subCategoryPlaces : places}
               renderItem={renderAllPlaces}
               keyExtractor={(item, index) => `${item.id}-${index}`}
               numColumns={2}
               ListFooterComponent={
-                isLoadingMore ? (
-                  <ActivityIndicator size="large" />
-                ) : (
-                  <View style={{ height: 200 }} />
-                )
+                <View style={{ height: 100 }}>
+                  {isLoadingMore && <ActivityIndicator size="large" />}
+                </View>
               }
-              showsVerticalScrollIndicator={false}
               onEndReached={loadMorePlaces}
               onEndReachedThreshold={0.5}
-              getItemLayout={getItemLayout}
-              initialNumToRender={10}
-              maxToRenderPerBatch={10}
-              removeClippedSubviews={true}
-              disableVirtualization={false}
-              maintainVisibleContentPosition={{
-                minIndexForVisible: 0,
-              }}
             />
           )}
         </View>

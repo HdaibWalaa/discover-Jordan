@@ -23,14 +23,14 @@ const AllPlaces = memo(({ item, refetch }) => {
       <View style={styles.container}>
         <View style={styles.ImageContainer}>
           <NetworkImage
-            source={item.image}
+            source={item.image || "https://via.placeholder.com/150"}
             width={"100%"}
             height={hp(20)}
             radius={12}
           />
           <View style={styles.TopSection}>
             <View>
-              <PlaceRate rating={item.total_ratings} />
+              <PlaceRate rating={item.total_ratings || 0} />
             </View>
             <View style={styles.favoriteContainer}>
               <ReusableFavorite
@@ -52,10 +52,10 @@ const AllPlaces = memo(({ item, refetch }) => {
             {item.name}
           </Text>
           <View style={styles.textContainer}>
-            <ReusableRegionLocation region={item.region} />
+            <ReusableRegionLocation region={item.region || "Unknown"} />
             <View style={styles.goContainer}>
               <Text style={styles.distance}>
-                {item.distance !== undefined && item.distance !== null
+                {item.distance
                   ? `${item.distance.toFixed(2)} km away`
                   : "Calculating..."}
               </Text>

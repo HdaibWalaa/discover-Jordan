@@ -6,13 +6,15 @@ const fetchSubCategoryPlaces = async (
   language,
   pageNum = 1,
   userLatitude,
-  userLongitude
+  userLongitude,
+  token // Accept token here
 ) => {
   try {
     const response = await axios.get(
       `${BASE_URL}/places/subcategory/${subCategoryId}?page=${pageNum}`,
       {
         headers: {
+          Authorization: `Bearer ${token}`, // Use token here
           "Content-Language": language,
           "X-API-KEY": "DISCOVERJO91427",
         },

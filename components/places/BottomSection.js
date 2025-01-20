@@ -50,8 +50,8 @@ const styles = StyleSheet.create({
     backgroundColor: COLORS.primary,
     borderWidth: 2,
     borderColor: COLORS.lightGrey,
-    padding: hp("2%"), // Responsive padding
-    borderRadius: wp("4%"), // Responsive border radius
+    padding: hp("2%"),
+    borderRadius: wp("4%"),
     alignItems: "center",
     justifyContent: "center",
   },
@@ -60,8 +60,8 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
   icon: {
-    width: wp("6%"), // Responsive icon width
-    height: wp("6%"), // Responsive icon height
-    tintColor: COLORS.black, // Keep the icon color consistent
+    width: wp("6%"),
+    height: wp("6%"),
+    tintColor: COLORS.black,
   },
 });

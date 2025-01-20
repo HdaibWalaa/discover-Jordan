@@ -22,6 +22,7 @@ import {
   OtherUserProfile,
   PlacesFilter,
   EditUserPost,
+  PlaceForLocation,
 } from "./screens";
 import DrawerNavigation from "./navigation/DrawerNavigation";
 import AuthContextProvider, { AuthContext } from "./store/auth-context";
@@ -112,6 +113,11 @@ function AuthStack() {
         component={EditUserPost}
         options={{ headerShown: false }}
       />
+      <Stack.Screen
+        name="PlaceForLocation"
+        component={PlaceForLocation}
+        options={{ headerShown: false }}
+      />
     </Stack.Navigator>
   );
 }
@@ -184,6 +190,11 @@ function AppStack() {
           <Stack.Screen
             name="EditUserPost"
             component={EditUserPost}
+            options={{ headerShown: false }}
+          />
+          <Stack.Screen
+            name="PlaceForLocation"
+            component={PlaceForLocation}
             options={{ headerShown: false }}
           />
         </Stack.Navigator>
@@ -271,6 +282,7 @@ export default function App() {
     Light: require("./assets/fonts/RedHatDisplayLight.ttf"),
     ExtraBold: require("./assets/fonts/RedHatDisplayExtraBold.ttf"),
     SemiBold: require("./assets/fonts/RedHatDisplaySemiBold.ttf"),
+    Regular: require("./assets/fonts/RedHatDisplaySemiBold.ttf"),
   });
 
   const onLayoutRootView = useCallback(async () => {

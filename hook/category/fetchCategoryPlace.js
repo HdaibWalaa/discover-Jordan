@@ -2,11 +2,18 @@ import { useState, useEffect } from "react";
 import axios from "axios";
 import BASE_URL from "../apiConfig";
 
-const fetchCategoryPlace = (id, language, userLatitude, userLongitude) => {
+const fetchCategoryPlace = (
+  id,
+  language,
+  userLatitude,
+  userLongitude,
+  token
+) => {
   const [categoryPlaces, setCategoryPlaces] = useState({
     places: [],
-    sub_category: [],
+    sub_categories: [],
     pagination: {},
+    name: "",
   });
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState(null);
@@ -16,24 +23,27 @@ const fetchCategoryPlace = (id, language, userLatitude, userLongitude) => {
     setIsLoading(true);
 
     try {
-      console.log("Language in fetchCategoryPlace:", language); // Log language here
       const res = await axios.get(
         `${BASE_URL}/places/category/${id}?page=${pageNum}`,
         {
           headers: {
+            Authorization: `Bearer ${token}`, // Use token here
             "Content-Language": language,
-            "X-API-KEY":"DISCOVERJO91427",
+            "X-API-KEY": "DISCOVERJO91427",
           },
           params: {
-            lat: userLatitude, // Sending the user's latitude
-            lng: userLongitude, // Sending the user's longitude
+            lat: userLatitude,
+            lng: userLongitude,
           },
         }
       );
 
       setCategoryPlaces((prevData) => ({
-        ...res.data.data,
+        ...prevData,
         places: [...prevData.places, ...res.data.data.places],
+        sub_categories: res.data.data.sub_categories,
+        pagination: res.data.data.pagination,
+        name: res.data.data.category.name,
       }));
       setError(null);
     } catch (error) {
@@ -45,7 +55,12 @@ const fetchCategoryPlace = (id, language, userLatitude, userLongitude) => {
 
   useEffect(() => {
     if (userLatitude && userLongitude) {
-      setCategoryPlaces({ places: [], sub_category: [], pagination: {} });
+      setCategoryPlaces({
+        places: [],
+        sub_categories: [],
+        pagination: {},
+        name: "",
+      });
       setPage(1);
       fetchData();
     }

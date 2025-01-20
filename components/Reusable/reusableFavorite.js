@@ -16,12 +16,11 @@ const ReusableFavorite = ({
   refresh,
   style,
 }) => {
-  const authCtx = useContext(AuthContext); // Get user authentication token
+  const authCtx = useContext(AuthContext);
 
-  // Handle adding/removing favorite status
   const handleFavoriteToggle = async () => {
     if (!authCtx.token) {
-      console.error("No authentication token found");
+      console.error("No authentication token found.");
       return;
     }
 
@@ -35,17 +34,16 @@ const ReusableFavorite = ({
         method,
         url,
         headers: {
-          Authorization: `Bearer ${authCtx.token}`, // Add user token to headers
+          Authorization: `Bearer ${authCtx.token}`,
           Accept: "application/json",
         },
       });
 
-      // Call the `refresh` function to update the favorite status in the UI
       if (refresh) {
-        refresh();
+        refresh(); // Refresh parent data to reflect favorite status
       }
     } catch (error) {
-      console.error("Error updating favorite status:", error);
+      console.error("Error toggling favorite status:", error);
     }
   };
 

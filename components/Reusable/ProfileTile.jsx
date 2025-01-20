@@ -6,7 +6,7 @@ import { AntDesign } from "@expo/vector-icons";
 import WidthSpacer from "./WidthSpacer";
 import ReusableText from "./ReusableText";
 
-const ProfileTile = ({onPress, title, icon}) => {
+const ProfileTile = ({ onPress, title, icon }) => {
   return (
     <TouchableOpacity style={styles.tile} onPress={onPress}>
       <View style={reusable.rowWithSpace("space-between")}>
@@ -17,7 +17,7 @@ const ProfileTile = ({onPress, title, icon}) => {
 
           <ReusableText
             text={title}
-            family={"regular"}
+            family={"Regular"}
             size={SIZES.medium}
             color={COLORS.gray}
           />
@@ -35,7 +35,7 @@ const styles = StyleSheet.create({
     backgroundColor: COLORS.lightWhite,
     width: "100%",
     height: 50,
-    justifyContent:"center",
+    justifyContent: "center",
     paddingHorizontal: 10,
     paddingVertical: 12,
     borderRadius: 12,

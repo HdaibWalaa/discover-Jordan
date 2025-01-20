@@ -162,7 +162,9 @@ const PlaceDetails = () => {
 
   const handleDirectionPress = () => {
     if (placeData.google_map_url) {
-      Linking.openURL(placeData.google_map_url);
+      Linking.openURL(placeData.google_map_url).catch(() =>
+        console.error("Failed to open the map URL")
+      );
     }
   };
 

@@ -41,6 +41,7 @@ import EditUserPost from "./Posts/EditUserPost";
 import AllGuideTrip from "./trips/AllGuideTrip";
 import CreateGuideTrip from "./trips/CreateGuideTrip";
 import GuideTripDetails from "./trips/GuideTripDetails";
+import PlaceForLocation from "./search/PlaceForLocation";
 export {
   Home,
   Onboarding,
@@ -85,4 +86,5 @@ export {
   AllGuideTrip,
   CreateGuideTrip,
   GuideTripDetails,
+  PlaceForLocation,
 };

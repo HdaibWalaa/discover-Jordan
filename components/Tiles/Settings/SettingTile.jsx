@@ -14,7 +14,7 @@ const SettingTile = ({ title, title1, onPress }) => {
     >
       <ReusableText
         text={title}
-        family={"regular"}
+        family={"Regular"}
         size={TEXT.large}
         color={COLORS.dark}
       />
@@ -28,7 +28,7 @@ const SettingTile = ({ title, title1, onPress }) => {
           <WidthSpacer width={5} />
           <ReusableText
             text={"English"}
-            family={"regular"}
+            family={"Regular"}
             size={TEXT.large}
             color={COLORS.gray}
           />
@@ -39,7 +39,7 @@ const SettingTile = ({ title, title1, onPress }) => {
         <View style={reusable.rowWithSpace("flex-start")}>
           <ReusableText
             text={title1}
-            family={"regular"}
+            family={"Regular"}
             size={TEXT.large}
             color={COLORS.gray}
           />

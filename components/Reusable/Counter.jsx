@@ -27,7 +27,7 @@ const Counter = () => {
       />
       <ReusableText
         text={`  ${count}  `}
-        family={"regular"}
+        family={"Regular"}
         size={SIZES.medium}
         color={COLORS.black}
       />
