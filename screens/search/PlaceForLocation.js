@@ -1,157 +1,262 @@
-import React, { useEffect, useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
-  StyleSheet,
   Text,
   View,
-  FlatList,
-  Image,
-  ActivityIndicator,
+  TextInput,
   TouchableOpacity,
-  Linking,
+  Alert,
+  Image,
+  FlatList,
 } from "react-native";
-import axios from "axios";
-import BASE_URL from "../../hook/apiConfig";
+import * as Location from "expo-location";
+import MapView, { Marker } from "react-native-maps";
+import styles from "./PlaceForLocation.styles";
+import useFetchPlaceForLocation from "../../hook/places/fetchPlaceForLocation";
+import { ReusableText } from "../../components";
+import { COLORS, TEXT } from "../../constants/theme";
+import reusable from "../../components/Reusable/reusable.style";
+import { useNavigation } from "@react-navigation/native";
+import {
+  widthPercentageToDP as wp,
+  heightPercentageToDP as hp,
+} from "react-native-responsive-screen";
 
 const PlaceForLocation = () => {
-  const [places, setPlaces] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
+  const navigation = useNavigation();
+  const {
+    places,
+    categories,
+    subcategories,
+    fetchPlaces,
+    fetchCategories,
+    fetchSubcategories,
+  } = useFetchPlaceForLocation();
 
-  const fetchPlaces = async () => {
-    const url = `${BASE_URL}/user/current-location/places`;
-    const params = {
-      area: 18,
-      categories_id: JSON.stringify([1]),
-      subcategories_id: JSON.stringify([2]),
-      lat: 31.968461,
-      lng: 35.88096,
+  const [area, setArea] = useState("");
+  const [selectedCategory, setSelectedCategory] = useState(null);
+  const [selectedSubcategory, setSelectedSubcategory] = useState(null);
+  const [showCategories, setShowCategories] = useState(false);
+  const [showSubcategories, setShowSubcategories] = useState(false);
+  const [userLocation, setUserLocation] = useState({
+    lat: 31.963158,
+    lng: 35.930359,
+  });
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        await fetchCategories();
+        const { status } = await Location.requestForegroundPermissionsAsync();
+        if (status !== "granted") {
+          Alert.alert("Error", "Permission to access location was denied.");
+          return;
+        }
+        const location = await Location.getCurrentPositionAsync({});
+        setUserLocation({
+          lat: location.coords.latitude,
+          lng: location.coords.longitude,
+        });
+      } catch (error) {
+        console.error("Error in location or fetching categories:", error);
+        Alert.alert("Error", "Something went wrong while fetching data.");
+      }
     };
 
-    const headers = {
-      "X-API-KEY": "DISCOVERJO91427",
-    };
+    fetchData();
+  }, []);
+
+  useEffect(() => {
+    if (selectedCategory) {
+      fetchSubcategories([selectedCategory]).catch((error) => {
+        console.error("Error fetching subcategories:", error);
+        Alert.alert("Error", "Failed to fetch subcategories.");
+      });
+    }
+  }, [selectedCategory]);
+
+  const handleFetchPlaces = async () => {
+    if (!area || !selectedCategory || !selectedSubcategory) {
+      Alert.alert("Error", "Please fill in all the fields.");
+      return;
+    }
 
     try {
-      const response = await axios.get(url, { headers, params });
-      if (response.data.status === 200) {
-        setPlaces(response.data.data);
-      } else {
-        setError("Failed to fetch places.");
-      }
-    } catch (err) {
-      setError("An error occurred while fetching data.");
-    } finally {
-      setLoading(false);
+      await fetchPlaces({
+        area,
+        categoriesId: selectedCategory.toString(),
+        subcategoriesId: selectedSubcategory.toString(),
+        userLocation,
+      });
+    } catch (error) {
+      console.error("Error fetching places:", error);
+      Alert.alert("Error", "Failed to fetch places.");
     }
   };
 
-  useEffect(() => {
-    fetchPlaces();
-  }, []);
-
-  const renderPlace = ({ item }) => (
+  const renderCategory = ({ item }) => (
     <TouchableOpacity
-      onPress={() => Linking.openURL(item.google_map_url)}
-      style={styles.placeCard}
+      style={[
+        styles.dropdownItem,
+        selectedCategory === item.id && styles.selectedItem,
+      ]}
+      onPress={() => setSelectedCategory(item.id)}
     >
-      <Image source={{ uri: item.image }} style={styles.placeImage} />
-      <View style={styles.placeInfo}>
-        <Text style={styles.placeName}>{item.name}</Text>
-        <Text style={styles.placeRegion}>{item.region}</Text>
-        <Text style={styles.placeRating}>Rating: {item.rating}</Text>
-      </View>
+      <Image source={{ uri: item.image }} style={styles.dropdownImage} />
+      <Text style={styles.dropdownText}>{item.name}</Text>
+      {selectedCategory === item.id && <Text style={styles.checkMark}>✔</Text>}
     </TouchableOpacity>
   );
 
-  if (loading) {
-    return (
-      <View style={styles.loadingContainer}>
-        <ActivityIndicator size="large" color="#0000ff" />
-      </View>
-    );
-  }
-
-  if (error) {
-    return (
-      <View style={styles.errorContainer}>
-        <Text style={styles.errorText}>{error}</Text>
-      </View>
-    );
-  }
+  const renderSubcategory = ({ item }) => (
+    <TouchableOpacity
+      style={[
+        styles.dropdownItem,
+        selectedSubcategory === item.id && styles.selectedItem,
+      ]}
+      onPress={() => setSelectedSubcategory(item.id)}
+    >
+      <Image source={{ uri: item.active_image }} style={styles.dropdownImage} />
+      <Text style={styles.dropdownText}>{item.name}</Text>
+      {selectedSubcategory === item.id && (
+        <Text style={styles.checkMark}>✔</Text>
+      )}
+    </TouchableOpacity>
+  );
 
   return (
-    <View style={styles.container}>
-      <Text style={styles.header}>Nearby Places</Text>
-      <FlatList
-        data={places}
-        keyExtractor={(item) => item.id.toString()}
-        renderItem={renderPlace}
-        contentContainerStyle={styles.listContainer}
+    <View style={[styles.container]}>
+      <View style={[reusable.header1]}>
+        <View style={{ width: 200 }}>
+          <ReusableText
+            text={"Show The Places Around You"}
+            family={"Bold"}
+            size={TEXT.large}
+            color={COLORS.black}
+            style={{ letterSpacing: 1 }}
+          />
+        </View>
+        <TouchableOpacity
+          style={styles.CancelButton}
+          onPress={() => navigation.goBack()}
+        >
+          <Image
+            source={require("../../assets/images/icons/back.png")}
+            style={styles.icon}
+            resizeMode="contain"
+          />
+          <ReusableText
+            text={"cancel".toLocaleUpperCase()}
+            family={"Bold"}
+            size={TEXT.small}
+            color={COLORS.black}
+            style={{ letterSpacing: 1 }}
+          />
+        </TouchableOpacity>
+      </View>
+
+      <View >
+        <TouchableOpacity
+          onPress={() => {
+            setShowCategories(!showCategories);
+            setShowSubcategories(false);
+          }}
+          style={styles.Catdropdown}
+        >
+          <View style={styles.dropdownPlaceholder}>
+            <ReusableText
+              text={
+                selectedCategory
+                  ? categories.find((cat) => cat.id === selectedCategory)?.name
+                  : "Category"
+              }
+              family={"semiBold"}
+              size={TEXT.medium}
+              color={COLORS.black}
+              align={"center"}
+            />
+          </View>
+        </TouchableOpacity>
+
+        {showCategories && (
+          <FlatList
+            horizontal
+            data={categories}
+            keyExtractor={(item) => item.id.toString()}
+            renderItem={renderCategory}
+            style={styles.dropdownList}
+            showsHorizontalScrollIndicator={false}
+          />
+        )}
+
+        <TouchableOpacity
+          onPress={() => {
+            setShowSubcategories(!showSubcategories);
+            setShowCategories(false);
+          }}
+          style={styles.Subdropdown}
+          disabled={!selectedCategory}
+        >
+          <View style={styles.dropdownPlaceholder}>
+            <ReusableText
+              text={
+                selectedSubcategory
+                  ? subcategories.find((sub) => sub.id === selectedSubcategory)
+                      ?.name
+                  : "SubCategory"
+              }
+              family={"semiBold"}
+              size={TEXT.medium}
+              color={COLORS.black}
+              align={"center"}
+            />
+          </View>
+        </TouchableOpacity>
+
+        {showSubcategories && (
+          <FlatList
+            horizontal
+            data={subcategories}
+            keyExtractor={(item) => item.id.toString()}
+            renderItem={renderSubcategory}
+            style={styles.dropdownList}
+            showsHorizontalScrollIndicator={false}
+          />
+        )}
+      </View>
+
+      <TextInput
+        style={styles.input}
+        placeholder="Enter area in km"
+        value={area}
+        onChangeText={setArea}
+        keyboardType="numeric"
       />
+      <TouchableOpacity onPress={handleFetchPlaces} style={styles.searchButton}>
+        <Text style={styles.searchButtonText}>Search</Text>
+      </TouchableOpacity>
+      <MapView
+        style={styles.map}
+        initialRegion={{
+          latitude: userLocation.lat,
+          longitude: userLocation.lng,
+          latitudeDelta: 0.1,
+          longitudeDelta: 0.1,
+        }}
+      >
+        {places.map((place) => (
+          <Marker
+            key={place.id}
+            coordinate={{
+              latitude: parseFloat(place.latitude),
+              longitude: parseFloat(place.longitude),
+            }}
+            title={place.name}
+            description={place.region}
+          />
+        ))}
+      </MapView>
     </View>
   );
 };
 
 export default PlaceForLocation;
-
-const styles = StyleSheet.create({
-  container: {
-    top:50,
-    flex: 1,
-    backgroundColor: "#f5f5f5",
-    paddingHorizontal: 15,
-  },
-  header: {
-    fontSize: 24,
-    fontWeight: "bold",
-    marginVertical: 10,
-    textAlign: "center",
-  },
-  listContainer: {
-    paddingBottom: 20,
-  },
-  placeCard: {
-    flexDirection: "row",
-    backgroundColor: "#fff",
-    marginBottom: 10,
-    borderRadius: 8,
-    overflow: "hidden",
-    elevation: 2,
-  },
-  placeImage: {
-    width: 100,
-    height: 100,
-  },
-  placeInfo: {
-    flex: 1,
-    padding: 10,
-    justifyContent: "center",
-  },
-  placeName: {
-    fontSize: 16,
-    fontWeight: "bold",
-    color: "#333",
-  },
-  placeRegion: {
-    fontSize: 14,
-    color: "#777",
-  },
-  placeRating: {
-    fontSize: 14,
-    color: "#333",
-  },
-  loadingContainer: {
-    flex: 1,
-    justifyContent: "center",
-    alignItems: "center",
-  },
-  errorContainer: {
-    flex: 1,
-    justifyContent: "center",
-    alignItems: "center",
-  },
-  errorText: {
-    color: "red",
-    fontSize: 16,
-  },
-});

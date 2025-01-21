@@ -1,3 +1,4 @@
+// PlacesList.js
 import React, {
   useEffect,
   useState,
@@ -28,6 +29,7 @@ import reusable from "../../components/Reusable/reusable.style";
 import * as Location from "expo-location";
 import FilterButton from "../../components/Serach&Filter/FilterButton";
 import { AuthContext } from "../../store/auth-context";
+import FilterModal from "../../components/places/FilterModal";
 
 const MemoizedSubcategory = memo(Subcategory);
 const MemoizedAllPlaces = memo(AllPlaces);
@@ -37,6 +39,7 @@ const PlacesList = () => {
   const navigation = useNavigation();
   const authCtx = useContext(AuthContext);
   const token = authCtx.token;
+  const [isModalVisible, setIsModalVisible] = useState(false);
 
   const [places, setPlaces] = useState([]);
   const [subCategoryPlaces, setSubCategoryPlaces] = useState([]);
@@ -50,7 +53,18 @@ const PlacesList = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [isLoadingMore, setIsLoadingMore] = useState(false);
 
-  // Handle location permissions and fetch location
+  const handleFilterApply = (filters) => {
+    const { categories_id, subcategories_id, area } = filters;
+
+    navigation.navigate("PlaceForLocation", {
+      categories_id,
+      subcategories_id,
+      area,
+      lat: userLocation.latitude,
+      lng: userLocation.longitude,
+    });
+  };
+
   useEffect(() => {
     (async () => {
       const { status } = await Location.requestForegroundPermissionsAsync();
@@ -66,7 +80,6 @@ const PlacesList = () => {
     })();
   }, []);
 
-  // Get device language
   const deviceLanguage =
     Platform.OS === "ios"
       ? NativeModules.SettingsManager.settings.AppleLocale ||
@@ -75,7 +88,6 @@ const PlacesList = () => {
 
   const language = deviceLanguage.split(/[-_]/)[0] || "en";
 
-  // Fetch category places
   const { categoryPlaces, loadMoreData } = fetchCategoryPlace(
     route.params.id,
     language,
@@ -98,7 +110,6 @@ const PlacesList = () => {
     }
   }, [categoryPlaces]);
 
-  // Handle subcategory selection
   const handleSubcategoryPress = async (subCategoryId) => {
     setSelectedSubCategory(subCategoryId);
     setIsLoading(true);
@@ -122,7 +133,6 @@ const PlacesList = () => {
     }
   };
 
-  // Reset to main category places
   const handleAllPress = () => {
     setSelectedSubCategory(null);
     setSubCategoryPlaces([]);
@@ -131,7 +141,6 @@ const PlacesList = () => {
     setCategoryName(categoryPlaces.name);
   };
 
-  // Load more places (category or subcategory)
   const loadMorePlaces = async () => {
     if (!pagination.next_page_url || isLoadingMore) return;
 
@@ -198,7 +207,7 @@ const PlacesList = () => {
               />
             </View>
             <FilterButton
-              onPress={() => navigation.navigate("PlaceForLocation")}
+              onPress={() => navigation.navigate("PlaceForLocation", { token })}
             />
           </View>
           <View style={{ flexDirection: "row" }}>
@@ -210,7 +219,12 @@ const PlacesList = () => {
                     : styles.inactiveIcon
                 }
               >
-                <Text>All</Text>
+                <ReusableText
+                  text={"All"}
+                  family={"SemiBold"}
+                  size={TEXT.medium}
+                  color={COLORS.black}
+                />
               </View>
             </TouchableOpacity>
             {categoryPlaces?.sub_categories && (
