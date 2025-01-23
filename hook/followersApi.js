@@ -10,7 +10,8 @@ export const fetchFollowersApi = async (token, userId) => {
     const response = await axios.get(`${BASE_URL}/follow/followers/${userId}`, {
       headers: {
         Accept: "application/json",
-        Authorization: `Bearer ${token}`, // Include the Bearer token for authentication
+        Authorization: `Bearer ${token}`,
+        "X-API-KEY": "DISCOVERJO91427", // Include the Bearer token for authentication
       },
     });
 

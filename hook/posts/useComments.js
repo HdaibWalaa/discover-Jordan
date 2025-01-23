@@ -14,6 +14,7 @@ const useComments = (token) => {
         headers: {
           Authorization: `Bearer ${token}`,
           Accept: "application/json",
+          "X-API-KEY": "DISCOVERJO91427",
         },
       });
 

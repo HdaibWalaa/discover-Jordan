@@ -34,6 +34,7 @@ const useUpdateProfile = () => {
             Authorization: `Bearer ${token}`,
             "Content-Type": "multipart/form-data",
             Accept: "application/json",
+            "X-API-KEY": "DISCOVERJO91427",
           },
         }
       );

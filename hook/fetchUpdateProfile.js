@@ -9,6 +9,7 @@ export async function getUserProfile(token) {
         Authorization: `Bearer ${token}`,
         Accept: "application/json",
         "Content-Language": "en",
+        "X-API-KEY": "DISCOVERJO91427",
       },
     });
     return response.data;

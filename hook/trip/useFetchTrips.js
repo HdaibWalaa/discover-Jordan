@@ -13,6 +13,7 @@ const useFetchTrips = (token) => {
       const response = await axios.get(`${BASE_URL}/trip`, {
         headers: {
           Authorization: `Bearer ${token}`,
+          "X-API-KEY": "DISCOVERJO91427",
         },
       });
       setTrips(response.data.data);

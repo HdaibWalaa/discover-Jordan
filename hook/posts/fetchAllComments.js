@@ -7,6 +7,7 @@ export const fetchComments = async (postId, token) => {
     const response = await axios.get(`${BASE_URL}/post/comment/${postId}`, {
       headers: {
         Authorization: `Bearer ${token}`,
+        "X-API-KEY": "DISCOVERJO91427",
       },
     });
     return response.data.data;

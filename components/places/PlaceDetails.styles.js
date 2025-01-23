@@ -11,6 +11,7 @@ const styles = StyleSheet.create({
     fontSize: wp("4%"),
     fontWeight: "bold",
     marginLeft: wp("2%"),
+    backgroundColor:COLORS.white,
   },
   icon: {
     width: wp("5%"),
@@ -40,6 +41,7 @@ const styles = StyleSheet.create({
   tabsContainer: {
     flexDirection: "row",
     marginBottom: hp("1.3%"),
+    paddingHorizontal: wp("5%"),
   },
   tab: {
     flex: 1,
@@ -63,7 +65,6 @@ const styles = StyleSheet.create({
     paddingVertical: hp("2%"),
     alignItems: "center",
   },
- 
 });
 
 export default styles;

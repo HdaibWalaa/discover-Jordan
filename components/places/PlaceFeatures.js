@@ -52,7 +52,6 @@ export default PlaceFeatures;
 
 const styles = StyleSheet.create({
   container: {
-    marginBottom: hp("2%"),
     marginHorizontal: wp("2%"),
   },
   headerContainer: {

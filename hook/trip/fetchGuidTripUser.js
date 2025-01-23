@@ -12,7 +12,10 @@ export const fetchGuideTripSubscribers = async (tripId, token) => {
     const response = await axios.get(
       `${BASE_URL}/user/guide-trip/subscription/${tripId}`,
       {
-        headers: { Authorization: `Bearer ${token}` },
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "X-API-KEY": "DISCOVERJO91427",
+        },
       }
     );
     return response.data.data;

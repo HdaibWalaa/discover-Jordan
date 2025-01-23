@@ -16,6 +16,7 @@ const FetchTrip = (tripId, token, language) => {
           headers: {
             Authorization: `Bearer ${token}`,
             "Content-Language": language,
+            "X-API-KEY": "DISCOVERJO91427",
           },
         });
         setTripDetails(response.data.data);

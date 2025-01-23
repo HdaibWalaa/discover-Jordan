@@ -16,6 +16,7 @@ export const TripProvider = ({ children }) => {
         headers: {
           Authorization: `Bearer ${token}`,
           "Content-Language": language,
+          "X-API-KEY": "DISCOVERJO91427",
         },
       });
       setTrips(response.data.data);

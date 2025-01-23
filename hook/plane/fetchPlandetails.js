@@ -3,38 +3,27 @@ import BASE_URL from "../apiConfig";
 
 const fetchPlanDetails = async (id, token, language) => {
   try {
-    if (!token) {
-      throw new Error("No token found in storage.");
-    }
+    if (!id) throw new Error("Plan ID is missing.");
+    if (!token) throw new Error("Token is missing.");
 
-    console.log("Token received in fetchPlanDetails:", token);
+    console.log("Fetching Plan Details:", { id, token, language });
 
-    const response = await axios.get(`${BASE_URL}/plan/${id}`, {
+    const response = await axios.get(`${BASE_URL}/plan/show/${id}`, {
       headers: {
         Authorization: `Bearer ${token}`,
+        "X-API-KEY": "DISCOVERJO91427",
         Accept: "application/json",
-        "Content-Language": language, 
-        
+        "Content-Language": language,
       },
     });
 
-    return response.data.data;
+    console.log("API Response:", response.data);
+    return response.data.data; // Adjust based on your API response structure
   } catch (error) {
-    if (error.response && error.response.data.msg) {
-      const messages = error.response.data.msg;
-      if (messages.includes("The selected plan id is invalid.")) {
-        console.error("The plan ID provided is invalid.");
-      } else if (
-        messages.includes(
-          "validation.msg.api.you_are_not_the_owner_of_this_plan"
-        )
-      ) {
-        console.error("You do not have permission to access this plan.");
-      } else {
-        console.error("Error fetching plan details:", error.response.data);
-      }
+    if (error.response) {
+      console.error("API Error Response:", error.response.data);
     } else {
-      console.error("Error fetching plan details:", error.message);
+      console.error("Error Fetching Plan Details:", error.message);
     }
     throw error;
   }

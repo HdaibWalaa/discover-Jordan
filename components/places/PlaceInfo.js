@@ -91,9 +91,6 @@ const styles = StyleSheet.create({
     top: hp(-1),
     right: wp(2),
   },
-  descriptionContainer: {
-    padding: wp("2%"),
-  },
   sectionTitle: {
     marginBottom: hp("1%"),
   },
@@ -109,8 +106,6 @@ const styles = StyleSheet.create({
     color: COLORS.secondary,
     textAlign: "justify",
     fontFamily: "Regular",
-    fontSize: wp("4%"),
-    marginTop: hp("0.5%"),
-    lineHeight: hp("3%"),
+    fontSize: wp("3%"),
   },
 });

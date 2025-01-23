@@ -14,6 +14,7 @@ const fetchVolunteerDetails = (id, language) => {
         const response = await axios.get(`${BASE_URL}/volunteering/${id}`, {
           headers: {
             "Content-Language": language,
+            "X-API-KEY": "DISCOVERJO91427",
           },
         });
         setVolunteerDetails(response.data.data);

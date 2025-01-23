@@ -19,6 +19,7 @@ export const getFollowings = async (token, userId) => {
       Authorization: `Bearer ${token}`,
       Accept: "application/json",
       "Content-Language": en,
+      "X-API-KEY": "DISCOVERJO91427",
     },
   });
   return response.data;

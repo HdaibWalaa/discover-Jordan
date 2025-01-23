@@ -110,6 +110,7 @@ const handleLeaveTrip = async () => {
         headers: {
           Authorization: `Bearer ${token}`,
           Accept: "application/json",
+          "X-API-KEY": "DISCOVERJO91427",
         },
       }
     );
@@ -167,6 +168,7 @@ const handleLeaveTrip = async () => {
           headers: {
             Authorization: `Bearer ${token}`,
             Accept: "application/json",
+            "X-API-KEY": "DISCOVERJO91427",
           },
         }
       );
@@ -193,6 +195,7 @@ const handleLeaveTrip = async () => {
          headers: {
            Authorization: `Bearer ${token}`,
            Accept: "application/json",
+           "X-API-KEY": "DISCOVERJO91427",
          },
        }
      );

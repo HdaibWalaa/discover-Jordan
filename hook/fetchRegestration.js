@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import axios from "axios";
 import BASE_URL from "./apiConfig";
 
+
 const fetchRegestration = (language,) => {
   const [username, setUsername] = useState("");
   const [email, setEmail] = useState("");
@@ -11,7 +12,7 @@ const fetchRegestration = (language,) => {
   const handleSignUp = async () => {
     try {
       const response = await axios.post(
-        "https://rehletna-jo.com/api/ar/register",
+        `${BASE_URL}/register`,
         {
           username,
           email,
@@ -22,6 +23,7 @@ const fetchRegestration = (language,) => {
         {
           headers: {
             "Content-Type": "application/json",
+             "X-API-KEY": "DISCOVERJO91427",
           },
         }
       );
@@ -40,5 +42,3 @@ const fetchRegestration = (language,) => {
 
 export default fetchRegestration;
 
-//the api:rehletna-jo.com/register
-//the keys(username,email,password,password_confirmation,device_token)

@@ -10,6 +10,7 @@ export const addFavorite = async (postId, token) => {
         headers: {
           Authorization: `Bearer ${token}`,
           Accept: "application/json",
+          "X-API-KEY": "DISCOVERJO91427",
         },
       }
     );

@@ -20,6 +20,7 @@ async function updateComment(token, commentId, content) {
     headers: {
       Authorization: `Bearer ${token}`,
       Accept: "application/json",
+      "X-API-KEY": "DISCOVERJO91427",
     },
     body: new FormData().append("content", content),
   });

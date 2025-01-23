@@ -14,6 +14,7 @@ const fetchFilteredPlans = async (
       },
       headers: {
         "Content-Language": language,
+        "X-API-KEY": "DISCOVERJO91427",
       },
     });
     return response.data.data || []; // Ensure we return an empty array if no data

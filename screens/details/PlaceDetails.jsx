@@ -9,6 +9,7 @@ import {
   Linking,
   Image,
   Alert,
+  FlatList,
 } from "react-native";
 import {
   NetworkImage,
@@ -100,21 +101,22 @@ const PlaceDetails = () => {
   }, [placeData]);
 
   // Fetch weather based on place's latitude and longitude
-  useEffect(() => {
-    if (placeData && placeData.latitude && placeData.longitude) {
-      const fetchWeather = async () => {
-        try {
-          const API_KEY = "b601d5067fa04b3b997205706240408";
-          const URL = `http://api.weatherapi.com/v1/current.json?key=${API_KEY}&q=${placeData.latitude},${placeData.longitude}&aqi=no`;
-          const response = await axios.get(URL);
-          setWeather(response.data.current.temp_c);
-        } catch (error) {
-          console.error("Error fetching weather data: ", error);
-        }
-      };
-      fetchWeather();
-    }
-  }, [placeData]);
+useEffect(() => {
+  if (placeData && placeData.latitude && placeData.longitude) {
+    const fetchWeather = async () => {
+      try {
+        const API_KEY = "b601d5067fa04b3b997205706240408"; // Replace with your API key
+        const URL = `http://api.weatherapi.com/v1/current.json?key=${API_KEY}&q=${placeData.latitude},${placeData.longitude}&aqi=no`;
+        const response = await axios.get(URL);
+        setWeather(response.data.current.temp_c); // Set the temperature in Celsius
+      } catch (error) {
+        console.error("Error fetching weather data: ", error);
+      }
+    };
+    fetchWeather();
+  }
+}, [placeData]);
+
 
   const formatDescription = (text) => {
     if (!text) return "";
@@ -197,40 +199,43 @@ const renderTabContent = () => {
 
   return (
     <RusableWhite>
-      <ImageContainer
-        mainImage={mainImage}
-        placeData={placeData}
-        handleDirectionPress={handleDirectionPress}
-        refetch={refetch}
-      />
-      <ImageGallery images={placeData.gallery} onSelectImage={setMainImage} />
+      {/* Fixed Top Section */}
+      <View>
+        <ImageContainer
+          mainImage={mainImage}
+          placeData={placeData}
+          handleDirectionPress={() => navigation.goBack()}
+          refetch={refetch}
+        />
+        <ImageGallery images={placeData.gallery} onSelectImage={setMainImage} />
+      </View>
 
-      <ScrollView style={styles.scrollContent}>
-        <PlaceInfo placeData={placeData} />
-        <View style={styles.contentContainer}>
-          <PlaceInfoCards
-            distance={distance}
-            priceLevel={priceLevel}
-            rating={rating}
-            weather={weather}
-          />
-          <OpeningHours openingHours={placeData.opening_hours} />
-          <View style={styles.separator} />
-          <PlaceFeatures features={placeData.features} />
-               <View style={styles.tabsContainer}>
-              <TouchableOpacity
-                style={[styles.tab, activeTab === "posts" && styles.activeTab]}
-                onPress={() => setActiveTab("posts")}
-              >
-                <Text
-                  style={[
-                    styles.tabText,
-                    activeTab === "posts" && styles.activeTabText,
-                  ]}
-                >
-                  Posts
-                </Text>
-              </TouchableOpacity>
+      {/* Scrollable Middle Section */}
+      <FlatList
+        data={[]} // Empty data for the main section
+        keyExtractor={(item, index) => index.toString()}
+        ListHeaderComponent={
+          <>
+            <PlaceInfo placeData={placeData} />
+            <View style={styles.contentContainer}>
+              <PlaceInfoCards
+                distance={placeData.distance || "N/A"}
+                priceLevel={placeData.price_level || "N/A"}
+                rating={
+                  placeData.rating !== null
+                    ? parseFloat(placeData.rating).toFixed(1)
+                    : "N/A"
+                }
+                weather={weather}
+              />
+              <OpeningHours openingHours={placeData.opening_hours} />
+              <View style={styles.separator} />
+              <PlaceFeatures features={placeData.features} />
+            </View>
+
+            {/* Tabs */}
+            <View style={styles.tabsContainer}>
+              {/* Reviews Tab */}
               <TouchableOpacity
                 style={[
                   styles.tab,
@@ -247,18 +252,43 @@ const renderTabContent = () => {
                   Reviews
                 </Text>
               </TouchableOpacity>
+              {/* Posts Tab */}
+              <TouchableOpacity
+                style={[styles.tab, activeTab === "posts" && styles.activeTab]}
+                onPress={() => setActiveTab("posts")}
+              >
+                <Text
+                  style={[
+                    styles.tabText,
+                    activeTab === "posts" && styles.activeTabText,
+                  ]}
+                >
+                  Posts
+                </Text>
+              </TouchableOpacity>
             </View>
-            <View style={styles.tabContent}>{renderTabContent()}</View>
-            <HeightSpacer height={20} />
-      </View>
-      </ScrollView>
+          </>
+        }
+        ListFooterComponent={
+          // Render either posts or reviews based on the active tab
+          activeTab === "posts" ? (
+            <PostsSection posts={placeData.posts} token={authCtx.token} />
+          ) : (
+            <ReviewsSection
+              reviews={placeData.reviews}
+              placeId={placeData.id}
+              token={authCtx.token}
+            />
+          )
+        }
+      />
 
+      {/* Fixed Bottom Section */}
       <BottomSection
         favorite={placeData.favorite}
         placeId={placeData.id}
         visited={placeData.visited}
         refresh={refetch}
-        handleDirectionPress={handleDirectionPress}
       />
     </RusableWhite>
   );

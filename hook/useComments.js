@@ -13,6 +13,7 @@ const useComments = (token) => {
       const response = await axios.get(`${BASE_URL}/post/followings`, {
         headers: {
           Authorization: `Bearer ${token}`,
+          "X-API-KEY": "DISCOVERJO91427",
         },
       });
       const post = response.data.data.find((post) => post.id === postId);

@@ -9,7 +9,8 @@ const fetchAllPosts = async (token, page = 1, language = "en") => {
         headers: {
           Authorization: `Bearer ${token}`,
           Accept: "application/json",
-          "Content-Language": language, // Include the language header
+          "Content-Language": language,
+          "X-API-KEY": "DISCOVERJO91427", // Include the language header
         },
       }
     );

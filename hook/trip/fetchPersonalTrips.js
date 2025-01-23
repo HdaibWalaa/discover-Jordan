@@ -8,6 +8,7 @@ const fetchPersonalTrips = async (token, language) => {
         Authorization: `Bearer ${token}`,
         Accept: "application/json",
         "Content-Language": language,
+        "X-API-KEY": "DISCOVERJO91427",
       },
     });
     if (response.data.status === 200) {

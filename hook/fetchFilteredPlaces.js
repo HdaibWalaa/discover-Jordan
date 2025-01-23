@@ -13,6 +13,10 @@ const fetchFilteredPlaces = (filterParams, page) => {
       try {
         const response = await axios.get(`${BASE_URL}/places/filter`, {
           params: { ...filterParams, page },
+          headers: {
+            "X-API-KEY": "DISCOVERJO91427", // Added API key here
+            "Content-Type": "application/json",
+          },
         });
         setFilteredPlaces(response.data.data);
       } catch (err) {

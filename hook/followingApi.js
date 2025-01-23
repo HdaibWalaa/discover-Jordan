@@ -12,7 +12,8 @@ export const fetchFollowingApi = async (token, userId) => {
       {
         headers: {
           Accept: "application/json",
-          Authorization: `Bearer ${token}`, // Include the Bearer token for authentication
+          Authorization: `Bearer ${token}`,
+          "X-API-KEY": "DISCOVERJO91427", // Include the Bearer token for authentication
         },
       }
     );

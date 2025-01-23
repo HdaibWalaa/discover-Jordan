@@ -46,6 +46,7 @@ export async function usePostTrip(
       headers: {
         Authorization: `Bearer ${token}`,
         "Content-Type": "multipart/form-data",
+        "X-API-KEY": "DISCOVERJO91427",
       },
     });
 

@@ -125,6 +125,7 @@ export async function createUser(
       headers: {
         "Content-Type": "application/json",
         "Content-Language": language,
+        "X-API-KEY": "DISCOVERJO91427",
       },
     });
     return response.data;
@@ -146,6 +147,7 @@ export async function forgotPassword(email) {
       headers: {
         "Content-Type": "multipart/form-data",
         Accept: "application/json",
+        "X-API-KEY": "DISCOVERJO91427",
       },
     });
     return response.data; // Ensure response data is returned
@@ -174,6 +176,7 @@ export async function resetPassword(email, password, confirmPassword, token) {
       headers: {
         "Content-Type": "application/json",
         Accept: "application/json",
+        "X-API-KEY": "DISCOVERJO91427",
       },
     });
     return response.data;
@@ -199,6 +202,7 @@ export async function resendVerificationEmail(token, email) {
         headers: {
           Authorization: `Bearer ${token}`,
           Accept: "application/json",
+          "X-API-KEY": "DISCOVERJO91427",
         },
       }
     );
@@ -220,6 +224,7 @@ export async function getUserProfile(token) {
         Authorization: `Bearer ${token}`, // Ensure token is included
         Accept: "application/json",
         "Content-Language": "en",
+        "X-API-KEY": "DISCOVERJO91427",
       },
     });
     return response.data;
@@ -249,6 +254,7 @@ export async function updateUserProfile(data, token) {
         Accept: "application/json",
         "Content-Language": "en",
         "Content-Type": "multipart/form-data",
+        "X-API-KEY": "DISCOVERJO91427",
       },
     });
     return response.data;
@@ -266,6 +272,7 @@ export async function setUserLocation(data, token) {
       headers: {
         Authorization: `Bearer ${token}`,
         Accept: "application/json",
+        "X-API-KEY": "DISCOVERJO91427",
       },
     });
     return response.data;
