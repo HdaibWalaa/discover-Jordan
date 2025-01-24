@@ -1,5 +1,6 @@
 import React from "react";
 import { TouchableOpacity, Image, StyleSheet } from "react-native";
+import { COLORS } from "../../constants/theme";
 
 const PlaceFilter = ({ onPress }) => {
   return (
@@ -17,7 +18,15 @@ export default PlaceFilter;
 
 const styles = StyleSheet.create({
   placefilter: {
-    padding: 10,
+    width: 40,
+    height: 40,
+    marginRight: 10,
+    justifyContent: "center",
+    alignItems: "center",
+    backgroundColor: "#FCD22820",
+    borderRadius: 10,
+    borderWidth: 1,
+    borderColor: COLORS.primary,
   },
   filterIcon: {
     width: 25,

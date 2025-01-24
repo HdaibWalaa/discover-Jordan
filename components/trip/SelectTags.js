@@ -34,6 +34,7 @@ const SelectTags = ({ label, onValueChange, value = [] }) => {
             Authorization: `Bearer ${token}`,
             Accept: "application/json",
             "Content-Language": "en",
+            "X-API-KEY": "DISCOVERJO91427",
           },
         });
         if (response.status === 200 && Array.isArray(response.data.data)) {

@@ -9,22 +9,26 @@ import { SIZES } from "../../constants/theme";
 const ReusableBtn = ({
   onPress,
   btnText,
-  textColor,
-  width,
-  backgroundColor,
-  borderWidth,
-  borderColor,
-  height, // New height prop for dynamic control
+  textColor = "#000", // Default color
+  width = 90, // Default width in percentage
+  backgroundColor = "#fff", // Default background color
+  borderWidth = 0, // Default border width
+  borderColor = "transparent", // Default border color
+  height = 6, // Default height in percentage
 }) => {
+  // Validate that width and height are numbers
+  const validWidth = isNaN(width) ? 90 : width; // Default to 90% if NaN
+  const validHeight = isNaN(height) ? 6 : height; // Default to 6% if NaN
+
   return (
     <TouchableOpacity
       onPress={onPress}
       style={styles.btnStyle(
-        width,
+        validWidth,
         backgroundColor,
         borderWidth,
         borderColor,
-        height
+        validHeight
       )}
     >
       <Text style={styles.btnText(textColor)}>{btnText}</Text>
@@ -45,7 +49,7 @@ const styles = StyleSheet.create({
     backgroundColor: backgroundColor,
     alignItems: "center",
     justifyContent: "center",
-    height: hp(height || 6), // Responsive height with default value
+    height: hp(height), // Responsive height
     borderRadius: SIZES.xSmall,
     borderColor: borderColor,
     borderWidth: borderWidth,

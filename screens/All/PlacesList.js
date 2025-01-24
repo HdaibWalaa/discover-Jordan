@@ -1,4 +1,4 @@
-// PlacesList.js
+
 import React, {
   useEffect,
   useState,
@@ -15,6 +15,7 @@ import {
   TouchableOpacity,
   Platform,
   NativeModules,
+  Image
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import fetchCategoryPlace from "../../hook/category/fetchCategoryPlace";
@@ -29,7 +30,6 @@ import reusable from "../../components/Reusable/reusable.style";
 import * as Location from "expo-location";
 import FilterButton from "../../components/Serach&Filter/FilterButton";
 import { AuthContext } from "../../store/auth-context";
-import FilterModal from "../../components/places/FilterModal";
 
 const MemoizedSubcategory = memo(Subcategory);
 const MemoizedAllPlaces = memo(AllPlaces);
@@ -197,18 +197,33 @@ const PlacesList = () => {
     <ReusableBackground>
       <SafeAreaView style={reusable.container}>
         <View>
-          <View style={reusable.header1}>
+          <View style={[reusable.header1, { marginBottom: 20 }]}>
             <View style={{ width: 150 }}>
               <ReusableText
                 text={categoryName || "Category"}
                 family={"SemiBold"}
-                size={TEXT.large}
+                size={TEXT.xLarge}
                 color={COLORS.black}
               />
             </View>
-            <FilterButton
-              onPress={() => navigation.navigate("PlaceForLocation", { token })}
-            />
+            <View style={styles.buttonsContainer}>
+              {/* Suggest Place Button */}
+              <TouchableOpacity
+                style={styles.suggestPlaceButton}
+                onPress={() => navigation.navigate("SuggestPlace")}
+              >
+                <Image
+                  source={require("../../assets/images/icons/SuggestPlace.png")}
+                  style={styles.buttonIcon}
+                />
+              </TouchableOpacity>
+              {/* Filter Button */}
+              <FilterButton
+                onPress={() =>
+                  navigation.navigate("PlaceForLocation", { token })
+                }
+              />
+            </View>
           </View>
           <View style={{ flexDirection: "row" }}>
             <TouchableOpacity onPress={handleAllPress}>
@@ -262,6 +277,27 @@ const PlacesList = () => {
 };
 
 const styles = StyleSheet.create({
+  buttonsContainer: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 5,
+    left: 15,
+  },
+  suggestPlaceButton: {
+    width: 40,
+    height: 40,
+    justifyContent: "center",
+    alignItems: "center",
+    backgroundColor: "#FCD22820",
+    borderRadius: 10,
+    borderWidth: 1,
+    borderColor: COLORS.primary,
+  },
+  buttonIcon: {
+    width: 25,
+    height: 25,
+    resizeMode: "contain",
+  },
   activeIcon: {
     backgroundColor: "#00BCD4",
     padding: 10,
@@ -273,5 +309,6 @@ const styles = StyleSheet.create({
     borderRadius: 20,
   },
 });
+
 
 export default PlacesList;

@@ -53,7 +53,8 @@ const SelectPlace = ({
           page: page,
         },
         headers: {
-          "Content-Language": language, // Set the language header
+          "Content-Language": language,
+          "X-API-KEY": "DISCOVERJO91427", // Set the language header
         },
       });
 

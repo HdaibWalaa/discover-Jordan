@@ -11,14 +11,7 @@ import {
   Alert,
   FlatList,
 } from "react-native";
-import {
-  NetworkImage,
-  GoBack,
-  ReusableText,
-  ReusableRegionLocation,
-  RusableWhite,
-  HeightSpacer,
-} from "../../components/index";
+import { RusableWhite } from "../../components/index";
 import {
   widthPercentageToDP as wp,
   heightPercentageToDP as hp,
@@ -66,7 +59,7 @@ const PlaceDetails = () => {
     longitude: null,
   });
   const [showFullDescription, setShowFullDescription] = useState(false);
-  const [activeTab, setActiveTab] = useState("posts");
+  const [activeTab, setActiveTab] = useState("reviews");
 
   useEffect(() => {
     (async () => {
@@ -101,22 +94,21 @@ const PlaceDetails = () => {
   }, [placeData]);
 
   // Fetch weather based on place's latitude and longitude
-useEffect(() => {
-  if (placeData && placeData.latitude && placeData.longitude) {
-    const fetchWeather = async () => {
-      try {
-        const API_KEY = "b601d5067fa04b3b997205706240408"; // Replace with your API key
-        const URL = `http://api.weatherapi.com/v1/current.json?key=${API_KEY}&q=${placeData.latitude},${placeData.longitude}&aqi=no`;
-        const response = await axios.get(URL);
-        setWeather(response.data.current.temp_c); // Set the temperature in Celsius
-      } catch (error) {
-        console.error("Error fetching weather data: ", error);
-      }
-    };
-    fetchWeather();
-  }
-}, [placeData]);
-
+  useEffect(() => {
+    if (placeData && placeData.latitude && placeData.longitude) {
+      const fetchWeather = async () => {
+        try {
+          const API_KEY = "b601d5067fa04b3b997205706240408"; // Replace with your API key
+          const URL = `http://api.weatherapi.com/v1/current.json?key=${API_KEY}&q=${placeData.latitude},${placeData.longitude}&aqi=no`;
+          const response = await axios.get(URL);
+          setWeather(response.data.current.temp_c); // Set the temperature in Celsius
+        } catch (error) {
+          console.error("Error fetching weather data: ", error);
+        }
+      };
+      fetchWeather();
+    }
+  }, [placeData]);
 
   const formatDescription = (text) => {
     if (!text) return "";
@@ -164,30 +156,30 @@ useEffect(() => {
   const rating =
     placeData.rating !== null ? parseFloat(placeData.rating).toFixed(1) : "N/A";
 
-const handleDirectionPress = () => {
-  if (placeData.google_map_url) {
-    Linking.openURL(placeData.google_map_url)
-      .then(() => {
-        console.log(
-          "Opened Google Maps successfully:",
-          placeData.google_map_url
-        );
-      })
-      .catch((error) => {
-        console.error("Failed to open Google Maps:", error);
-        Alert.alert(
-          "Error",
-          "Unable to open Google Maps. Please try again later."
-        );
-      });
-  } else {
-    Alert.alert(
-      "No Map URL",
-      "The Google Maps URL for this location is not available."
-    );
-  }
-};
-const renderTabContent = () => {
+  const handleDirectionPress = () => {
+    if (placeData.google_map_url) {
+      Linking.openURL(placeData.google_map_url)
+        .then(() => {
+          console.log(
+            "Opened Google Maps successfully:",
+            placeData.google_map_url
+          );
+        })
+        .catch((error) => {
+          console.error("Failed to open Google Maps:", error);
+          Alert.alert(
+            "Error",
+            "Unable to open Google Maps. Please try again later."
+          );
+        });
+    } else {
+      Alert.alert(
+        "No Map URL",
+        "The Google Maps URL for this location is not available."
+      );
+    }
+  };
+  const renderTabContent = () => {
     if (activeTab === "posts") {
       return <PostsSection posts={placeData.posts} />;
     } else if (activeTab === "reviews") {
@@ -195,7 +187,6 @@ const renderTabContent = () => {
     }
     return null;
   };
-
 
   return (
     <RusableWhite>

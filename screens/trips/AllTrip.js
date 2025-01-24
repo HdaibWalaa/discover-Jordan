@@ -21,18 +21,24 @@ import { useNavigation } from "@react-navigation/native";
 import DateSelector from "../../components/Tiles/Trip/DateSelector";
 
 const AllTrip = () => {
+  // Utility function for capitalizing strings
   const capitalize = (str) =>
     str
       .split(" ")
       .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
       .join(" ");
+
+  // Contexts for authentication and trips
   const { token } = useContext(AuthContext);
   const { trips, isLoading, error, fetchTrips } = useContext(TripContext);
+
+  // Navigation instance
   const navigation = useNavigation();
 
+  // Local states for filtered trips and date selection
   const [filteredTrips, setFilteredTrips] = useState([]);
   const [selectedDate, setSelectedDate] = useState("");
-  const [selectedMonth, setSelectedMonth] = useState(new Date()); // Properly initialized
+  const [selectedMonth, setSelectedMonth] = useState(new Date()); // Initialize to the current month
 
   // Get device language
   const deviceLanguage =
@@ -45,12 +51,14 @@ const AllTrip = () => {
     ? deviceLanguage.split("_")[0]
     : deviceLanguage.split("-")[0];
 
+  // Fetch trips when the token or language changes
   useEffect(() => {
     if (token) {
-      fetchTrips(token, language); // Pass the language parameter
+      fetchTrips(token, language); // Fetch trips with token and language
     }
   }, [token, language]);
 
+  // Filter trips based on the selected date
   useEffect(() => {
     if (selectedDate) {
       setFilteredTrips(trips.filter((trip) => trip.date === selectedDate));
@@ -59,6 +67,7 @@ const AllTrip = () => {
     }
   }, [selectedDate, trips]);
 
+  // Loading state
   if (isLoading) {
     return (
       <View style={styles.centered}>
@@ -67,6 +76,7 @@ const AllTrip = () => {
     );
   }
 
+  // Error state
   if (error) {
     return (
       <View style={styles.centered}>
@@ -75,10 +85,12 @@ const AllTrip = () => {
     );
   }
 
+  // Render the main content
   return (
     <ReusableBackground>
       <SafeAreaView style={[reusable.container, styles.safeArea]}>
         <View style={{ gap: 30 }}>
+          {/* Header Section */}
           <View style={reusable.header1}>
             <View style={styles.headerTextContainer}>
               <ReusableText
@@ -89,6 +101,7 @@ const AllTrip = () => {
               />
             </View>
 
+            {/* Create Button */}
             <View style={styles.createButtonContainer}>
               <TouchableOpacity
                 onPress={() => navigation.navigate("CreatTrip")}
@@ -108,12 +121,16 @@ const AllTrip = () => {
               </TouchableOpacity>
             </View>
           </View>
+
+          {/* Date Selector */}
           <DateSelector
-            selectedMonth={selectedMonth} // Pass selectedMonth
-            selectedDate={selectedDate} // Pass selectedDate
-            onChangeMonth={setSelectedMonth}
-            onSelectDate={setSelectedDate}
+            selectedMonth={selectedMonth} // Pass selectedMonth state
+            selectedDate={selectedDate} // Pass selectedDate state
+            onChangeMonth={setSelectedMonth} // Update selectedMonth state
+            onSelectDate={setSelectedDate} // Update selectedDate state
           />
+
+          {/* Trip List */}
           <FlatList
             data={filteredTrips}
             showsVerticalScrollIndicator={false}
@@ -131,6 +148,7 @@ const AllTrip = () => {
 
 export default AllTrip;
 
+// Styles
 const styles = StyleSheet.create({
   safeArea: {
     marginTop: 50,

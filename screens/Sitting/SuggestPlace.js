@@ -69,6 +69,7 @@ const SuggestPlace = () => {
         {
           headers: {
             "Content-Type": "multipart/form-data",
+            "X-API-KEY": "DISCOVERJO91427",
           },
         }
       );

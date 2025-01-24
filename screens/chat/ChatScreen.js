@@ -1,14 +1,5 @@
 import React, { useEffect, useState } from "react";
-import {
-  View,
-  FlatList,
-  TouchableOpacity,
-  Image,
-  Text,
-  Alert,
-  ActivityIndicator,
-} from "react-native";
-import * as ImagePicker from "expo-image-picker";
+import { View, FlatList, ActivityIndicator, Image, Text } from "react-native";
 import axios from "axios";
 import Pusher from "pusher-js";
 import ChatHeader from "../../components/Chats/ChatHeader";
@@ -44,6 +35,7 @@ export default function GroupChatScreen({ route }) {
             Authorization: `Bearer ${userToken}`,
             Accept: "application/json",
             "Content-Language": "en",
+            "X-API-KEY": "DISCOVERJO91427",
           },
         }
       );
@@ -52,6 +44,7 @@ export default function GroupChatScreen({ route }) {
         headers: {
           Authorization: `Bearer ${userToken}`,
           Accept: "application/json",
+          "X-API-KEY": "DISCOVERJO91427",
         },
       });
 
@@ -73,6 +66,7 @@ export default function GroupChatScreen({ route }) {
         headers: {
           Authorization: `Bearer ${userToken}`,
           Accept: "application/json",
+          "X-API-KEY": "DISCOVERJO91427",
         },
       },
     });
@@ -83,14 +77,14 @@ export default function GroupChatScreen({ route }) {
       console.log("New message received:", data);
 
       const newMessage = {
-        id: data.id,
+        id: data.message.id || Date.now().toString(), // Generate unique ID if missing
         user: data.user,
-        message: data.message_txt,
-        message_file: data.file_url,
-        sent_datetime: data.sent_datetime,
+        message: data.message.message,
+        message_file: data.message.message_file,
+        sent_datetime: data.message.sent_datetime,
       };
 
-      setMessages((prev) => [...prev, newMessage]); // Add new message to the list
+      setMessages((prev) => [...prev, newMessage]);
     });
   };
 
@@ -116,57 +110,47 @@ export default function GroupChatScreen({ route }) {
       <ChatHeader groupMembers={groupMembers} />
       <FlatList
         data={messages}
-        keyExtractor={(item, index) => index.toString()}
-        renderItem={({ item }) => {
-          const isCurrentUser = item.user?.username === "You";
-
-          return (
+        keyExtractor={(item, index) => item.id?.toString() || index.toString()}
+        renderItem={({ item }) => (
+          <View
+            style={[
+              styles.messageBox,
+              item.user?.username === "You"
+                ? styles.currentUserMessage
+                : styles.otherUserMessage,
+            ]}
+          >
+            <Image
+              source={{ uri: item.user?.user_image }}
+              style={styles.messageAvatar}
+            />
             <View
               style={[
-                styles.messageBox,
-                isCurrentUser
-                  ? styles.currentUserMessage
-                  : styles.otherUserMessage,
+                styles.messageContentWrapper,
+                item.user?.username === "You"
+                  ? styles.currentUserContent
+                  : styles.otherUserContent,
               ]}
             >
-              <Image
-                source={{ uri: item.user?.user_image }}
-                style={styles.messageAvatar}
-              />
-              <View
-                style={[
-                  styles.messageContentWrapper,
-                  isCurrentUser
-                    ? styles.currentUserContent
-                    : styles.otherUserContent,
-                ]}
-              >
-                <Text style={styles.messageUsername}>
-                  {isCurrentUser ? "You" : item.user?.username}
-                </Text>
-
-                {/* Render message text */}
-                {item.message && (
-                  <Text style={styles.messageText}>{item.message}</Text>
-                )}
-
-                {/* Render attachment if available */}
-                {item.message_file && (
-                  <Image
-                    source={{ uri: item.message_file }}
-                    style={styles.messageImage}
-                  />
-                )}
-
-                <Text style={styles.messageTime}>{item.sent_datetime}</Text>
-              </View>
+              <Text style={styles.messageUsername}>
+                {item.user?.username || "Unknown"}
+              </Text>
+              {item.message && (
+                <Text style={styles.messageText}>{item.message}</Text>
+              )}
+              {item.message_file && (
+                <Image
+                  source={{ uri: item.message_file }}
+                  style={styles.messageImage}
+                />
+              )}
+              <Text style={styles.messageTime}>{item.sent_datetime}</Text>
             </View>
-          );
-        }}
+          </View>
+        )}
         contentContainerStyle={styles.chatContainer}
       />
-
-      <CahtMaessage />
+      <CahtMaessage conversationId={tripId} token={userToken} />
     </View>
   );
 }

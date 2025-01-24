@@ -307,6 +307,8 @@ const CreateTripForm = () => {
               btnText="POST"
               backgroundColor={COLORS.primary}
               textColor={COLORS.white}
+              width={90} // Ensure width is a valid number
+              height={6} // Ensure height is a valid number
               onPress={handlePostTrip}
             />
           </View>
