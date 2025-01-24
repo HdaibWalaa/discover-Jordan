@@ -1,12 +1,11 @@
 import React, { useState } from "react";
 import {
   View,
-  Text,
   TextInput,
-  Button,
   TouchableOpacity,
   Alert,
   StyleSheet,
+  Image,
 } from "react-native";
 import * as ImagePicker from "expo-image-picker";
 import BASE_URL from "../../hook/apiConfig";
@@ -44,15 +43,13 @@ const CahtMaessage = ({ conversationId, token }) => {
         body: formData,
       });
 
-      const responseText = await response.text();
-      console.log("Raw Response:", responseText);
-
+      const result = await response.json();
       if (response.ok) {
         Alert.alert("Success", "Message sent successfully.");
         setMessageTxt("");
         setSelectedFile(null);
       } else {
-        Alert.alert("Error", "Failed to send the message.");
+        Alert.alert("Error", result.message || "Failed to send the message.");
       }
     } catch (error) {
       console.error("Error sending message:", error);
@@ -86,16 +83,30 @@ const CahtMaessage = ({ conversationId, token }) => {
 
   return (
     <View style={styles.container}>
+      <TouchableOpacity onPress={handlePickFile}>
+        <Image
+          source={require("../../assets/images/icons/attach-file.png")} // Replace with the correct path to the icon
+          style={styles.icon}
+        />
+      </TouchableOpacity>
+      <TouchableOpacity onPress={() => Alert.alert("Mic button pressed")}>
+        <Image
+          source={require("../../assets/images/icons/microphone.png")} // Replace with the correct path to the icon
+          style={styles.icon}
+        />
+      </TouchableOpacity>
       <TextInput
         style={styles.input}
-        placeholder="Enter your message..."
+        placeholder="Write your message"
         value={messageTxt}
         onChangeText={setMessageTxt}
       />
-      <TouchableOpacity style={styles.fileButton} onPress={handlePickFile}>
-        <Text>{selectedFile ? selectedFile.name : "Attach a file"}</Text>
+      <TouchableOpacity onPress={handleSendMessage} style={styles.sendButton}>
+        <Image
+          source={require("../../assets/images/icons/sendrtip.png")} // Replace with the correct path to the icon
+          style={styles.sendIcon}
+        />
       </TouchableOpacity>
-      <Button title="Send Message" onPress={handleSendMessage} />
     </View>
   );
 };
@@ -103,20 +114,36 @@ const CahtMaessage = ({ conversationId, token }) => {
 export default CahtMaessage;
 
 const styles = StyleSheet.create({
-  container: { padding: 16 },
-  input: {
-    borderWidth: 1,
-    borderColor: "#ccc",
-    padding: 8,
-    borderRadius: 4,
-    marginBottom: 8,
-  },
-  fileButton: {
-    borderWidth: 1,
-    borderColor: "#ccc",
-    padding: 8,
-    borderRadius: 4,
+  container: {
+    flexDirection: "row",
     alignItems: "center",
-    marginBottom: 8,
+    padding: 8,
+    backgroundColor: "#F5F5F5",
+    borderRadius: 25,
+    marginHorizontal: 10,
+  },
+  icon: {
+    width: 24,
+    height: 24,
+    marginHorizontal: 8,
+  },
+  input: {
+    flex: 1,
+    height: 40,
+    backgroundColor: "#FFFFFF",
+    borderRadius: 20,
+    paddingHorizontal: 12,
+    marginHorizontal: 8,
+  },
+  sendButton: {
+    backgroundColor: "#FCD228", // Yellow color for the button
+    padding: 10,
+    borderRadius: 25,
+    marginLeft: 8,
+  },
+  sendIcon: {
+    width: 24,
+    height: 24,
+    tintColor: "#000000", // Black color for the icon
   },
 });
