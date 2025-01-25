@@ -265,19 +265,45 @@ export async function updateUserProfile(data, token) {
 }
 
 // Function to set user location
-export async function setUserLocation(data, token) {
-  const url = `${BASE_URL}/user/set-location`;
+export const setUserLocation = async (
+  longitude,
+  latitude,
+  addressAr,
+  addressEn,
+  token
+) => {
   try {
-    const response = await axios.post(url, data, {
-      headers: {
-        Authorization: `Bearer ${token}`,
-        Accept: "application/json",
-        "X-API-KEY": "DISCOVERJO91427",
+    console.log("Sending to API:");
+    console.log("Longitude:", longitude);
+    console.log("Latitude:", latitude);
+    console.log("Address (AR):", addressAr);
+    console.log("Address (EN):", addressEn);
+
+    const response = await axios.post(
+      `${BASE_URL}/user/set-location`,
+      {
+        longitude,
+        latitude,
+        address_ar: addressAr,
+        address_en: addressEn,
       },
-    });
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "X-API-KEY": "DISCOVERJO91427",
+          Accept: "application/json",
+          "Content-Type": "application/json", // Changed to JSON as form-data isn't needed here.
+        },
+      }
+    );
+
+    console.log("API Response:", response.data);
     return response.data;
   } catch (error) {
-    console.error("Error occurred while setting location:", error.message);
-    throw error;
+    console.error(
+      "Error setting location:",
+      error.response?.data || error.message
+    );
+    throw new Error("Failed to save location.");
   }
-}
+};

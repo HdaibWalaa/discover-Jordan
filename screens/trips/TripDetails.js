@@ -281,8 +281,9 @@ const handleLeaveTrip = async () => {
                 isTripActive={isTripActive}
                 isUserJoined={isUserJoined}
                 isRequestPending={isRequestPending}
-                tripId={tripId} // from route.params
-                token={token} // from AuthContext
+                isCreator={isCreator} // Pass the isCreator state
+                tripId={tripId}
+                token={token}
               />
             )}
             <HeightSpacer height={100} />

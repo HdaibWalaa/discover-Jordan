@@ -1,4 +1,3 @@
-// JoinTrip.js
 import React from "react";
 import { StyleSheet, Text, View, TouchableOpacity } from "react-native";
 import { useNavigation } from "@react-navigation/native";
@@ -14,30 +13,30 @@ export default function JoinTrip({
   isTripActive,
   isUserJoined,
   isRequestPending,
-  handleJoinTrip, // optional if you do a server call
+  isCreator, // New prop for creator
+  handleJoinTrip,
 }) {
   const navigation = useNavigation();
 
- const handleButtonPress = () => {
-   if (isUserJoined) {
-     // Navigate to chat if joined
-     navigation.navigate("ChatScreen", {
-       tripId: tripId,
-       userToken: token,
-     });
-   } else {
-     // Call join logic when user is not joined
-     handleJoinTrip();
-   }
- };
-
+  const handleButtonPress = () => {
+    // Navigate to chat if user is joined or is the creator
+    if (isUserJoined || isCreator) {
+      navigation.navigate("ChatScreen", {
+        tripId: tripId,
+        userToken: token,
+      });
+    } else {
+      // Call join logic for non-joined users
+      handleJoinTrip();
+    }
+  };
 
   if (!isTripActive) {
     return null;
   }
 
-  // Already joined => "Group Chat"
-  if (isUserJoined) {
+  // Show "Group Chat" for joined users or the creator
+  if (isUserJoined || isCreator) {
     return (
       <View style={styles.joinContainer}>
         <TouchableOpacity style={styles.joinButton} onPress={handleButtonPress}>
@@ -47,7 +46,7 @@ export default function JoinTrip({
     );
   }
 
-  // Request is pending
+  // Show "Request Pending" for users with pending requests
   if (isRequestPending) {
     return (
       <View style={styles.joinContainer}>
@@ -61,7 +60,7 @@ export default function JoinTrip({
     );
   }
 
-  // Not joined => "JOIN"
+  // Show "JOIN" for non-joined users
   return (
     <View style={styles.joinContainer}>
       <TouchableOpacity style={styles.joinButton} onPress={handleButtonPress}>

@@ -23,7 +23,7 @@ const LocationComponent = ({ location, onPress }) => {
           </View>
         </View>
 
-        <Text style={[styles.locationText, { fontSize: wp(4) }]}>
+        <Text style={[styles.locationText, { fontSize: wp(3.5) }]}>
           {location}
         </Text>
       </View>
