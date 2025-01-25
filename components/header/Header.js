@@ -1,10 +1,7 @@
 import React, { useContext, useState, useEffect } from "react";
 import { View, ImageBackground, StyleSheet, Alert } from "react-native";
 import * as Location from "expo-location";
-import {
-  widthPercentageToDP as wp,
-  heightPercentageToDP as hp,
-} from "react-native-responsive-screen";
+import { widthPercentageToDP as wp, heightPercentageToDP as hp } from "react-native-responsive-screen";
 import { COLORS } from "../../constants/theme";
 import { AuthContext } from "../../store/auth-context";
 import SearchBar from "./Search";
@@ -12,123 +9,102 @@ import ProfileIcon from "./Profile";
 import LocationComponent from "./Location";
 import NotificationIcon from "../../navigation/NotificationNavigator";
 import SideMenu from "../../navigation/MainStackNavigator";
-import { setUserLocation, getUserProfile } from "../../util/auth"; // Import the functions
+import { setUserLocation, getUserProfile } from "../../util/auth";
 import { useNavigation } from "@react-navigation/native";
 
-
-const Header = ({ route }) => {
-  const authCtx = useContext(AuthContext);
-  const isAuthenticated = authCtx.isAuthenticated;
-  const navigation = useNavigation();
-  const [userAvatar, setUserAvatar] = useState("");
-  const [location, setLocation] = useState(
-    route.params?.location || "Press to save address"
-  );
-
-
-useEffect(() => {
-  const fetchUserProfile = async () => {
-    try {
-      const profileData = await getUserProfile(authCtx.token);
-      setUserAvatar(profileData.data.avatar);
-
-      // Use the address from the profile if available
-      const profileAddress = profileData.data.address || null;
-      if (profileAddress) {
-        setLocation(profileAddress);
-      } else {
-        const city =
-          profileData.data.city || profileData.data.locality || "Unknown City";
-        const country = profileData.data.countryName || "Unknown Country";
-
-        const addressEn = `${city}, ${country}`;
-        setLocation(addressEn);
-      }
-    } catch (error) {
-      console.error("Error fetching user profile:", error);
-    }
-  };
-
-  if (isAuthenticated) {
-    fetchUserProfile();
-  }
-}, [authCtx.token, isAuthenticated]);
-
-
-
-const sanitizeCountryName = (countryName) => {
-  // Remove any text inside parentheses, e.g., "United States of America (the)"
-  return countryName.replace(/\s*\(.*?\)\s*/g, "").trim();
-};
-
+// Function to translate city and country names to Arabic
 const translateToArabic = (city, country) => {
   const arabicTranslations = {
     "San Francisco": "سان فرانسيسكو",
     "United States of America": "الولايات المتحدة الأمريكية",
   };
 
-  const cityAr = arabicTranslations[city] || city; // Use Arabic translation or fallback to original
+  const cityAr = arabicTranslations[city] || city;
   const countryAr = arabicTranslations[country] || country;
 
   return `${cityAr}، ${countryAr}`;
 };
 
-const handleSetLocation = async () => {
-  let { status } = await Location.requestForegroundPermissionsAsync();
-  if (status !== "granted") {
-    Alert.alert("Permission Required", "Please allow location access.");
-    return;
-  }
+// Header Component
+const Header = ({ route }) => {
+  const authCtx = useContext(AuthContext);
+  const isAuthenticated = authCtx.isAuthenticated;
+  const navigation = useNavigation();
+  const [userAvatar, setUserAvatar] = useState("");
+  const [location, setLocation] = useState("Press to save address");
+  let rateLimitTimeout = null;
 
-  try {
-    const { coords } = await Location.getCurrentPositionAsync({});
-    const { latitude, longitude } = coords;
+  useEffect(() => {
+    const fetchUserProfile = async () => {
+      try {
+        const profileData = await getUserProfile(authCtx.token);
+        setUserAvatar(profileData.data.avatar);
 
-    const response = await fetch(
-      `https://api.bigdatacloud.net/data/reverse-geocode-client?latitude=${latitude}&longitude=${longitude}&localityLanguage=en`
-    );
-    const data = await response.json();
+        const profileAddress = profileData.data.address || null;
+        if (profileAddress) {
+          setLocation(profileAddress);
+        } else {
+          const city = profileData.data.city || "Unknown City";
+          const country = profileData.data.countryName || "Unknown Country";
+          setLocation(`${city}, ${country}`);
+        }
+      } catch (error) {
+        console.error("Error fetching user profile:", error);
+      }
+    };
 
-    let city = data.city || "Unknown City";
-    let country = data.countryName || "Unknown Country";
+    if (isAuthenticated) {
+      fetchUserProfile();
+    }
+  }, [authCtx.token, isAuthenticated]);
 
-    // Sanitize the country name
-    country = sanitizeCountryName(country);
+  const handleSetLocation = async () => {
+    if (rateLimitTimeout) {
+      Alert.alert("Rate Limited", "Please wait a moment and try again.");
+      return;
+    }
 
-    // Convert to Arabic and English addresses
-    const addressAr = translateToArabic(city, country);
-    const addressEn = `${city}, ${country}`;
+    try {
+      const { status } = await Location.requestForegroundPermissionsAsync();
+      if (status !== "granted") {
+        Alert.alert("Permission Required", "Please allow location access.");
+        return;
+      }
 
-    setLocation(addressEn);
+      const { coords } = await Location.getCurrentPositionAsync({});
+      const { latitude, longitude } = coords;
 
-    // Send data to the backend
-    console.log("Sending to API:");
-    console.log("Longitude:", longitude);
-    console.log("Latitude:", latitude);
-    console.log("Address (AR):", addressAr);
-    console.log("Address (EN):", addressEn);
+      const response = await fetch(
+        `https://api.bigdatacloud.net/data/reverse-geocode-client?latitude=${latitude}&longitude=${longitude}&localityLanguage=en`
+      );
+      const data = await response.json();
 
-    const responseApi = await setUserLocation(
-      longitude,
-      latitude,
-      addressAr,
-      addressEn,
-      authCtx.token
-    );
+      const city = data.city || "Unknown City";
+      const country = data.countryName || "Unknown Country";
 
-    console.log("API Response:", responseApi);
-    Alert.alert(
-      "Location Saved",
-      "Your address has been updated successfully."
-    );
-  } catch (error) {
-    Alert.alert("Error", "Unable to fetch or save location.");
-    console.error(error);
-  }
-};
+      const sanitizedCountry = country.replace(/\s*\(.*?\)\s*/g, "").trim();
+      const addressAr = translateToArabic(city, sanitizedCountry);
+      const addressEn = `${city}, ${sanitizedCountry}`;
 
+      setLocation(addressEn);
 
+      await setUserLocation(longitude, latitude, addressAr, addressEn, authCtx.token);
 
+      console.log("Location updated successfully.");
+      Alert.alert("Success", "Your location has been updated.");
+    } catch (error) {
+      if (error.response?.status === 429) {
+        const retryAfter = parseInt(error.response.headers["retry-after"], 10) * 1000;
+        rateLimitTimeout = setTimeout(() => {
+          rateLimitTimeout = null;
+        }, retryAfter);
+        Alert.alert("Rate Limited", `Please wait ${retryAfter / 1000} seconds.`);
+      } else {
+        console.error("Error updating location:", error.message);
+        Alert.alert("Error", "Unable to update location.");
+      }
+    }
+  };
 
   return (
     <View style={styles.container}>
@@ -141,10 +117,7 @@ const handleSetLocation = async () => {
           <View style={styles.TopHeader}>
             <View style={styles.LeftRow}>
               <SideMenu onPress={() => console.log("Menu pressed")} />
-              <LocationComponent
-                location={location}
-                onPress={handleSetLocation}
-              />
+              <LocationComponent location={location} onPress={handleSetLocation} />
             </View>
             <View style={styles.RightRow}>
               {isAuthenticated && (

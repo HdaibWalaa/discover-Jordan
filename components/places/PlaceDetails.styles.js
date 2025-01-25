@@ -41,7 +41,7 @@ const styles = StyleSheet.create({
   tabsContainer: {
     flexDirection: "row",
     marginBottom: hp("1.3%"),
-    paddingHorizontal: wp("5%"),
+    paddingHorizontal: wp("2%"),
   },
   tab: {
     flex: 1,

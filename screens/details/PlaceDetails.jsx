@@ -25,7 +25,7 @@ import PlaceStatus from "../../components/places/PlaceStatus";
 import PlaceInfoCards from "../../components/places/PlaceInfoCards";
 import PlaceFeatures from "../../components/places/PlaceFeatures";
 import OpeningHours from "../../components/places/OpeningHoures";
-import BottomSection from "../../components/places/BottomSection"; // Import the new component
+import BottomSection from "../../components/places/BottomSection"; 
 import PostsSection from "../../components/places/PostsSection";
 import ReviewsSection from "../../components/places/ReviewsSection";
 import axios from "axios";

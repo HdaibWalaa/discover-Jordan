@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect, useContext } from "react";
 import {
   View,
   Text,
@@ -11,20 +11,38 @@ import {
 } from "react-native";
 import { COLORS, TEXT, SIZES } from "../../constants/theme";
 import addIcon from "../../assets/images/icons/message-add.png";
-import downArrowIcon from "../../assets/images/icons/down-arrow.png"; // Replace with the correct down arrow icon
+import downArrowIcon from "../../assets/images/icons/down-arrow.png";
 import BASE_URL from "../../hook/apiConfig";
 import ReusableText from "../Reusable/ReusableText";
-import {
-  widthPercentageToDP as wp,
-  heightPercentageToDP as hp,
-} from "react-native-responsive-screen";
+import { widthPercentageToDP as wp } from "react-native-responsive-screen";
+import { AuthContext } from "../../store/auth-context";
+import { getUserProfile } from "../../util/auth";
+import ReusableBtn from "../Buttons/ReusableBtn";
 
 const ReviewsSection = ({ reviews, placeId, token }) => {
   const [reviewList, setReviewList] = useState(reviews || []);
   const [showAddReview, setShowAddReview] = useState(false);
-  const [showReviews, setShowReviews] = useState(true); // State to toggle reviews visibility
+  const [showReviews, setShowReviews] = useState(true);
   const [rating, setRating] = useState(0);
   const [comment, setComment] = useState("");
+  const [username, setUsername] = useState("");
+  const [userAvatar, setUserAvatar] = useState("");
+  const authCtx = useContext(AuthContext);
+
+  useEffect(() => {
+    const fetchUserData = async () => {
+      try {
+        const profileData = await getUserProfile(authCtx.token);
+        setUsername(profileData.data.username || "Discover Jordan");
+        setUserAvatar(profileData.data.avatar || null);
+      } catch (error) {
+        console.error("Error fetching user data:", error);
+        Alert.alert("Error", "Could not fetch user data.");
+      }
+    };
+
+    fetchUserData();
+  }, [authCtx.token]);
 
   const handleAddReview = async () => {
     if (!rating || !comment) {
@@ -60,19 +78,34 @@ const ReviewsSection = ({ reviews, placeId, token }) => {
     }
   };
 
+  const renderStars = () => (
+    <View style={styles.ratingContainer}>
+      {[1, 2, 3, 4, 5].map((star) => (
+        <TouchableOpacity
+          key={star}
+          onPress={() => setRating(star)}
+          style={styles.starButton}
+        >
+          <Text style={[styles.star, rating >= star && styles.filledStar]}>
+            ★
+          </Text>
+        </TouchableOpacity>
+      ))}
+    </View>
+  );
+
   return (
     <View style={styles.container}>
       <View style={styles.headerContainer}>
-        <View style={styles.textContainer}>
-          <ReusableText
-            text={"Reviewers' Recommendations"}
-            family={"Bold"}
-            size={TEXT.large}
-            color={COLORS.dark}
-            align={"left"}
-            width={"50%"}
-          />
-        </View>
+        <ReusableText
+          text={"Reviewers' Recommendations"}
+          family={"Bold"}
+          size={TEXT.large}
+          color={COLORS.dark}
+          align={"left"}
+          width={"50%"}
+          style={styles.textContainer}
+        />
         <View style={styles.buttonsContainer}>
           <TouchableOpacity
             style={styles.iconButton}
@@ -91,71 +124,83 @@ const ReviewsSection = ({ reviews, placeId, token }) => {
 
       {showAddReview && (
         <View style={styles.addReviewContainer}>
-          <View style={styles.ratingContainer}>
-            {[1, 2, 3, 4, 5].map((star) => (
-              <TouchableOpacity
-                key={star}
-                onPress={() => setRating(star)}
-                style={styles.starButton}
-              >
-                <Text
-                  style={[styles.star, rating >= star && styles.filledStar]}
-                >
-                  ★
-                </Text>
-              </TouchableOpacity>
-            ))}
+          <View style={styles.addHeader}>
+            <View style={styles.userInfo}>
+              <Image
+                source={
+                  userAvatar
+                    ? { uri: userAvatar }
+                    : require("../../assets/images/icons/usernametrip.png")
+                }
+                style={styles.avatar}
+              />
+              <Text style={styles.userName}>{username}</Text>
+            </View>
+            {renderStars()}
           </View>
-          <TextInput
-            style={styles.commentInput}
-            placeholder="Type your comment..."
-            value={comment}
-            onChangeText={setComment}
-            multiline
-          />
-          <TouchableOpacity
-            style={styles.submitButton}
+          <View style={styles.inputWrapper}>
+            <TextInput
+              placeholder="Type your comment..."
+              style={styles.commentBox}
+              placeholderTextColor={COLORS.gray}
+              multiline
+              value={comment}
+              onChangeText={setComment}
+            />
+          </View>
+          <ReusableBtn
+            btnText={"PUBLISH"}
+            backgroundColor={COLORS.primary}
+            width={90}
+            height={6}
+            borderColor={COLORS.primary}
+            borderWidth={0}
+            textColor={COLORS.black}
             onPress={handleAddReview}
-          >
-            <Text style={styles.submitButtonText}>Publish</Text>
-          </TouchableOpacity>
+          />
         </View>
       )}
 
-      {showReviews ? (
+      {showReviews && (
         <FlatList
           data={reviewList}
           keyExtractor={(item, index) =>
             item.id ? item.id.toString() : index.toString()
-          } // Use index as a fallback
+          }
           renderItem={({ item }) => (
             <View style={styles.reviewContainer}>
               <View style={styles.header}>
-                {item.avatar ? (
-                  <Image source={{ uri: item.avatar }} style={styles.avatar} />
-                ) : (
-                  <View style={styles.placeholderAvatar} />
-                )}
-                <Text style={styles.username}>{item.username}</Text>
+                <Image
+                  source={
+                    item.avatar
+                      ? { uri: item.avatar }
+                      : require("../../assets/images/icons/usernametrip.png")
+                  }
+                  style={styles.avatar}
+                />
+                <Text style={styles.username}>
+                  {item.username || "Anonymous"}
+                </Text>
               </View>
               <Text style={styles.comment}>{item.comment}</Text>
               <Text style={styles.rating}>Rating: {item.rating}/5</Text>
             </View>
           )}
         />
-      ) : (
-        <Text style={styles.noReviewsText}>No reviews to show.</Text>
       )}
     </View>
   );
 };
 
 const styles = StyleSheet.create({
+  container: {
+    marginBottom: SIZES.medium,
+    paddingHorizontal: wp("5%"),
+  },
   headerContainer: {
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
-    paddingHorizontal: wp("5%"),
   },
   textContainer: {
     width: wp("50%"),
@@ -180,54 +225,14 @@ const styles = StyleSheet.create({
     resizeMode: "contain",
   },
   addReviewContainer: {
-    marginVertical: SIZES.medium,
-    padding: SIZES.medium,
-    backgroundColor: COLORS.white,
-    borderRadius: SIZES.small,
-    borderWidth: 1,
-    borderColor: COLORS.gray,
+    marginTop: SIZES.medium,
   },
-  ratingContainer: {
+  addHeader: {
     flexDirection: "row",
-    justifyContent: "center",
-    marginBottom: SIZES.small,
-  },
-  starButton: {
-    marginHorizontal: 5,
-  },
-  star: {
-    fontSize: 30,
-    color: COLORS.gray,
-  },
-  filledStar: {
-    color: COLORS.secondary,
-  },
-  commentInput: {
-    height: 80,
-    borderColor: COLORS.gray,
-    borderWidth: 1,
-    borderRadius: SIZES.small,
-    padding: SIZES.small,
-    textAlignVertical: "top",
-    marginBottom: SIZES.small,
-  },
-  submitButton: {
-    backgroundColor: COLORS.primary,
-    paddingVertical: SIZES.small,
-    borderRadius: SIZES.small,
     alignItems: "center",
+    justifyContent: "space-between",
   },
-  submitButtonText: {
-    color: COLORS.white,
-    fontFamily: "Bold",
-  },
-  reviewContainer: {
-    padding: SIZES.small,
-    backgroundColor: COLORS.lightGray,
-    borderRadius: SIZES.small,
-    marginBottom: SIZES.small,
-  },
-  header: {
+  userInfo: {
     flexDirection: "row",
     alignItems: "center",
     marginBottom: SIZES.small,
@@ -235,15 +240,45 @@ const styles = StyleSheet.create({
   avatar: {
     width: 40,
     height: 40,
-    borderRadius: 20,
+    borderRadius: 25,
     marginRight: SIZES.small,
   },
-  placeholderAvatar: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    backgroundColor: COLORS.gray,
-    marginRight: SIZES.small,
+  userName: {
+    fontSize: TEXT.medium,
+    fontFamily: "SemiBold",
+    color: COLORS.black,
+  },
+  ratingContainer: {
+    flexDirection: "row",
+    justifyContent: "center",
+    marginBottom: SIZES.small,
+  },
+  starButton: {
+    marginHorizontal: 3,
+  },
+  star: {
+    fontSize: 25,
+    color: COLORS.gray,
+  },
+  filledStar: {
+    color: COLORS.primary,
+  },
+  inputWrapper: {
+    flexDirection: "row",
+    alignItems: "center",
+    borderBottomWidth: 1,
+    borderBottomColor: "#8D8D8D",
+    borderStyle: "solid",
+    paddingVertical: SIZES.small,
+    marginBottom: SIZES.medium,
+  },
+  reviewContainer: {
+    marginBottom: SIZES.medium,
+  },
+  header: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginBottom: SIZES.small,
   },
   username: {
     fontSize: TEXT.medium,
@@ -252,20 +287,11 @@ const styles = StyleSheet.create({
   },
   comment: {
     fontSize: TEXT.small,
-    fontFamily: "Regular",
     color: COLORS.gray,
-    marginBottom: SIZES.small,
   },
   rating: {
     fontSize: TEXT.small,
-    fontFamily: "SemiBold",
     color: COLORS.secondary,
-  },
-  noReviewsText: {
-    textAlign: "center",
-    color: COLORS.gray,
-    fontSize: TEXT.medium,
-    marginVertical: SIZES.medium,
   },
 });
 

@@ -273,12 +273,6 @@ export const setUserLocation = async (
   token
 ) => {
   try {
-    console.log("Sending to API:");
-    console.log("Longitude:", longitude);
-    console.log("Latitude:", latitude);
-    console.log("Address (AR):", addressAr);
-    console.log("Address (EN):", addressEn);
-
     const response = await axios.post(
       `${BASE_URL}/user/set-location`,
       {
@@ -292,18 +286,15 @@ export const setUserLocation = async (
           Authorization: `Bearer ${token}`,
           "X-API-KEY": "DISCOVERJO91427",
           Accept: "application/json",
-          "Content-Type": "application/json", // Changed to JSON as form-data isn't needed here.
+          "Content-Type": "application/json",
         },
       }
     );
 
-    console.log("API Response:", response.data);
     return response.data;
   } catch (error) {
-    console.error(
-      "Error setting location:",
-      error.response?.data || error.message
-    );
-    throw new Error("Failed to save location.");
+    console.error("Error setting location:", error.response?.data || error.message);
+    throw error;
   }
 };
+
