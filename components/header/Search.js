@@ -6,17 +6,29 @@ import {
   widthPercentageToDP as wp,
   heightPercentageToDP as hp,
 } from "react-native-responsive-screen";
+import { useTheme } from "../../store/context/ThemeContext";
+import { useLanguage } from "../../store/context/LanguageContext";
+import { COLORS } from "../../constants/theme";
 
 const SearchBar = () => {
   const navigation = useNavigation();
-
-  const texts = [" plan", " trip", " place", " event", " volunteer"];
+  const { translations } = useLanguage();
+  const { mode } = useTheme();
+  const isDarkMode = mode === "dark";
+  const texts = [
+    translations.Plans.toUpperCase(),
+    translations.trips.toUpperCase(),
+    translations.places.toUpperCase(),
+    translations.events.toUpperCase(),
+    translations.volunteers.toUpperCase(),
+    translations.Jordan.toUpperCase(),
+  ];
   const [currentIndex, setCurrentIndex] = useState(0);
 
   useEffect(() => {
     const interval = setInterval(() => {
       setCurrentIndex((prevIndex) => (prevIndex + 1) % texts.length);
-    }, 1000);
+    }, 1500);
 
     return () => clearInterval(interval);
   }, []);
@@ -34,11 +46,26 @@ const SearchBar = () => {
 
   return (
     <TouchableOpacity
-      style={styles.searchContainer}
+      style={[
+        styles.searchContainer,
+        {
+          backgroundColor: isDarkMode ? COLORS.lightGrey : COLORS.white,
+        },
+      ]}
       onPress={handleSearchPress}
     >
-      <Image source={require("../../assets/images/icons/Search1.png")} />
-      <Text style={styles.searchInput}>DISCOVER{texts[currentIndex]}</Text>
+      <Image
+        source={require("../../assets/images/icons/Search1.png")}
+        style={{ tintColor: isDarkMode ? COLORS.black : COLORS.black }}
+      />
+      <Text
+        style={[
+          styles.searchInput,
+          { color: isDarkMode ? COLORS.black : COLORS.black },
+        ]}
+      >
+        {translations.Discover} {texts[currentIndex]}
+      </Text>
       <FilterButton />
     </TouchableOpacity>
   );
@@ -54,7 +81,6 @@ const styles = StyleSheet.create({
     height: hp(6),
     paddingHorizontal: wp(3),
     borderRadius: hp(2),
-    backgroundColor: "#FFFFFF",
     shadowColor: "#000000",
     shadowOpacity: 0.15,
     shadowRadius: 15,
@@ -68,7 +94,6 @@ const styles = StyleSheet.create({
   },
   searchInput: {
     flex: 1,
-    backgroundColor: "#fff",
     paddingHorizontal: wp(3),
     borderRadius: hp(2),
   },

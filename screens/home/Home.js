@@ -13,6 +13,7 @@ import TopTen from "../../components/Home/TopTen";
 import Popular from "../../components/Home/Popular";
 import Guides from "../../components/Home/Guides";
 import { COLORS, SIZES, TEXT } from "../../constants/theme";
+import { colors } from "react-native-elements";
 
 const Home = ({ navigation }) => {
   return (

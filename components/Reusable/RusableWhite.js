@@ -1,11 +1,21 @@
-import { StyleSheet, Text, View, ImageBackground } from "react-native";
 import React from "react";
+import { StyleSheet, View, ImageBackground } from "react-native";
+import { useTheme } from "../../store/context/ThemeContext";
 
 const RusableWhite = ({ children }) => {
-  return (
+  const { mode } = useTheme();
+
+  return mode === "dark" ? (
+    <ImageBackground
+      source={require("../../assets/images/DarkModeVisitorHomePage.png")}
+      style={styles.darkContainer}
+    >
+      <View style={styles.content}>{children}</View>
+    </ImageBackground>
+  ) : (
     <ImageBackground
       source={require("../../assets/images/white.png")}
-      style={styles.container}
+      style={styles.lightContainer}
     >
       <View style={styles.content}>{children}</View>
     </ImageBackground>
@@ -15,7 +25,13 @@ const RusableWhite = ({ children }) => {
 export default RusableWhite;
 
 const styles = StyleSheet.create({
-  container: {
+  darkContainer: {
+    flex: 1,
+    resizeMode: "cover",
+    justifyContent: "center",
+   
+  },
+  lightContainer: {
     flex: 1,
     resizeMode: "cover",
     justifyContent: "center",

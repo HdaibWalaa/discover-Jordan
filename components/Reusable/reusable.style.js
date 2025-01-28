@@ -8,7 +8,7 @@ import { COLORS } from "../../constants/theme";
 const reusable = StyleSheet.create({
   container: {
     flex: 1,
-    marginHorizontal: wp(5), // Adjusted margin for responsiveness
+    marginHorizontal: wp(5), 
   },
   rowWithSpace: (justifyContent) => ({
     flexDirection: "row",

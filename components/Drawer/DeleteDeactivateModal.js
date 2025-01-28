@@ -10,41 +10,46 @@ import {
 import { Ionicons } from "@expo/vector-icons";
 import axios from "axios";
 import { useNavigation } from "@react-navigation/native";
-import BASE_URL from "../../hook/apiConfig"; // Make sure to replace with your base URL
+import { COLORS, TEXT, SIZES } from "../../constants/theme";
+import {
+  widthPercentageToDP as wp,
+  heightPercentageToDP as hp,
+} from "react-native-responsive-screen"; 
+import BASE_URL from "../../hook/apiConfig"; 
+import { ReusableText } from "../index";
 
 const DeleteDeactivateModal = ({ visible, onClose }) => {
-  const navigation = useNavigation(); // Initialize the navigation hook
+  const navigation = useNavigation();
 
-const handleDeleteAccount = async () => {
-  try {
-    const response = await axios.post(`${BASE_URL}/delete/account/`);
-    Alert.alert("Success", "Your account has been deleted successfully.");
-    onClose();
-    navigation.reset({
-      index: 0,
-      routes: [{ name: "Onboarding" }], // Ensure "Onboarding" is in the stack
-    });
-  } catch (error) {
-    console.error("Error deleting account:", error);
-    Alert.alert("Error", "There was a problem deleting your account.");
-  }
-};
+  const handleDeleteAccount = async () => {
+    try {
+      const response = await axios.post(`${BASE_URL}/delete/account/`);
+      Alert.alert("Success", "Your account has been deleted successfully.");
+      onClose();
+      navigation.reset({
+        index: 0,
+        routes: [{ name: "Onboarding" }],
+      });
+    } catch (error) {
+      console.error("Error deleting account:", error);
+      Alert.alert("Error", "There was a problem deleting your account.");
+    }
+  };
 
-const handleDeactivateAccount = async () => {
-  try {
-    const response = await axios.post(`${BASE_URL}/user/deactivate-account/`);
-    Alert.alert("Success", "Your account has been deactivated successfully.");
-    onClose();
-    navigation.reset({
-      index: 0,
-      routes: [{ name: "Onboarding" }], // Ensure "Onboarding" is in the stack
-    });
-  } catch (error) {
-    console.error("Error deactivating account:", error);
-    Alert.alert("Error", "There was a problem deactivating your account.");
-  }
-};
-
+  const handleDeactivateAccount = async () => {
+    try {
+      const response = await axios.post(`${BASE_URL}/user/deactivate-account/`);
+      Alert.alert("Success", "Your account has been deactivated successfully.");
+      onClose();
+      navigation.reset({
+        index: 0,
+        routes: [{ name: "Onboarding" }],
+      });
+    } catch (error) {
+      console.error("Error deactivating account:", error);
+      Alert.alert("Error", "There was a problem deactivating your account.");
+    }
+  };
 
   return (
     <Modal
@@ -56,26 +61,52 @@ const handleDeactivateAccount = async () => {
       <View style={styles.centeredView}>
         <View style={styles.modalView}>
           <TouchableOpacity style={styles.closeButton} onPress={onClose}>
-            <Ionicons name="close" size={24} color="black" />
+            <Ionicons name="close" size={wp("6%")} color="black" />
           </TouchableOpacity>
-
-          <Text style={styles.modalTitle}>Delete or Deactivate?</Text>
-          <Text style={styles.modalText}>
-            Are you sure you want to delete your account or you can deactivate
-            it?
-          </Text>
+          <ReusableText
+            text={"Delete or Deactivate?"}
+            family={"Bold"}
+            size={TEXT.large}
+            color={COLORS.black}
+            align={"center"}
+            style={styles.modalTitle}
+          />
+          <ReusableText
+            text={
+              "Are you sure you want to delete your account or you can deactivate it?"
+            }
+            family={"Medium"}
+            size={TEXT.xmedium}
+            color={COLORS.black}
+            align={"center"}
+            style={styles.modalText}
+          />
           <View style={styles.buttonContainer}>
             <TouchableOpacity
               style={styles.deleteButton}
               onPress={handleDeleteAccount}
             >
-              <Text style={styles.buttonText}>DELETE</Text>
+              <ReusableText
+                text={"DELETE"}
+                family={"SemiBold"}
+                size={TEXT.xmedium}
+                color={COLORS.white}
+                align={"center"}
+                style={styles.buttonText}
+              />
             </TouchableOpacity>
             <TouchableOpacity
               style={styles.deactivateButton}
               onPress={handleDeactivateAccount}
             >
-              <Text style={styles.deactivateButtonText}>DEACTIVATE</Text>
+              <ReusableText
+                text={"DEACTIVATE"}
+                family={"SemiBold"}
+                size={TEXT.xmedium}
+                color={COLORS.black}
+                align={"center"}
+                style={styles.buttonText}
+              />
             </TouchableOpacity>
           </View>
         </View>
@@ -89,14 +120,13 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: "center",
     alignItems: "center",
-    marginTop: 22,
-    backgroundColor: "rgba(0, 0, 0, 0.5)", // To dim the background
+    backgroundColor: "rgba(0, 0, 0, 0.5)",
   },
   modalView: {
-    width: "90%",
+    width: wp("90%"),
     backgroundColor: "white",
-    borderRadius: 20,
-    padding: 35,
+    borderRadius: wp("5%"),
+    padding: wp("5%"),
     alignItems: "center",
     shadowColor: "#000",
     shadowOffset: {
@@ -106,51 +136,41 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.25,
     shadowRadius: 4,
     elevation: 5,
-    position: "relative", // Ensure the close button is correctly positioned
+    position: "relative",
   },
   closeButton: {
     position: "absolute",
-    top: 10,
-    right: 10,
+    top: hp("2%"),
+    right: wp("5%"),
   },
   modalTitle: {
-    fontSize: 18,
-    fontWeight: "bold",
-    marginBottom: 15,
+    marginBottom: hp("1%"),
   },
   modalText: {
-    fontSize: 14,
-    textAlign: "center",
-    marginBottom: 25,
+    marginBottom: hp("3%"),
   },
   buttonContainer: {
     flexDirection: "row",
     justifyContent: "space-between",
     width: "100%",
+    gap: hp("1%"),
+    paddingHorizontal: hp("2%"),
   },
   deleteButton: {
     backgroundColor: "#FF4500",
-    padding: 10,
-    borderRadius: 5,
-    width: "45%",
+    padding: hp("2%"),
+    borderRadius: wp("3%"),
+    width: wp("35%"),
     alignItems: "center",
   },
   deactivateButton: {
     backgroundColor: "#FFFFFF",
     borderWidth: 1,
     borderColor: "#FF4500",
-    padding: 10,
-    borderRadius: 5,
-    width: "45%",
+    padding: hp("2%"),
+    borderRadius: wp("3%"),
+    width: wp("35%"),
     alignItems: "center",
-  },
-  buttonText: {
-    color: "white",
-    fontWeight: "bold",
-  },
-  deactivateButtonText: {
-    color: "#FF4500",
-    fontWeight: "bold",
   },
 });
 

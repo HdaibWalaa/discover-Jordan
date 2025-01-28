@@ -1,14 +1,19 @@
-// DrawerNavigation.js
 import React from "react";
 import { createDrawerNavigator } from "@react-navigation/drawer";
 import BottomTabNavigation from "./BottomTabNavigation";
 import CustomDrawerContent from "../components/Drawer/CustomDrawerContent";
 import { Dimensions } from "react-native";
+import { COLORS } from "../constants/theme";
+import { useTheme } from "../store/context/ThemeContext";
 
 const Drawer = createDrawerNavigator();
 const { width } = Dimensions.get("window");
 
 const DrawerNavigation = () => {
+  const { mode } = useTheme(); // Access the current theme
+
+  const isDarkMode = mode === "dark";
+
   return (
     <Drawer.Navigator
       initialRouteName="BottomTabs"
@@ -19,7 +24,10 @@ const DrawerNavigation = () => {
           borderTopRightRadius: 20,
           borderBottomRightRadius: 20,
           overflow: "hidden",
-          marginBottom: 30,
+          backgroundColor: isDarkMode ? COLORS.navey : COLORS.white,
+        },
+        drawerLabelStyle: {
+          color: isDarkMode ? COLORS.white : COLORS.navey,
         },
       }}
     >

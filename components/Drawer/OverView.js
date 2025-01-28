@@ -1,33 +1,128 @@
 import React from "react";
 import { View, Text, StyleSheet, TouchableOpacity } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
+import FontAwesome6 from "@expo/vector-icons/FontAwesome6";
 import { useNavigation } from "@react-navigation/native";
+import {
+  widthPercentageToDP as wp,
+  heightPercentageToDP as hp,
+} from "react-native-responsive-screen";
+import { ReusableText } from "../index";
+import { useTheme } from "../../store/context/ThemeContext";
+import { useLanguage } from "../../store/context/LanguageContext";
+import { COLORS, TEXT } from "../../constants/theme";
 
 const OverView = () => {
   const navigation = useNavigation();
+  const { mode } = useTheme(); // Access theme mode
+  const { translations } = useLanguage(); // Access translations
+  const isDarkMode = mode === "dark";
 
   return (
     <View style={styles.container}>
-      <Text style={styles.sectionTitle}>Overview</Text>
+      <ReusableText
+        text={translations.overview || "Overview"}
+        family={"Bold"}
+        size={TEXT.xmedium}
+        color={isDarkMode ? COLORS.white : COLORS.black} // Dynamic text color
+        align={"left"}
+        style={styles.sectionTitle}
+      />
       <View style={styles.gridContainer}>
+        {/* My Posts Card */}
         <TouchableOpacity
-          style={styles.card}
+          style={[
+            styles.card,
+            { backgroundColor: isDarkMode ? COLORS.gray : COLORS.white }, // Dynamic card background
+          ]}
           onPress={() => navigation.navigate("AllUserPosts")}
         >
-          <Ionicons name="list-outline" size={24} color="#00aaff" />
+          <Ionicons
+            name="list-outline"
+            size={wp("6%")}
+            color={isDarkMode ? COLORS.lightPrimary : "#00aaff"} // Dynamic icon color
+          />
           <View style={styles.cardText}>
-            <Text style={styles.cardTitle}>My Posts</Text>
-            <Text style={styles.cardSubtitle}>120 Posts</Text>
+            <Text
+              style={[
+                styles.cardTitle,
+                { color: isDarkMode ? COLORS.white : COLORS.black }, // Dynamic text color
+              ]}
+            >
+              {translations.myPosts || "My Posts"}
+            </Text>
           </View>
         </TouchableOpacity>
+        {/* Plans Card */}
         <TouchableOpacity
-          style={styles.card}
-          onPress={() => navigation.navigate("SuggestPlace")}
+          style={[
+            styles.card,
+            { backgroundColor: isDarkMode ? COLORS.gray : COLORS.white }, // Dynamic card background
+          ]}
+          onPress={() => navigation.navigate("UserAllPlans")}
         >
-          <Ionicons name="add-outline" size={24} color="#00aaff" />
+          <Ionicons
+            name="calendar-outline"
+            size={wp("6%")}
+            color={isDarkMode ? COLORS.lightPrimary : "#00aaff"} // Dynamic icon color
+          />
           <View style={styles.cardText}>
-            <Text style={styles.cardTitle}>Suggest Place</Text>
-            <Text style={styles.cardSubtitle}>Suggest new place</Text>
+            <Text
+              style={[
+                styles.cardTitle,
+                { color: isDarkMode ? COLORS.white : COLORS.black }, // Dynamic text color
+              ]}
+            >
+              {translations.myPlans || "My Plans"}
+            </Text>
+          </View>
+        </TouchableOpacity>
+        {/* Trips Card */}
+        <TouchableOpacity
+          style={[
+            styles.card,
+            { backgroundColor: isDarkMode ? COLORS.gray : COLORS.white }, // Dynamic card background
+          ]}
+          onPress={() => navigation.navigate("UserAllTrips")}
+        >
+          <FontAwesome6
+            name="map-location-dot"
+            size={wp("5%")}
+            color={isDarkMode ? COLORS.lightPrimary : "#00aaff"} // Dynamic icon color
+          />
+          <View style={styles.cardText}>
+            <Text
+              style={[
+                styles.cardTitle,
+                { color: isDarkMode ? COLORS.white : COLORS.black }, // Dynamic text color
+              ]}
+            >
+              {translations.myTrips || "My Trips"}
+            </Text>
+          </View>
+        </TouchableOpacity>
+        {/* Favorites Card */}
+        <TouchableOpacity
+          style={[
+            styles.card,
+            { backgroundColor: isDarkMode ? COLORS.gray : COLORS.white }, // Dynamic card background
+          ]}
+          onPress={() => navigation.navigate("Favorites")}
+        >
+          <Ionicons
+            name="heart-outline"
+            size={wp("6%")}
+            color={isDarkMode ? COLORS.lightPrimary : "#00aaff"} // Dynamic icon color
+          />
+          <View style={styles.cardText}>
+            <Text
+              style={[
+                styles.cardTitle,
+                { color: isDarkMode ? COLORS.white : COLORS.black }, // Dynamic text color
+              ]}
+            >
+              {translations.favorites || "Favorites"}
+            </Text>
           </View>
         </TouchableOpacity>
       </View>
@@ -39,24 +134,20 @@ export default OverView;
 
 const styles = StyleSheet.create({
   container: {
-    padding: 16,
+   
   },
   sectionTitle: {
-    fontSize: 18,
-    fontWeight: "bold",
-    marginBottom: 10,
+    marginBottom: hp("2%"),
   },
   gridContainer: {
     flexDirection: "row",
     flexWrap: "wrap",
-    justifyContent: "space-between",
+    gap: hp("1%"),
   },
   card: {
-    width: "48%",
-    backgroundColor: "#fff",
-    borderRadius: 10,
-    padding: 15,
-    marginBottom: 15,
+    width: "44%",
+    borderRadius: wp("3%"),
+    padding: wp("4%"),
     flexDirection: "row",
     alignItems: "center",
     shadowColor: "#000",
@@ -66,14 +157,10 @@ const styles = StyleSheet.create({
     elevation: 2,
   },
   cardText: {
-    marginLeft: 10,
+    marginLeft: wp("3%"),
   },
   cardTitle: {
-    fontSize: 16,
+    fontSize: wp("4%"),
     fontWeight: "600",
-  },
-  cardSubtitle: {
-    fontSize: 12,
-    color: "gray",
   },
 });

@@ -6,7 +6,7 @@ export const searchPlaces = async (query, lat, lng, language) => {
   try {
     const response = await axios.get(`${BASE_URL}/all/places/search`, {
       params: { query, lat, lng },
-      headers: { "Content-Language": language },
+      headers: { "Content-Language": language, "X-API-KEY": "DISCOVERJO91427" },
     });
     return response.data.data.places || []; // Return an empty array if no places
   } catch (error) {
@@ -20,7 +20,7 @@ export const searchTrips = async (query, language) => {
   try {
     const response = await axios.get(`${BASE_URL}/all/trip/search`, {
       params: { query },
-      headers: { "Content-Language": language },
+      headers: { "Content-Language": language, "X-API-KEY": "DISCOVERJO91427" },
     });
     return response.data.data.trips || []; // Return an empty array if no trips
   } catch (error) {
@@ -34,7 +34,7 @@ export const searchPlans = async (query, language) => {
   try {
     const response = await axios.get(`${BASE_URL}/all/plan/search`, {
       params: { query },
-      headers: { "Content-Language": language },
+      headers: { "Content-Language": language, "X-API-KEY": "DISCOVERJO91427" },
     });
     return response.data.data.plans || []; // Return an empty array if no plans
   } catch (error) {
@@ -48,7 +48,7 @@ export const searchUsers = async (query, language) => {
   try {
     const response = await axios.get(`${BASE_URL}/user/search`, {
       params: { query },
-      headers: { "Content-Language": language },
+      headers: { "Content-Language": language, "X-API-KEY": "DISCOVERJO91427" },
     });
     return response.data.data.users || []; // Return an empty array if no users
   } catch (error) {
@@ -62,7 +62,7 @@ export const searchPopularPlaces = async (query, language) => {
   try {
     const response = await axios.get(`${BASE_URL}/popular/places/search`, {
       params: { query },
-      headers: { "Content-Language": language },
+      headers: { "Content-Language": language, "X-API-KEY": "DISCOVERJO91427" },
     });
     return response.data.data || []; // Return an empty array if no popular places
   } catch (error) {
@@ -76,7 +76,7 @@ export const searchTopTenPlaces = async (query, language) => {
   try {
     const response = await axios.get(`${BASE_URL}/top-ten/places/search`, {
       params: { query },
-      headers: { "Content-Language": language },
+      headers: { "Content-Language": language, "X-API-KEY": "DISCOVERJO91427" },
     });
     return response.data.data || []; // Return an empty array if no top ten places
   } catch (error) {
@@ -90,7 +90,7 @@ export const searchEvents = async (query, language) => {
   try {
     const response = await axios.get(`${BASE_URL}/all/event/search`, {
       params: { query },
-      headers: { "Content-Language": language },
+      headers: { "Content-Language": language, "X-API-KEY": "DISCOVERJO91427" },
     });
     return response.data.data.events || []; // Return an empty array if no events
   } catch (error) {
@@ -104,7 +104,7 @@ export const searchVolunteering = async (query, language) => {
   try {
     const response = await axios.get(`${BASE_URL}/all/volunteering/search`, {
       params: { query },
-      headers: { "Content-Language": language },
+      headers: { "Content-Language": language, "X-API-KEY": "DISCOVERJO91427" },
     });
     return response.data.data.volunteering || []; // Return an empty array if no volunteering opportunities
   } catch (error) {
@@ -118,7 +118,7 @@ export const searchCategories = async (query, language) => {
   try {
     const response = await axios.get(`${BASE_URL}/categories/search`, {
       params: { query },
-      headers: { "Content-Language": language },
+      headers: { "Content-Language": language, "X-API-KEY": "DISCOVERJO91427" },
     });
     return response.data.data || []; // Return an empty array if no categories
   } catch (error) {
@@ -132,7 +132,7 @@ export const searchGuideTrips = async (query, language) => {
   try {
     const response = await axios.get(`${BASE_URL}/all/guide-trip/search`, {
       params: { query },
-      headers: { "Content-Language": language },
+      headers: { "Content-Language": language, "X-API-KEY": "DISCOVERJO91427" },
     });
     return response.data.data.trips || []; // Return an empty array if no guide trips
   } catch (error) {

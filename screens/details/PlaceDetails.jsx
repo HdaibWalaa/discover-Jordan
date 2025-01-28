@@ -36,6 +36,7 @@ import ImageContainer from "../../components/places/ImageContainer";
 import PlaceInfo from "../../components/places/PlaceInfo";
 
 const PlaceDetails = () => {
+  
   const route = useRoute();
   const navigation = useNavigation();
   const authCtx = useContext(AuthContext);
@@ -183,7 +184,13 @@ const PlaceDetails = () => {
     if (activeTab === "posts") {
       return <PostsSection posts={placeData.posts} />;
     } else if (activeTab === "reviews") {
-      return <ReviewsSection reviews={placeData.reviews} />;
+      return (
+        <ReviewsSection
+          reviewsData={placeData.reviews} // Pass reviews data
+          placeId={placeData.id}
+          token={authCtx.token}
+        />
+      );
     }
     return null;
   };
@@ -266,7 +273,7 @@ const PlaceDetails = () => {
             <PostsSection posts={placeData.posts} token={authCtx.token} />
           ) : (
             <ReviewsSection
-              reviews={placeData.reviews}
+              reviewsData={placeData.reviews} // Pass reviews data
               placeId={placeData.id}
               token={authCtx.token}
             />

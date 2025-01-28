@@ -9,7 +9,13 @@ import {
   NativeModules,
 } from "react-native";
 import axios from "axios";
+import {
+  widthPercentageToDP as wp,
+  heightPercentageToDP as hp,
+} from "react-native-responsive-screen";
 import BASE_URL from "../../hook/apiConfig";
+import { ReusableText } from "../../components";
+import { COLORS, TEXT, SIZES } from "../../constants/theme";
 
 const PrivacyPolicy = () => {
   const [privacyData, setPrivacyData] = useState([]);
@@ -33,6 +39,7 @@ const PrivacyPolicy = () => {
         const response = await axios.get(`${BASE_URL}/legal/document`, {
           headers: {
             "Content-Language": language,
+            "X-API-KEY": "DISCOVERJO91427",
           },
         });
         const policyData = response.data.data[0]["Privacy And Policy"];
@@ -48,16 +55,37 @@ const PrivacyPolicy = () => {
   }, [language]);
 
   if (loading) {
-    return <ActivityIndicator size="large" color="#0000ff" />;
+    return (
+      <View style={styles.loadingContainer}>
+        <ActivityIndicator size="large" color="#0000ff" />
+      </View>
+    );
   }
 
   return (
     <View style={styles.container}>
-      <ScrollView style={styles.contentContainer}>
+      <ScrollView
+        contentContainerStyle={styles.contentContainer}
+        showsVerticalScrollIndicator="false"
+      >
         {privacyData.map((section, index) => (
           <View key={index} style={styles.section}>
-            <Text style={styles.sectionTitle}>{section.title}</Text>
-            <Text style={styles.sectionContent}>{section.content}</Text>
+            <ReusableText
+              text={section.title}
+              family={"Bold"}
+              size={TEXT.large}
+              color={COLORS.black}
+              align={"left"}
+              style={styles.sectionTitle}
+            />
+            <ReusableText
+              text={section.content}
+              family={"Medium"}
+              size={TEXT.small}
+              color={COLORS.black}
+              align={"left"}
+              style={styles.sectionContent}
+            />
           </View>
         ))}
       </ScrollView>
@@ -70,21 +98,26 @@ export default PrivacyPolicy;
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#fff",
+    backgroundColor: COLORS.white,
+    paddingHorizontal: wp("5%"),
+    paddingVertical: hp("2%"),
+    marginBottom: hp("5%"),
   },
   contentContainer: {
-    padding: 20,
+    paddingBottom: hp("3%"),
+  },
+  loadingContainer: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
   },
   section: {
-    marginBottom: 20,
+    marginBottom: hp("3%"),
   },
   sectionTitle: {
-    fontSize: 18,
-    fontWeight: "bold",
-    marginBottom: 10,
+    marginBottom: hp("1%"),
   },
   sectionContent: {
-    fontSize: 16,
-    lineHeight: 24,
+    lineHeight: hp("3.5%"),
   },
 });

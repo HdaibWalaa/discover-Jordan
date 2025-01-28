@@ -42,6 +42,7 @@ import { COLORS } from "../constants/theme";
 import Header from "../components/header/Header";
 import ReusableHeader from "../components/Reusable/ReusableHeader";
 import PrivacyPolicyHeader from "../components/header/privacyPolicyHeader";
+import SuggestPlaceHeader from "../components/header/SuggestPlaceHeader";
 import ContactusHeader from "../components/header/ContactusHeader";
 import NotificationHeader from "../components/header/NotificationHeader";
 import CustomDrawerContent from "../components/Drawer/CustomDrawerContent";
@@ -247,10 +248,7 @@ const HomeStack = () => {
           name="SuggestPlace"
           component={SuggestPlace}
           options={{
-            tabBarShowLabel: false,
-            header: () => (
-              <ReusableHeader headerText={"SuggestPlace".toUpperCase()} />
-            ),
+            header: () => <SuggestPlaceHeader />,
           }}
         />
 

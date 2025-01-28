@@ -4,9 +4,12 @@ import { NavigationContainer } from "@react-navigation/native";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
 import * as SplashScreen from "expo-splash-screen";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import { ReviewProvider } from "./store/context/ReviewContext";
 import { useFonts } from "expo-font";
 import store from "./store/redux/store";
 import { COLORS } from "./constants/theme";
+import { ThemeProvider } from "./store/context/ThemeContext";
+import { LanguageProvider } from "./store/context/LanguageContext";
 import {
   Onboarding,
   Welcome,
@@ -23,6 +26,8 @@ import {
   PlacesFilter,
   EditUserPost,
   PlaceForLocation,
+  UserAllPlans,
+  UserAllTrips
 } from "./screens";
 import DrawerNavigation from "./navigation/DrawerNavigation";
 import AuthContextProvider, { AuthContext } from "./store/auth-context";
@@ -118,6 +123,16 @@ function AuthStack() {
         component={PlaceForLocation}
         options={{ headerShown: false }}
       />
+      <Stack.Screen
+        name="UserAllPlans"
+        component={UserAllPlans}
+        options={{ headerShown: false }}
+      />
+      <Stack.Screen
+        name="UserAllTrips"
+        component={UserAllTrips}
+        options={{ headerShown: false }}
+      />
     </Stack.Navigator>
   );
 }
@@ -195,6 +210,16 @@ function AppStack() {
           <Stack.Screen
             name="PlaceForLocation"
             component={PlaceForLocation}
+            options={{ headerShown: false }}
+          />
+          <Stack.Screen
+            name="UserAllPlans"
+            component={UserAllPlans}
+            options={{ headerShown: false }}
+          />
+          <Stack.Screen
+            name="UserAllTrips"
+            component={UserAllTrips}
             options={{ headerShown: false }}
           />
         </Stack.Navigator>
@@ -296,13 +321,19 @@ export default function App() {
   }
 
   return (
-    <AuthContextProvider>
-      <Provider store={store}>
-        <View style={styles.container} onLayout={onLayoutRootView}>
-          <Root />
-        </View>
-      </Provider>
-    </AuthContextProvider>
+    <LanguageProvider>
+      <ThemeProvider>
+        <AuthContextProvider>
+          <ReviewProvider>
+            <Provider store={store}>
+              <View style={styles.container} onLayout={onLayoutRootView}>
+                <Root />
+              </View>
+            </Provider>
+          </ReviewProvider>
+        </AuthContextProvider>
+      </ThemeProvider>
+    </LanguageProvider>
   );
 }
 

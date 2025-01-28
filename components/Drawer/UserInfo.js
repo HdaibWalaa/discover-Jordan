@@ -1,11 +1,19 @@
 import React, { useContext, useState, useEffect } from "react";
 import { View, Text, Image, StyleSheet, TouchableOpacity } from "react-native";
 import { AuthContext } from "../../store/auth-context";
-import { getUserProfile } from "../../util/auth"; // Make sure this function fetches data from your API
+import { getUserProfile } from "../../util/auth";
+import { useNavigation } from "@react-navigation/native";
+import { useLanguage } from "../../store/context/LanguageContext";
+import { useTheme } from "../../store/context/ThemeContext";
 
-const UserInfo = ({ onPress }) => {
+const UserInfo = () => {
+  const navigation = useNavigation();
   const authCtx = useContext(AuthContext);
   const isAuthenticated = authCtx.isAuthenticated;
+  const { language } = useLanguage(); // Use device language from context
+  const { mode } = useTheme(); // Access theme mode
+  const isDarkMode = mode === "dark";
+
   const [userData, setUserData] = useState({
     avatar: "",
     firstName: "",
@@ -17,9 +25,9 @@ const UserInfo = ({ onPress }) => {
     const fetchUserData = async () => {
       if (isAuthenticated) {
         try {
-          const profileData = await getUserProfile(authCtx.token);
+          const profileData = await getUserProfile(authCtx.token, language);
           setUserData({
-            avatar: profileData.data.avatar || "", // Ensure this is not undefined
+            avatar: profileData.data.avatar || "",
             firstName: profileData.data.first_name,
             lastName: profileData.data.last_name,
             email: profileData.data.email,
@@ -31,7 +39,7 @@ const UserInfo = ({ onPress }) => {
     };
 
     fetchUserData();
-  }, [authCtx.token, isAuthenticated]);
+  }, [authCtx.token, isAuthenticated, language]);
 
   const defaultAvatar = "https://via.placeholder.com/150";
   const avatarSource = userData.avatar
@@ -39,15 +47,34 @@ const UserInfo = ({ onPress }) => {
     : { uri: defaultAvatar };
 
   return (
-    <TouchableOpacity onPress={onPress} style={styles.userInfoContainer}>
+    <TouchableOpacity
+      onPress={() => navigation.navigate("Profile")}
+      style={styles.userInfoContainer}
+    >
       <Image source={avatarSource} style={styles.avatar} />
       <View>
-        <Text style={styles.username}>
+        <Text
+          style={[
+            styles.username,
+            { color: isDarkMode ? "#FFFFFF" : "#000000" }, // White in dark mode
+          ]}
+        >
           {isAuthenticated
             ? `${userData.firstName} ${userData.lastName}`
+            : language === "ar"
+            ? "اضغط للتسجيل"
             : "Press to register"}
         </Text>
-        {isAuthenticated && <Text style={styles.email}>{userData.email}</Text>}
+        {isAuthenticated && (
+          <Text
+            style={[
+              styles.email,
+              { color: isDarkMode ? "#D3D3D3" : "gray" }, // Light gray in dark mode
+            ]}
+          >
+            {userData.email}
+          </Text>
+        )}
       </View>
     </TouchableOpacity>
   );
@@ -74,6 +101,5 @@ const styles = StyleSheet.create({
   },
   email: {
     fontSize: 14,
-    color: "gray",
   },
 });

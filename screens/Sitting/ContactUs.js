@@ -73,6 +73,7 @@ const ContactUs = () => {
       const response = await axios.post(`${BASE_URL}/contact-us`, formData, {
         headers: {
           "Content-Type": "multipart/form-data",
+          "X-API-KEY": "DISCOVERJO91427",
         },
       });
       Alert.alert("Success", "Your message has been sent successfully.");

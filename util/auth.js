@@ -214,16 +214,16 @@ export async function resendVerificationEmail(token, email) {
 }
 
 // Function to fetch user profile
-export async function getUserProfile(token) {
+export async function getUserProfile(token,language) {
   const url = `${BASE_URL}/user/profile`;
 
   try {
-    console.log("Sending request with token:", token); // Debug log
+    console.log("Sending request with token:", token); 
     const response = await axios.get(url, {
       headers: {
-        Authorization: `Bearer ${token}`, // Ensure token is included
+        Authorization: `Bearer ${token}`, 
         Accept: "application/json",
-        "Content-Language": "en",
+        "Content-Language": language,
         "X-API-KEY": "DISCOVERJO91427",
       },
     });

@@ -42,6 +42,8 @@ import AllGuideTrip from "./trips/AllGuideTrip";
 import CreateGuideTrip from "./trips/CreateGuideTrip";
 import GuideTripDetails from "./trips/GuideTripDetails";
 import PlaceForLocation from "./search/PlaceForLocation";
+import UserAllPlans from "./Sitting/UserAllPlans";
+import UserAllTrips from "./Sitting/UserAllTrips";
 export {
   Home,
   Onboarding,
@@ -87,4 +89,6 @@ export {
   CreateGuideTrip,
   GuideTripDetails,
   PlaceForLocation,
+  UserAllPlans,
+  UserAllTrips,
 };

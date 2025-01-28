@@ -5,6 +5,7 @@ import {
   widthPercentageToDP as wp,
   heightPercentageToDP as hp,
 } from "react-native-responsive-screen";
+import { COLORS } from "../../constants/theme";
 
 
 const PrivacyPolicyHeader = () => {
@@ -39,6 +40,9 @@ const PrivacyPolicyHeader = () => {
 export default PrivacyPolicyHeader;
 
 const styles = StyleSheet.create({
+  container: {
+    backgroundColor: COLORS.white,
+  },
   headerWrapper: {
     borderBottomLeftRadius: hp(4),
     borderBottomRightRadius: hp(4),

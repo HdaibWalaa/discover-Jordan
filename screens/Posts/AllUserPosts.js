@@ -14,7 +14,7 @@ import { getUserProfile } from "../../util/auth";
 import { AuthContext } from "../../store/auth-context";
 import PostCard from "../../components/Tiles/Posts/PostCard";
 const AllUserPosts = () => {
-  const { token } = useContext(AuthContext); // Access token from AuthContext
+  const { token } = useContext(AuthContext); 
   const [userProfile, setUserProfile] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);

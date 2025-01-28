@@ -1,7 +1,17 @@
 import React, { useContext, useState, useEffect } from "react";
-import { View, ImageBackground, StyleSheet, Alert } from "react-native";
+import {
+  View,
+  ImageBackground,
+  StyleSheet,
+  TouchableOpacity,
+} from "react-native";
 import * as Location from "expo-location";
-import { widthPercentageToDP as wp, heightPercentageToDP as hp } from "react-native-responsive-screen";
+import AwesomeAlert from "react-native-awesome-alerts";
+import { Ionicons } from "@expo/vector-icons";
+import {
+  widthPercentageToDP as wp,
+  heightPercentageToDP as hp,
+} from "react-native-responsive-screen";
 import { COLORS } from "../../constants/theme";
 import { AuthContext } from "../../store/auth-context";
 import SearchBar from "./Search";
@@ -11,41 +21,38 @@ import NotificationIcon from "../../navigation/NotificationNavigator";
 import SideMenu from "../../navigation/MainStackNavigator";
 import { setUserLocation, getUserProfile } from "../../util/auth";
 import { useNavigation } from "@react-navigation/native";
+import { useTheme } from "../../store/context/ThemeContext";
+import { useLanguage } from "../../store/context/LanguageContext";
+import { LanguageProvider } from "../../store/context/LanguageContext";
 
-// Function to translate city and country names to Arabic
-const translateToArabic = (city, country) => {
-  const arabicTranslations = {
-    "San Francisco": "سان فرانسيسكو",
-    "United States of America": "الولايات المتحدة الأمريكية",
-  };
-
-  const cityAr = arabicTranslations[city] || city;
-  const countryAr = arabicTranslations[country] || country;
-
-  return `${cityAr}، ${countryAr}`;
-};
-
-// Header Component
-const Header = ({ route }) => {
+const Header = () => {
   const authCtx = useContext(AuthContext);
+  const { translations, language, toggleLanguage } = useLanguage(); // Include toggleLanguage
+  const { mode } = useTheme();
   const isAuthenticated = authCtx.isAuthenticated;
   const navigation = useNavigation();
   const [userAvatar, setUserAvatar] = useState("");
-  const [location, setLocation] = useState("Press to save address");
-  let rateLimitTimeout = null;
+  const [location, setLocation] = useState(translations.pressToSaveAddress);
+  const [showAlert, setShowAlert] = useState(false);
+
+  const headerBackground =
+    mode === "dark"
+      ? require("../../assets/images/header(dark).png")
+      : require("../../assets/images/header1.png"); // Dynamic background
 
   useEffect(() => {
     const fetchUserProfile = async () => {
       try {
-        const profileData = await getUserProfile(authCtx.token);
+        const profileData = await getUserProfile(authCtx.token, language); // Pass language
         setUserAvatar(profileData.data.avatar);
 
         const profileAddress = profileData.data.address || null;
         if (profileAddress) {
           setLocation(profileAddress);
         } else {
-          const city = profileData.data.city || "Unknown City";
-          const country = profileData.data.countryName || "Unknown Country";
+          const city = profileData.data.city || translations.unknownCity;
+          const country =
+            profileData.data.countryName || translations.unknownCountry;
           setLocation(`${city}, ${country}`);
         }
       } catch (error) {
@@ -56,18 +63,18 @@ const Header = ({ route }) => {
     if (isAuthenticated) {
       fetchUserProfile();
     }
-  }, [authCtx.token, isAuthenticated]);
+  }, [authCtx.token, isAuthenticated, language]);
 
   const handleSetLocation = async () => {
-    if (rateLimitTimeout) {
-      Alert.alert("Rate Limited", "Please wait a moment and try again.");
+    if (!isAuthenticated) {
+      setShowAlert(true); // Show alert
       return;
     }
 
     try {
       const { status } = await Location.requestForegroundPermissionsAsync();
       if (status !== "granted") {
-        Alert.alert("Permission Required", "Please allow location access.");
+        alert(translations.permissionRequired, translations.allowLocation);
         return;
       }
 
@@ -75,65 +82,103 @@ const Header = ({ route }) => {
       const { latitude, longitude } = coords;
 
       const response = await fetch(
-        `https://api.bigdatacloud.net/data/reverse-geocode-client?latitude=${latitude}&longitude=${longitude}&localityLanguage=en`
+        `https://api.bigdatacloud.net/data/reverse-geocode-client?latitude=${latitude}&longitude=${longitude}&localityLanguage=${language}`
       );
       const data = await response.json();
 
-      const city = data.city || "Unknown City";
-      const country = data.countryName || "Unknown Country";
+      const city = data.city || translations.unknownCity;
+      const country = data.countryName || translations.unknownCountry;
 
-      const sanitizedCountry = country.replace(/\s*\(.*?\)\s*/g, "").trim();
-      const addressAr = translateToArabic(city, sanitizedCountry);
-      const addressEn = `${city}, ${sanitizedCountry}`;
+      const address = `${city}, ${country}`;
+      setLocation(address);
 
-      setLocation(addressEn);
+      await setUserLocation(
+        longitude,
+        latitude,
+        address,
+        address,
+        authCtx.token
+      );
 
-      await setUserLocation(longitude, latitude, addressAr, addressEn, authCtx.token);
-
-      console.log("Location updated successfully.");
-      Alert.alert("Success", "Your location has been updated.");
+      alert(translations.success, translations.locationUpdated);
     } catch (error) {
-      if (error.response?.status === 429) {
-        const retryAfter = parseInt(error.response.headers["retry-after"], 10) * 1000;
-        rateLimitTimeout = setTimeout(() => {
-          rateLimitTimeout = null;
-        }, retryAfter);
-        Alert.alert("Rate Limited", `Please wait ${retryAfter / 1000} seconds.`);
-      } else {
-        console.error("Error updating location:", error.message);
-        Alert.alert("Error", "Unable to update location.");
-      }
+      console.error("Error updating location:", error.message);
+      alert(translations.error, translations.unableToUpdate);
     }
   };
 
   return (
-    <View style={styles.container}>
+    <View
+      style={[
+        styles.container,
+        {
+          backgroundColor: mode === "dark" ? COLORS.navey : COLORS.white,
+        },
+      ]}
+    >
       <View style={styles.headerWrapper}>
         <ImageBackground
-          source={require("../../assets/images/header1.png")}
+          source={headerBackground}
           style={styles.headerImage}
           imageStyle={{ resizeMode: "cover" }}
         >
           <View style={styles.TopHeader}>
             <View style={styles.LeftRow}>
-              <SideMenu onPress={() => console.log("Menu pressed")} />
-              <LocationComponent location={location} onPress={handleSetLocation} />
+              <SideMenu />
+              <LocationComponent
+                location={location}
+                onPress={handleSetLocation}
+              />
             </View>
             <View style={styles.RightRow}>
-              {isAuthenticated && (
+              {isAuthenticated ? (
                 <NotificationIcon
                   onPress={() => navigation.navigate("Notification")}
                 />
+              ) : (
+                <TouchableOpacity onPress={toggleLanguage}>
+                  <Ionicons
+                    name="language-outline"
+                    size={24}
+                    color={mode === "dark" ? COLORS.white : COLORS.black}
+                    style={[styles.languageIcon]}
+                  />
+                </TouchableOpacity>
               )}
               <ProfileIcon
                 avatar={userAvatar}
-                onPress={() => navigation.navigate("Profile")}
+                onPress={() =>
+                  !isAuthenticated
+                    ? setShowAlert(true)
+                    : navigation.navigate("Profile")
+                }
               />
             </View>
           </View>
         </ImageBackground>
       </View>
       <SearchBar />
+
+      {/* Awesome Alert */}
+      <AwesomeAlert
+        show={showAlert}
+        showProgress={false}
+        title={translations.joinUsTitle}
+        message={translations.joinUsMessage}
+        closeOnTouchOutside={true}
+        closeOnHardwareBackPress={false}
+        showCancelButton={true}
+        showConfirmButton={true}
+        cancelText={translations.cancel || "Cancel"}
+        confirmText={translations.signup || "Signup"}
+        cancelButtonColor={COLORS.grey}
+        confirmButtonColor={COLORS.primary}
+        onCancelPressed={() => setShowAlert(false)}
+        onConfirmPressed={() => {
+          setShowAlert(false);
+          navigation.navigate("Signup");
+        }}
+      />
     </View>
   );
 };
@@ -151,6 +196,7 @@ const styles = StyleSheet.create({
   headerImage: {
     width: "100%",
     height: hp(20),
+    
   },
   TopHeader: {
     flexDirection: "row",
@@ -166,8 +212,15 @@ const styles = StyleSheet.create({
   RightRow: {
     flexDirection: "row",
     alignItems: "center",
-    right: wp(9),
+    right: wp(5),
     top: hp(0.5),
+  },
+  languageIcon: {
+    borderWidth: 1,
+    padding: wp(2),
+    borderColor: COLORS.black,
+    borderRadius: wp(5),
+    marginRight: wp(-9),
   },
 });
 
