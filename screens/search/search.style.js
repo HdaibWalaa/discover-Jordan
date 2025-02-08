@@ -9,39 +9,41 @@ export default StyleSheet.create({
   searchContainer: {
     flexDirection: "row",
     alignItems: "center",
-    paddingHorizontal: wp(2), 
-    top:wp(-7),
+    paddingHorizontal: wp(1),
+    top: wp(5),
   },
   backButton: {
-    marginRight: wp(2.5), // 10% of screen width
-    backgroundColor: "#F2F2F7",
-    borderRadius: wp(5), // 20% of screen width
-    padding: wp(2), // 8% of screen width
+    marginRight: wp(2.5),
+    backgroundColor: COLORS.white,
+    borderRadius: wp(5),
+    padding: wp(2.3),
+    borderWidth: wp(0.1),
   },
   searchWrapper: {
     flex: 1,
     flexDirection: "row",
     alignItems: "center",
-    backgroundColor: "#F2F2F7",
-    borderRadius: wp(8), // 30% of screen width
-    paddingLeft: wp(4), // 15% of screen width
-    paddingRight: wp(10), // 40% of screen width
-    height: hp(5), // 40% of screen height
+    backgroundColor: COLORS.white,
+    borderRadius: wp(8),
+    paddingLeft: wp(4),
+    paddingRight: wp(10),
+    height: hp(5),
+    borderWidth: wp(0.1),
   },
   input: {
     flex: 1,
-    fontSize: wp(4), // Responsive font size
+    fontSize: wp(4),
     color: "#000",
   },
   clearButton: {
     position: "absolute",
-    right: wp(2.5), // Positioning based on screen width
-    padding: wp(1), // 5% of screen width
+    right: wp(2.5),
+    padding: wp(1),
     zIndex: 1,
   },
   clearIcon: {
-    width: wp(4), // 16% of screen width
-    height: wp(4), // 16% of screen height
+    width: wp(4),
+    height: wp(4),
   },
   noItemsText: {
     fontSize: 16,
@@ -49,5 +51,12 @@ export default StyleSheet.create({
     paddingHorizontal: 10,
     paddingVertical: 20,
     textAlign: "center",
+  },
+  sectionContainer: {
+    top: wp(5),
+    marginBottom: wp(5),
+  },
+  sectionTitle: {
+    marginBottom: wp(5),
   },
 });

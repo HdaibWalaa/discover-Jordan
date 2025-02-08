@@ -1,8 +1,10 @@
 import React, { useState } from "react";
 import { TouchableOpacity, Image, Alert } from "react-native";
 import * as Location from "expo-location";
+import { useNavigation } from "@react-navigation/native";
 
 const FilterButton = () => {
+   const navigation = useNavigation();
   const [isFetchingLocation, setIsFetchingLocation] = useState(false);
 
   const handleFilterPress = async () => {
@@ -63,7 +65,10 @@ const FilterButton = () => {
   };
 
   return (
-    <TouchableOpacity onPress={handleFilterPress} disabled={isFetchingLocation}>
+    <TouchableOpacity
+      onPress={() => navigation.navigate("FilterComponent")}
+      disabled={isFetchingLocation}
+    >
       <Image
         source={require("../../assets/images/icons/Filter.png")}
         style={styles.Filter}

@@ -44,6 +44,9 @@ import GuideTripDetails from "./trips/GuideTripDetails";
 import PlaceForLocation from "./search/PlaceForLocation";
 import UserAllPlans from "./Sitting/UserAllPlans";
 import UserAllTrips from "./Sitting/UserAllTrips";
+import FilterComponent from "./Sitting/FilterComponent";
+import AllFavorites from "./favorites/AllFavorites";
+import Favorites from "./favorites/Favorites";
 export {
   Home,
   Onboarding,
@@ -91,4 +94,7 @@ export {
   PlaceForLocation,
   UserAllPlans,
   UserAllTrips,
+  FilterComponent,
+  AllFavorites,
+  Favorites,
 };

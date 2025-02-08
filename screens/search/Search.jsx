@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useCallback } from "react";
 import { View, Text, ScrollView, FlatList } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import * as api from "../../services/apiService"; // Import all API services
+import * as api from "../../services/apiService"; 
 import ReusableTile from "../../components/Reusable/ReusableTile";
 import styles from "./search.style";
 import reusable from "../../components/Reusable/reusable.style";
@@ -10,7 +10,8 @@ import SearchInput from "../../components/Serach&Filter/SerachInput";
 import TypeTabs from "../../components/Serach&Filter/TypeTabs";
 import { useTheme } from "../../store/context/ThemeContext";
 import { useLanguage } from "../../store/context/LanguageContext";
-import { COLORS } from "../../constants/theme";
+import { COLORS,TEXT,SIZES } from "../../constants/theme";
+import ReusableText from "../../components/Reusable/ReusableText";
 
 const endpoints = [
   { key: "places", fn: api.searchPlaces },
@@ -28,8 +29,7 @@ const endpoints = [
 const Search = ({ navigation }) => {
   const { mode } = useTheme();
   const isDarkMode = mode === "dark";
-  const { translations, language } = useLanguage(); // Access language context
-
+  const { translations, language } = useLanguage(); 
   const [searchKey, setSearchKey] = useState("");
   const [selectedType, setSelectedType] = useState("all");
   const [results, setResults] = useState({});
@@ -42,7 +42,7 @@ const Search = ({ navigation }) => {
         return;
       }
 
-      setLoading(true); // Show loading indicator
+      setLoading(true); 
       const allResults = {};
 
       try {
@@ -51,7 +51,7 @@ const Search = ({ navigation }) => {
             .then((data) => ({ key, data }))
             .catch((error) => {
               console.error(`Error fetching ${key}:`, error);
-              return { key, data: [] }; // Fallback to empty array
+              return { key, data: [] }; 
             })
         );
 
@@ -79,19 +79,20 @@ const Search = ({ navigation }) => {
     <>
       {data && data.length > 0 && (
         <View style={styles.sectionContainer}>
-          <Text
+          <ReusableText
+            text={translations[title] || title}
+            family={"SemiBold"}
+            size={TEXT.medium}
+            color={COLORS.black}
             style={[
               styles.sectionTitle,
               { color: isDarkMode ? COLORS.white : COLORS.black },
             ]}
-          >
-            {translations[title] || title} {/* Dynamic title */}
-          </Text>
+          />
           <FlatList
             data={data}
             horizontal
             keyExtractor={(item) => {
-              // Ensure each item has a unique key
               const itemId =
                 item.id ||
                 item.place_id ||
@@ -151,7 +152,7 @@ const Search = ({ navigation }) => {
         reusable.container,
         {
           backgroundColor: isDarkMode
-            ? COLORS.darkBackground
+            ? COLORS.navey
             : COLORS.lightBackground,
         },
       ]}
@@ -159,13 +160,19 @@ const Search = ({ navigation }) => {
       <SearchInput
         searchKey={searchKey}
         setSearchKey={setSearchKey}
-        placeholder={translations.searchPlaceholder} // Dynamic placeholder
+        placeholder={translations.searchPlaceholder} 
       />
       <TypeTabs selectedType={selectedType} onSelectType={setSelectedType} />
 
       {loading ? (
         <Text style={styles.loadingText}>
-          {translations.loading || "Loading..."}
+          <ReusableText
+            text={translations.loading || "Loading..."}
+            family={"Bold"}
+            size={TEXT.large}
+            color={COLORS.black}
+            style={{ letterSpacing: 1 }}
+          />
         </Text>
       ) : (
         <ScrollView>

@@ -57,15 +57,12 @@ const useFetchPlaceForLocation = () => {
   const fetchCategories = async () => {
     setLoading(true);
     try {
-      const response = await axios.get(
-        "https://dashboard.discoverjo.com/api/categories/search",
-        {
-          headers: {
-            "X-API-KEY": "DISCOVERJO91427",
-            "Content-Language": "en",
-          },
-        }
-      );
+      const response = await axios.get(`${BASE_URL}/categories/search`, {
+        headers: {
+          "X-API-KEY": "DISCOVERJO91427",
+          "Content-Language": "en",
+        },
+      });
       setCategories(response.data.data || []);
     } catch (err) {
       setError(
@@ -80,18 +77,15 @@ const useFetchPlaceForLocation = () => {
   const fetchSubcategories = async (selectedCategories) => {
     setLoading(true);
     try {
-      const response = await axios.get(
-        "https://dashboard.discoverjo.com/api/list/subcategories",
-        {
-          headers: {
-            "X-API-KEY": "DISCOVERJO91427",
-            "Content-Language": "en",
-          },
-          params: {
-            categories: JSON.stringify(selectedCategories),
-          },
-        }
-      );
+      const response = await axios.get(`${BASE_URL}/list/subcategories`, {
+        headers: {
+          "X-API-KEY": "DISCOVERJO91427",
+          "Content-Language": "en",
+        },
+        params: {
+          categories: JSON.stringify(selectedCategories),
+        },
+      });
       setSubcategories(response.data.data || []);
     } catch (err) {
       setError(

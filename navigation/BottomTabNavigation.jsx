@@ -37,6 +37,8 @@ import {
   AllUserPosts,
   AllGuideTrip,
   CreateGuideTrip,
+  AllFavorites,
+  Favorites
 } from "../screens";
 import { COLORS } from "../constants/theme";
 import Header from "../components/header/Header";
@@ -50,7 +52,19 @@ import GuideTripDetails from "../screens/trips/GuideTripDetails";
 
 const Tab = createBottomTabNavigator();
 const Stack = createStackNavigator();
-
+const tabBarStyle = {
+  backgroundColor: "white",
+  borderTopLeftRadius: 25,
+  borderTopRightRadius: 25,
+  height: 85,
+  position: "absolute",
+  padding: 20,
+  shadowColor: "#000",
+  shadowOffset: { width: 0, height: -1 },
+  shadowOpacity: 0.2,
+  shadowRadius: 4,
+  elevation: 2,
+};
 const CustomTabBar = ({ state, descriptors, navigation }) => {
   return (
     <View style={styles.tabBarContainer}>
@@ -338,7 +352,27 @@ const FollowingStack = () => {
     </Stack.Navigator>
   );
 };
-
+const FavoritesStack = () => {
+  return (
+    <Stack.Navigator
+      screenOptions={{
+        header: (props) => <Header />,
+        headerShown: true,
+      }}
+    >
+      <Stack.Screen
+        name="FavoritesScreen"
+        component={Favorites}
+        options={{ headerShown: true }}
+      />
+      <Stack.Screen
+        name="AllFavorites"
+        component={AllFavorites}
+        options={{ headerShown: true }}
+      />
+    </Stack.Navigator>
+  );
+};
 const BottomTabNavigation = () => {
   return (
     <Tab.Navigator
@@ -358,10 +392,18 @@ const BottomTabNavigation = () => {
       />
       <Tab.Screen
         name="Favorites"
-        component={Home}
+        component={FavoritesStack}
         options={{
+          tabBarStyle: tabBarStyle,
           tabBarShowLabel: false,
-          headerShown: false, // Set to true if you want the header in the tab
+          headerShown: false,
+          tabBarIcon: ({ focused }) => (
+            <Ionicons
+              name={focused ? "heart" : "heart-outline"}
+              color={focused ? COLORS.secondary : COLORS.gray}
+              size={26}
+            />
+          ),
         }}
       />
       <Tab.Screen

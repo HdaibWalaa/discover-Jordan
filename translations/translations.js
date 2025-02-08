@@ -48,6 +48,7 @@ export default {
     volunteering: "Volunteering",
     categories: "Categories",
     guideTrips: "Guide Trips",
+    FavoritesTitles: "Your Highlighted Spots and Activities",
   },
   ar: {
     changeLanguage: "تغيير إلى الإنجليزية",
@@ -99,5 +100,6 @@ export default {
     volunteering: "تطوع",
     categories: "فئات",
     guideTrips: "رحلات مرشدة",
+    FavoritesTitles: "الأماكن والأنشطة المفضلة لديك",
   },
 };

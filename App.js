@@ -27,7 +27,8 @@ import {
   EditUserPost,
   PlaceForLocation,
   UserAllPlans,
-  UserAllTrips
+  UserAllTrips,
+  FilterComponent,
 } from "./screens";
 import DrawerNavigation from "./navigation/DrawerNavigation";
 import AuthContextProvider, { AuthContext } from "./store/auth-context";
@@ -37,105 +38,14 @@ import { GuideTripProvider } from "./store/guide-trip-context";
 import { Provider } from "react-redux";
 import * as Location from "expo-location";
 import Loader from "./components/Shimmers/Loader";
+import { useTheme } from "./store/context/ThemeContext";
 import ReusableHeader from "./components/Reusable/ReusableHeader";
 import ChatHeader from "./components/Chats/ChatHeader";
+import FilterHeader from "./components/header/FilterHeader";
 
 SplashScreen.preventAutoHideAsync();
 
 const Stack = createNativeStackNavigator();
-
-function AuthStack() {
-  return (
-    <Stack.Navigator
-      screenOptions={{
-        headerStyle: { backgroundColor: COLORS.white },
-        headerTintColor: "white",
-        contentStyle: { backgroundColor: COLORS.white },
-      }}
-    >
-      <Stack.Screen
-        name="Onboarding"
-        component={Onboarding}
-        options={{ headerShown: false }}
-      />
-      <Stack.Screen
-        name="Welcome"
-        component={Welcome}
-        options={{ headerShown: false }}
-      />
-      <Stack.Screen
-        name="BottomTabs"
-        component={BottomTabNavigation}
-        options={{ headerShown: false }}
-      />
-      <Stack.Screen
-        name="AllPopular"
-        component={AllPopular}
-        options={{ headerShown: false }}
-      />
-      <Stack.Screen
-        name="LoginEmail"
-        component={LoginEmail}
-        options={{ headerShown: false }}
-      />
-      <Stack.Screen
-        name="Login"
-        component={LoginScreen}
-        options={{ headerShown: false }}
-      />
-      <Stack.Screen
-        name="Signup"
-        component={SignupScreen}
-        options={{ headerShown: false }}
-      />
-      <Stack.Screen
-        name="ResetPassword"
-        component={ResetPasswordScreen}
-        options={{ headerShown: false }}
-      />
-      <Stack.Screen
-        name="Search"
-        component={Search}
-        options={{ headerShown: false }}
-      />
-      <Stack.Screen
-        name="EditUserProfile"
-        component={EditUserProfile}
-        options={{ headerShown: false }}
-      />
-      <Stack.Screen
-        name="PlacesFilter"
-        component={PlacesFilter}
-        options={{ headerShown: false }}
-      />
-      <Stack.Screen
-        name="PlaceDetails"
-        component={PlaceDetails}
-        options={{ headerShown: false }}
-      />
-      <Stack.Screen
-        name="EditUserPost"
-        component={EditUserPost}
-        options={{ headerShown: false }}
-      />
-      <Stack.Screen
-        name="PlaceForLocation"
-        component={PlaceForLocation}
-        options={{ headerShown: false }}
-      />
-      <Stack.Screen
-        name="UserAllPlans"
-        component={UserAllPlans}
-        options={{ headerShown: false }}
-      />
-      <Stack.Screen
-        name="UserAllTrips"
-        component={UserAllTrips}
-        options={{ headerShown: false }}
-      />
-    </Stack.Navigator>
-  );
-}
 
 function AppStack() {
   return (
@@ -154,18 +64,23 @@ function AppStack() {
             options={{ headerShown: false }}
           />
           <Stack.Screen
+            name="Search"
+            component={Search}
+            options={({ route }) => {
+              const { mode } = useTheme();
+              return {
+                headerShown: false,
+                contentStyle: {
+                  backgroundColor:
+                    mode === "dark" ? COLORS.navey : COLORS.white,
+                },
+              };
+            }}
+          />
+          <Stack.Screen
             name="AllPopular"
             component={AllPopular}
             options={{ headerShown: false }}
-          />
-          <Stack.Screen
-            name="Search"
-            component={Search}
-            options={{
-              header: () => (
-                <ReusableHeader headerText={"Search".toUpperCase()} />
-              ),
-            }}
           />
           <Stack.Screen
             name="EditUserProfile"
@@ -222,9 +137,130 @@ function AppStack() {
             component={UserAllTrips}
             options={{ headerShown: false }}
           />
+          <Stack.Screen
+            name="FilterComponent"
+            component={FilterComponent}
+            options={{
+              tabBarShowLabel: false,
+              header: () => (
+                <FilterHeader headerText={"CreateGuideTrip".toUpperCase()} />
+              ),
+            }}
+          />
         </Stack.Navigator>
       </GuideTripProvider>
     </TripProvider>
+  );
+}
+
+function AuthStack() {
+  return (
+    <Stack.Navigator
+      screenOptions={{
+        headerStyle: { backgroundColor: COLORS.white },
+        headerTintColor: "white",
+        contentStyle: { backgroundColor: COLORS.white },
+      }}
+    >
+      <Stack.Screen
+        name="Search"
+        component={Search}
+        options={({ route }) => {
+          const { mode } = useTheme();
+          return {
+            headerShown: false,
+            contentStyle: {
+              backgroundColor: mode === "dark" ? COLORS.navey : COLORS.white,
+            },
+          };
+        }}
+      />
+      <Stack.Screen
+        name="Onboarding"
+        component={Onboarding}
+        options={{ headerShown: false }}
+      />
+      <Stack.Screen
+        name="Welcome"
+        component={Welcome}
+        options={{ headerShown: false }}
+      />
+      <Stack.Screen
+        name="BottomTabs"
+        component={BottomTabNavigation}
+        options={{ headerShown: false }}
+      />
+      <Stack.Screen
+        name="AllPopular"
+        component={AllPopular}
+        options={{ headerShown: false }}
+      />
+      <Stack.Screen
+        name="LoginEmail"
+        component={LoginEmail}
+        options={{ headerShown: false }}
+      />
+      <Stack.Screen
+        name="Login"
+        component={LoginScreen}
+        options={{ headerShown: false }}
+      />
+      <Stack.Screen
+        name="Signup"
+        component={SignupScreen}
+        options={{ headerShown: false }}
+      />
+      <Stack.Screen
+        name="ResetPassword"
+        component={ResetPasswordScreen}
+        options={{ headerShown: false }}
+      />
+      <Stack.Screen
+        name="EditUserProfile"
+        component={EditUserProfile}
+        options={{ headerShown: false }}
+      />
+      <Stack.Screen
+        name="PlacesFilter"
+        component={PlacesFilter}
+        options={{ headerShown: false }}
+      />
+      <Stack.Screen
+        name="PlaceDetails"
+        component={PlaceDetails}
+        options={{ headerShown: false }}
+      />
+      <Stack.Screen
+        name="EditUserPost"
+        component={EditUserPost}
+        options={{ headerShown: false }}
+      />
+      <Stack.Screen
+        name="PlaceForLocation"
+        component={PlaceForLocation}
+        options={{ headerShown: false }}
+      />
+      <Stack.Screen
+        name="UserAllPlans"
+        component={UserAllPlans}
+        options={{ headerShown: false }}
+      />
+      <Stack.Screen
+        name="UserAllTrips"
+        component={UserAllTrips}
+        options={{ headerShown: false }}
+      />
+      <Stack.Screen
+        name="FilterComponent"
+        component={FilterComponent}
+        options={{
+          tabBarShowLabel: false,
+          header: () => (
+            <FilterHeader headerText={"CreateGuideTrip".toUpperCase()} />
+          ),
+        }}
+      />
+    </Stack.Navigator>
   );
 }
 
