@@ -58,8 +58,6 @@ const CategoryList = () => {
             </View>
             <ReusableShuffle onPress={shuffleData} />
           </View>
-
-          {/* Pass the categories to AllCategories component */}
           <AllCategories categories={categoryData} />
         </View>
       </SafeAreaView>

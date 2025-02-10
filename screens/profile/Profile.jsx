@@ -20,6 +20,9 @@ import { useNavigation, useRoute } from "@react-navigation/native";
 import { AuthContext } from "../../store/auth-context";
 import { getUserProfile } from "../../util/auth";
 import FollowersModal from "./FollowersModal";
+import { useTheme } from "../../store/context/ThemeContext";
+import { useLanguage } from "../../store/context/LanguageContext";
+import translations from "../../translations/translations";
 
 const Tab = createMaterialTopTabNavigator();
 
@@ -31,6 +34,9 @@ const Profile = () => {
   const [profile, setProfile] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isFollowersModalVisible, setIsFollowersModalVisible] = useState(false);
+  const { mode } = useTheme();
+  const { language } = useLanguage();
+  const translatedText = translations[language] || translations["en"];
 
   useEffect(() => {
     const fetchProfile = async () => {
