@@ -214,25 +214,27 @@ export async function resendVerificationEmail(token, email) {
 }
 
 // Function to fetch user profile
-export async function getUserProfile(token,language) {
+export async function getUserProfile(token, language) {
   const url = `${BASE_URL}/user/profile`;
 
   try {
-    console.log("Sending request with token:", token); 
+    console.log("Sending request with token:", token);
+    console.log("Language being sent:", language); // ✅ Debugging log
+
     const response = await axios.get(url, {
       headers: {
-        Authorization: `Bearer ${token}`, 
+        Authorization: `Bearer ${token}`,
         Accept: "application/json",
-        "Content-Language": language,
+        "Content-Language": language, // ✅ Send `ar` or `en` dynamically
         "X-API-KEY": "DISCOVERJO91427",
       },
     });
+
+    console.log("Profile Response:", response.data); // ✅ Debugging log
     return response.data;
   } catch (error) {
     if (error.response) {
       console.error("Error response:", error.response.data);
-      console.error("Error status:", error.response.status);
-      console.error("Error headers:", error.response.headers);
     } else if (error.request) {
       console.error("Error request:", error.request);
     } else {
@@ -241,6 +243,7 @@ export async function getUserProfile(token,language) {
     throw error;
   }
 }
+
 
 
 // Function to update user profile

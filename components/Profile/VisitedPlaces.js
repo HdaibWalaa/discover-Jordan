@@ -8,6 +8,7 @@ import axios from "axios";
 import { COLORS, TEXT } from "../../constants/theme";
 import { AntDesign } from "@expo/vector-icons";
 import SelectPlace from "../trip/SelcetPlace";
+import BASE_URL from "../../hook/apiConfig";
 
 const VisitedPlaces = ({ visitedPlaces, refreshProfile }) => {
   const authCtx = useContext(AuthContext);
@@ -26,12 +27,13 @@ const VisitedPlaces = ({ visitedPlaces, refreshProfile }) => {
 
     try {
       await axios.post(
-        `https://dashboard.discoverjo.com/api/visited/place/${selectedPlaceId}`,
+        `${BASE_URL}/visited/place/${selectedPlaceId}`,
         {},
         {
           headers: {
             Authorization: `Bearer ${authCtx.token}`,
             Accept: "application/json",
+            "X-API-KEY": "DISCOVERJO91427",
           },
         }
       );
@@ -45,15 +47,13 @@ const VisitedPlaces = ({ visitedPlaces, refreshProfile }) => {
 
   const handleDeletePlace = async (placeId) => {
     try {
-      await axios.delete(
-        `https://dashboard.discoverjo.com/api/visited/place/${placeId}/delete`,
-        {
-          headers: {
-            Authorization: `Bearer ${authCtx.token}`,
-            Accept: "application/json",
-          },
-        }
-      );
+      await axios.delete(`${BASE_URL}/visited/place/${placeId}/delete`, {
+        headers: {
+          Authorization: `Bearer ${authCtx.token}`,
+          Accept: "application/json",
+          "X-API-KEY": "DISCOVERJO91427",
+        },
+      });
       refreshProfile();
     } catch (error) {
       Alert.alert("Error", "Unable to delete the place.");
@@ -80,12 +80,6 @@ const VisitedPlaces = ({ visitedPlaces, refreshProfile }) => {
 
   return (
     <View style={styles.container}>
-      <ReusableText
-        text={"Visited Places"}
-        family={"Medium"}
-        size={TEXT.large}
-        color={COLORS.black}
-      />
       <View style={styles.mapContainer}>
         <MapView
           style={styles.map}

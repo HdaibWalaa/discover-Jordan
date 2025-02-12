@@ -45,7 +45,6 @@ const styles = StyleSheet.create({
     justifyContent: "flex-start",
     alignItems: "center",
     gap: wp("1%"),
-   
   },
   profile: {
     justifyContent: "center",
@@ -96,14 +95,20 @@ const styles = StyleSheet.create({
     padding: wp("3%"),
     top: hp("-2%"),
   },
+  aboutContainer: {
+    top: hp("-2%"),
+  },
   bottomSpacing: {
-    height: hp("10%"),
+    height: hp("5%"),
+  },
+  aboutTitleContainer: {
+    marginBottom: hp("1%"),
   },
   modalContainer: {
     flex: 1,
     justifyContent: "center",
     alignItems: "center",
-    backgroundColor: "rgba(0, 0, 0, 0.5)", // Dim the background
+    backgroundColor: "rgba(0, 0, 0, 0.5)", 
   },
   modalContent: {
     width: "80%",

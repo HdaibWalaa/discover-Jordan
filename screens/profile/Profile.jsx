@@ -6,12 +6,15 @@ import {
   ImageBackground,
   TouchableOpacity,
   Alert,
+  Platform,
+  NativeModules,
+  ActivityIndicator,
 } from "react-native";
 import { createMaterialTopTabNavigator } from "@react-navigation/material-top-tabs";
-import Following from "../follow/Following";
-import AllPlans from "../plan/AllPlans";
-import AllPersonalTrip from "../trips/AllPersonalTrip";
 import TopInfo from "./TopInfo";
+import UserPosts from "./UserPosts";
+import UserTrips from "./UserTrips";
+import UserPlans from "./UserPlans";
 import { COLORS, SIZES } from "../../constants/theme";
 import { ReusableText } from "../../components";
 import styles from "./topTab.style";
@@ -31,44 +34,63 @@ const Profile = () => {
   const route = useRoute();
   const { userId, isOtherUser } = route.params || {};
   const authCtx = useContext(AuthContext);
+  const { mode } = useTheme();
+  const { language, setLanguage } = useLanguage();
+  const translatedText = translations[language] || translations["en"];
+
+  const deviceLanguage =
+    Platform.OS === "ios"
+      ? NativeModules.SettingsManager.settings.AppleLocale ||
+        NativeModules.SettingsManager.settings.AppleLanguages[0]
+      : NativeModules.I18nManager.localeIdentifier;
+
+  const detectedLanguage = deviceLanguage
+    ? deviceLanguage.split(/[-_]/)[0]
+    : "en";
+
+  const currentLanguage = language || detectedLanguage;
+
   const [profile, setProfile] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isFollowersModalVisible, setIsFollowersModalVisible] = useState(false);
-  const { mode } = useTheme();
-  const { language } = useLanguage();
-  const translatedText = translations[language] || translations["en"];
 
   useEffect(() => {
     const fetchProfile = async () => {
       try {
         const profileId = isOtherUser ? userId : authCtx.userId;
-        const userProfile = await getUserProfile(authCtx.token, profileId);
+        const userProfile = await getUserProfile(authCtx.token, language); 
         setProfile(userProfile.data);
       } catch (error) {
-        Alert.alert("Error", "An error occurred while fetching the profile.");
+        Alert.alert(
+          translations[language]?.error || "Error",
+          translations[language]?.profileFetchError ||
+            "An error occurred while fetching the profile."
+        );
       } finally {
         setIsLoading(false);
       }
     };
 
     fetchProfile();
-  }, [authCtx.token, userId, isOtherUser]);
+  }, [authCtx.token, userId, isOtherUser, language]); 
 
   const handleLogout = async () => {
     try {
-      authCtx.logout(); // Clear the token
+      authCtx.logout();
       navigation.reset({
         index: 0,
         routes: [{ name: "Onboarding" }],
       });
     } catch (error) {
-      console.error("Logout error:", error);
-      Alert.alert("Logout Error", "An error occurred during logout.");
+      Alert.alert(
+        translatedText.error || "Error",
+        translatedText.logoutError || "An error occurred during logout."
+      );
     }
   };
 
   if (isLoading) {
-    return <Text>Loading...</Text>;
+    return <ActivityIndicator size="large" color={COLORS.primary} />;
   }
 
   return (
@@ -83,9 +105,13 @@ const Profile = () => {
             <TouchableOpacity
               style={styles.actionButton}
               onPress={handleLogout}
-              accessibilityLabel="Logout"
+              accessibilityLabel={translatedText.logout || "Logout"}
             >
-              <AntDesign name="logout" size={24} color={COLORS.black} />
+              <AntDesign
+                name="logout"
+                size={24}
+                color={mode === "dark" ? COLORS.white : COLORS.black}
+              />
             </TouchableOpacity>
           </View>
 
@@ -93,7 +119,7 @@ const Profile = () => {
             <TouchableOpacity
               style={styles.actionButton}
               onPress={() => setIsFollowersModalVisible(true)}
-              accessibilityLabel="Followers List"
+              accessibilityLabel={translatedText.followers || "Followers"}
             >
               <Image
                 source={require("../../assets/images/icons/followersList.png")}
@@ -104,9 +130,15 @@ const Profile = () => {
               <TouchableOpacity
                 style={styles.actionButton}
                 onPress={() => navigation.navigate("EditUserProfile")}
-                accessibilityLabel="Edit Profile"
+                accessibilityLabel={
+                  translatedText.editProfile || "Edit Profile"
+                }
               >
-                <AntDesign name="edit" size={24} color={COLORS.black} />
+                <AntDesign
+                  name="edit"
+                  size={24}
+                  color={mode === "dark" ? COLORS.white : COLORS.black}
+                />
               </TouchableOpacity>
             )}
           </View>
@@ -122,16 +154,16 @@ const Profile = () => {
             style={styles.image}
           />
           <ReusableText
-            text={`${profile?.first_name} ${profile?.last_name}`}
+            text={`${profile?.first_name || ""} ${profile?.last_name || ""}`}
             family={"Bold"}
             size={SIZES.large}
-            color={COLORS.black}
+            color={mode === "dark" ? COLORS.white : COLORS.black}
           />
           <ReusableText
-            text={`@${profile?.username}`}
+            text={`@${profile?.username || ""}`}
             family={"Regular"}
             size={SIZES.medium}
-            color={COLORS.black}
+            color={mode === "dark" ? COLORS.lightGrey : COLORS.black}
           />
         </View>
       </ImageBackground>
@@ -142,12 +174,40 @@ const Profile = () => {
             style={styles.followBox}
             onPress={() => setIsFollowersModalVisible(true)}
           >
-            <Text style={styles.followCount}>{profile?.follower_number}</Text>
-            <Text style={styles.followLabel}>Followers</Text>
+            <Text
+              style={[
+                styles.followCount,
+                mode === "dark" && styles.followCountDark,
+              ]}
+            >
+              {profile?.follower_number}
+            </Text>
+            <Text
+              style={[
+                styles.followLabel,
+                mode === "dark" && styles.followLabelDark,
+              ]}
+            >
+              {translatedText.followers || "Followers"}
+            </Text>
           </TouchableOpacity>
           <TouchableOpacity style={styles.followBox}>
-            <Text style={styles.followCount}>{profile?.following_number}</Text>
-            <Text style={styles.followLabel}>Following</Text>
+            <Text
+              style={[
+                styles.followCount,
+                mode === "dark" && styles.followCountDark,
+              ]}
+            >
+              {profile?.following_number}
+            </Text>
+            <Text
+              style={[
+                styles.followLabel,
+                mode === "dark" && styles.followLabelDark,
+              ]}
+            >
+              {translatedText.following || "Following"}
+            </Text>
           </TouchableOpacity>
         </View>
 
@@ -155,24 +215,40 @@ const Profile = () => {
           <Tab.Navigator
             screenOptions={{
               tabBarScrollEnabled: true,
-              tabBarStyle: { backgroundColor: COLORS.white },
+              tabBarStyle: {
+                backgroundColor:
+                  mode === "dark" ? COLORS.lightGrey : COLORS.white,
+              },
               tabBarIndicatorStyle: { backgroundColor: COLORS.primary },
-              tabBarLabelStyle: { color: COLORS.black },
+              tabBarLabelStyle: {
+                color: mode === "dark" ? COLORS.white : COLORS.black,
+              },
             }}
           >
             <Tab.Screen
-              name="ABOUT"
+              name={translatedText.about || "About"}
               component={TopInfo}
               initialParams={{ profile }}
             />
-            <Tab.Screen name="POSTS" component={Following} />
-            <Tab.Screen name="REVIEW" component={AllPlans} />
-            <Tab.Screen name="Trips" component={AllPersonalTrip} />
+            <Tab.Screen
+              name={translatedText.posts || "Posts"}
+              component={UserPosts}
+              initialParams={{ profile }}
+            />
+            <Tab.Screen
+              name={translatedText.trips || "Trips"}
+              component={UserTrips}
+              initialParams={{ profile }}
+            />
+            <Tab.Screen
+              name={translatedText.Plans || "PLans"}
+              component={UserPlans}
+              initialParams={{ profile }}
+            />
           </Tab.Navigator>
         </View>
       </View>
 
-      {/* Followers Modal */}
       <FollowersModal
         isVisible={isFollowersModalVisible}
         onClose={() => setIsFollowersModalVisible(false)}
