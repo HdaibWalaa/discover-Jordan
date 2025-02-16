@@ -50,14 +50,14 @@ export const searchUsers = async (query, language) => {
       params: { query },
       headers: { "Content-Language": language, "X-API-KEY": "DISCOVERJO91427" },
     });
-    return response.data.data.users || []; // Return an empty array if no users
+    return response.data.data.users || []; 
   } catch (error) {
     console.error("Error fetching users:", error);
     throw error;
   }
 };
 
-// Function to search for popular places
+
 export const searchPopularPlaces = async (query, language) => {
   try {
     const response = await axios.get(`${BASE_URL}/popular/places/search`, {
@@ -127,7 +127,6 @@ export const searchCategories = async (query, language) => {
   }
 };
 
-// Function to search for guide trips
 export const searchGuideTrips = async (query, language) => {
   try {
     const response = await axios.get(`${BASE_URL}/all/guide-trip/search`, {

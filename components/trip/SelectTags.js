@@ -5,6 +5,12 @@ import ReusableText from "../Reusable/ReusableText";
 import axios from "axios";
 import { AuthContext } from "../../store/auth-context";
 import BASE_URL from "../../hook/apiConfig";
+import { useLanguage } from "../../store/context/LanguageContext";
+import translations from "../../translations/translations";
+import {
+  widthPercentageToDP as wp,
+  heightPercentageToDP as hp,
+} from "react-native-responsive-screen";
 
 const TagOption = ({ label, isSelected, onPress, image }) => {
   return (
@@ -19,6 +25,9 @@ const TagOption = ({ label, isSelected, onPress, image }) => {
 };
 
 const SelectTags = ({ label, onValueChange, value = [] }) => {
+  const { language } = useLanguage();
+  const localizedText = translations[language] || translations["en"];
+
   const [selectedTags, setSelectedTags] = useState(value);
   const [tags, setTags] = useState([]);
   const [tagsError, setTagsError] = useState("");
@@ -33,7 +42,7 @@ const SelectTags = ({ label, onValueChange, value = [] }) => {
           headers: {
             Authorization: `Bearer ${token}`,
             Accept: "application/json",
-            "Content-Language": "en",
+            "Content-Language": language,
             "X-API-KEY": "DISCOVERJO91427",
           },
         });
@@ -50,7 +59,7 @@ const SelectTags = ({ label, onValueChange, value = [] }) => {
     };
 
     fetchTags();
-  }, [token]);
+  }, [token, language]);
 
   const handleTagPress = (id) => {
     let updatedSelectedTags;
@@ -60,11 +69,13 @@ const SelectTags = ({ label, onValueChange, value = [] }) => {
       updatedSelectedTags = [...selectedTags, id];
     }
     setSelectedTags(updatedSelectedTags);
+
     if (updatedSelectedTags.length < 3) {
-      setTagsError("Please select at least three tags.");
+      setTagsError(localizedText.selectAtLeastThreeTags);
     } else {
       setTagsError("");
     }
+
     if (onValueChange) {
       onValueChange(updatedSelectedTags);
     }
@@ -81,7 +92,7 @@ const SelectTags = ({ label, onValueChange, value = [] }) => {
           text={label}
           family={"Regular"}
           size={TEXT.medium}
-          color={COLORS.dark} // Set label color to COLORS.dark
+          color={COLORS.dark}
         />
       )}
       <View style={styles.tagsContainer}>
@@ -100,7 +111,7 @@ const SelectTags = ({ label, onValueChange, value = [] }) => {
             />
           ))
         ) : (
-          <Text>No tags available.</Text>
+          <Text style={styles.noTagsText}>{localizedText.noTagsAvailable}</Text>
         )}
       </View>
       {tagsError ? <Text style={styles.errorText}>{tagsError}</Text> : null}
@@ -110,21 +121,23 @@ const SelectTags = ({ label, onValueChange, value = [] }) => {
 
 const styles = StyleSheet.create({
   container: {
-    marginVertical: 20,
+    marginVertical: hp(2),
   },
   tagsContainer: {
     flexDirection: "row",
     flexWrap: "wrap",
-    marginTop: 10,
+    marginTop: hp(1),
   },
   tagOption: {
+    flexDirection: "row", 
+    alignItems: "center",
     borderWidth: 1,
     borderColor: COLORS.lightGray,
-    borderRadius: 8,
-    padding: 10,
-    margin: 5,
+    borderRadius: wp(8),
+    paddingVertical: hp(1.5),
+    paddingHorizontal: wp(3),
+    margin: wp(1),
     backgroundColor: COLORS.white,
-    alignItems: "center",
   },
   selectedTag: {
     backgroundColor: COLORS.primary,
@@ -132,17 +145,22 @@ const styles = StyleSheet.create({
   },
   tagText: {
     color: COLORS.black,
-    marginTop: 5,
+    marginLeft: wp(2),
+    fontSize: wp(3.5),
   },
   tagImage: {
-    width: 50,
-    height: 50,
+    width: wp(7), 
+    height: wp(7),
     resizeMode: "contain",
   },
   errorText: {
     color: COLORS.red,
-    marginTop: 5,
-    fontSize: 14,
+    marginTop: hp(0.5),
+    fontSize: wp(3.5),
+  },
+  noTagsText: {
+    fontSize: wp(4),
+    color: COLORS.gray,
   },
 });
 

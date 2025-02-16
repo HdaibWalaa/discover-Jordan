@@ -2,6 +2,8 @@ import { StyleSheet, View, Image } from "react-native";
 import React from "react";
 import { COLORS, SIZES } from "../../constants/theme";
 import ReusableText from "../Reusable/ReusableText";
+import { useLanguage } from "../../store/context/LanguageContext";
+import translations from "../../translations/translations";
 import {
   widthPercentageToDP as wp,
   heightPercentageToDP as hp,
@@ -14,6 +16,9 @@ const WALLET_ICON = require("../../assets/images/icons/walletTrip.png");
 const SMILE_ICON = require("../../assets/images/icons/smile.png");
 
 const TripInfo = ({ tripDetails }) => {
+  const { language } = useLanguage();
+  const t = translations[language]; // 🌍 Get translated text
+
   const genderIcon =
     tripDetails.gender === "Female"
       ? FEMALE_ICON
@@ -32,6 +37,7 @@ const TripInfo = ({ tripDetails }) => {
           color={COLORS.gray}
         />
       </View>
+
       <View style={styles.additionalInfoItem}>
         <Image source={WALLET_ICON} style={styles.icon} />
         <ReusableText
@@ -41,10 +47,12 @@ const TripInfo = ({ tripDetails }) => {
           color={COLORS.gray}
         />
       </View>
+
+      {/* Age Range Info */}
       <View style={styles.additionalInfoItem}>
         <Image source={SMILE_ICON} style={styles.icon} />
         <ReusableText
-          text={`${tripDetails.age_min} - ${tripDetails.age_max}`}
+          text={`${tripDetails.age_min} - ${tripDetails.age_max}`} // Dynamic translation
           family={"Regular"}
           size={SIZES.medium}
           color={COLORS.gray}
@@ -66,21 +74,16 @@ const styles = StyleSheet.create({
     flex: 1,
     alignItems: "center",
     justifyContent: "center",
-    height: hp("9%"), // Responsive height
-    borderRadius: wp("3%"), // Responsive border radius
+    height: hp("9%"),
+    borderRadius: wp("3%"),
     backgroundColor: "#F6F6F6",
-    marginHorizontal: wp("1.5%"), // Responsive margin between items
+    marginHorizontal: wp("1.5%"),
     borderWidth: 2,
     borderColor: COLORS.lightGrey,
   },
   icon: {
-    height: wp("7%"), // Responsive icon size
+    height: wp("7%"),
     width: wp("7%"),
-    marginBottom: hp("1%"), // Responsive margin below the icon
-  },
-  additionalInfoValue: {
-    fontSize: wp("4%"), // Responsive font size
-    fontWeight: "Medium",
-    color: COLORS.gray,
+    marginBottom: hp("1%"),
   },
 });

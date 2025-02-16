@@ -8,8 +8,8 @@ import {
   Alert,
   TouchableOpacity,
   Modal,
-  FlatList,
-  StyleSheet,
+  Platform,
+  NativeModules,
 } from "react-native";
 import axios from "axios";
 import { AuthContext } from "../../store/auth-context";
@@ -31,14 +31,39 @@ import JoinTrip from "../../components/trip/JoinTrip";
 import { MenuProvider } from "react-native-popup-menu";
 import HeightSpacer from "../../components/Reusable/HeightSpacer";
 import BASE_URL from "../../hook/apiConfig";
+import { useLanguage } from "../../store/context/LanguageContext";
+import translations from "../../translations/translations";
+import AwesomeAlert from "react-native-awesome-alerts";
 
 const TripDetails = ({ route, navigation }) => {
   const { tripId } = route.params;
   const { token } = useContext(AuthContext);
+  const [alertVisible, setAlertVisible] = useState(false);
+  const [alertMessage, setAlertMessage] = useState("");
 
+
+  const { language: userPreferredLanguage } = useLanguage(); // 🌍 Get user's selected language from the app
+
+  // ✅ Get device language (fallback if user hasn’t changed it in the app)
+  const deviceLanguage =
+    Platform.OS === "ios"
+      ? NativeModules.SettingsManager.settings.AppleLocale ||
+        NativeModules.SettingsManager.settings.AppleLanguages[0]
+      : NativeModules.I18nManager.localeIdentifier;
+
+  let systemLanguage = deviceLanguage.includes("_")
+    ? deviceLanguage.split("_")[0]
+    : deviceLanguage.split("-")[0];
+
+  systemLanguage = systemLanguage || "en";
+
+  // ✅ Final language choice (app preference > system default)
+  const finalLanguage = userPreferredLanguage || systemLanguage;
+
+  const localizedText = translations[finalLanguage] || translations["en"];
   // Fetch hook for trip details
-  const { tripDetails, isLoading, error, joinTrip, deleteTrip, editTrip } =
-    FetchTrip(tripId, token);
+ const { tripDetails, isLoading, error, joinTrip, deleteTrip, editTrip } =
+   FetchTrip(tripId, token, finalLanguage); 
 
   // Local states for user status
   const [isCreator, setIsCreator] = useState(false);
@@ -49,87 +74,124 @@ const TripDetails = ({ route, navigation }) => {
   const [modalVisible, setModalVisible] = useState(false);
   const [userRequests, setUserRequests] = useState([]);
 
-  // Tabs
+
   const [activeTab, setActiveTab] = useState("posts");
 
-useEffect(() => {
-  const checkUserStatus = async () => {
-    try {
-      const profile = await getUserProfile(token);
-      const userId = profile.data.id;
+  useEffect(() => {
+    const checkUserStatus = async () => {
+      try {
+        const profile = await getUserProfile(token);
+        const userId = profile.data.id;
 
-      // Is this user the trip's creator?
-      if (userId === tripDetails?.creator_id) {
-        setIsCreator(true);
+        if (userId === tripDetails?.creator_id) {
+          setIsCreator(true);
+        }
+
+        const inAttendances = tripDetails?.attendances.some(
+          (att) => att.id === userId
+        );
+        setIsUserJoined(!!inAttendances);
+
+        const inRequests = tripDetails?.users_request.some(
+          (req) => req.id === userId
+        );
+        setIsRequestPending(inRequests && !inAttendances);
+
+        const filteredRequests = (tripDetails?.users_request || []).filter(
+          (user) => user.status === 0
+        );
+        setUserRequests(filteredRequests);
+      } catch (err) {
+        console.error("Error checking user status:", err);
       }
+    };
 
-      // Is the user in attendances?
-      const inAttendances = tripDetails?.attendances.some(
-        (att) => att.id === userId
-      );
-      setIsUserJoined(!!inAttendances);
-
-      // Is the user in users_request (but not in attendances)?
-      const inRequests = tripDetails?.users_request.some(
-        (req) => req.id === userId
-      );
-      setIsRequestPending(inRequests && !inAttendances);
-
-      // Populate the creator’s requests for the modal filtering only status 0
-      const filteredRequests = (tripDetails?.users_request || []).filter(
-        (user) => user.status === 0
-      );
-      setUserRequests(filteredRequests);
-    } catch (err) {
-      console.error("Error checking user status:", err);
+    if (tripDetails) {
+      checkUserStatus();
     }
-  };
+  }, [tripDetails, token]);
 
-  if (tripDetails) {
-    checkUserStatus();
-  }
-}, [tripDetails, token]);
-
-
-  // Handle user tapping "JOIN" button
-  const handleJoinTrip = async () => {
-    const result = await joinTrip();
-    if (result.success) {
-      // If the trip requires acceptance, show "Request Pending"
-      setIsRequestPending(true);
-    }
-    Alert.alert(result.success ? "Success" : "Error", result.message);
-  };
-
-  // **Handle user tapping "LEAVE" button**
-const handleLeaveTrip = async () => {
+const handleJoinTrip = async () => {
   try {
-    const response = await axios.delete(
-      `${BASE_URL}/trip/join/cancel/${tripId}`,
+    const response = await axios.post(
+      `${BASE_URL}/trip/join/${tripId}`,
+      {},
       {
         headers: {
           Authorization: `Bearer ${token}`,
           Accept: "application/json",
           "X-API-KEY": "DISCOVERJO91427",
+          "Content-Language": finalLanguage,
         },
       }
     );
 
     if (response.status === 200) {
-      Alert.alert("Success", "You have left the trip.");
-      setIsUserJoined(false);
-      setIsRequestPending(false);
+      Alert.alert(localizedText.success, localizedText.joinSuccess);
+      setIsRequestPending(true);
     }
-  } catch (err) {
-    console.log("Error leaving trip:", err.message);
-    if (err.response) {
-      console.log("Error response data:", err.response.data);
-      console.log("Error response status:", err.response.status);
+  } catch (error) {
+    console.error("Error joining trip:", error.response?.data || error.message);
+
+    let errorMsg = localizedText.joinError; // Default message
+
+    if (error.response && error.response.data && error.response.data.msg) {
+      const messages = error.response.data.msg;
+      if (Array.isArray(messages)) {
+        errorMsg = messages.join("\n"); // ✅ Show multiple messages correctly
+      } else if (typeof messages === "string") {
+        errorMsg = messages;
+      }
     }
-    Alert.alert("Error", "Could not leave the trip.");
+
+    setAlertMessage(errorMsg);
+    setAlertVisible(true);
   }
 };
 
+
+
+  if (isLoading) {
+    return <ActivityIndicator size="large" color={COLORS.primary} />;
+  }
+  if (error) {
+    return (
+      <View style={styles.centered}>
+        <Text>
+          {localizedText.error}: {error.message}
+        </Text>
+      </View>
+    );
+  }
+
+  // **Handle user tapping "LEAVE" button**
+  const handleLeaveTrip = async () => {
+    try {
+      const response = await axios.delete(
+        `${BASE_URL}/trip/join/cancel/${tripId}`,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            Accept: "application/json",
+            "X-API-KEY": "DISCOVERJO91427",
+          },
+        }
+      );
+
+      if (response.status === 200) {
+        Alert.alert("Success", "You have left the trip.");
+        setIsUserJoined(false);
+        setIsRequestPending(false);
+      }
+    } catch (err) {
+      console.log("Error leaving trip:", err.message);
+      if (err.response) {
+        console.log("Error response data:", err.response.data);
+        console.log("Error response status:", err.response.status);
+      }
+      Alert.alert("Error", "Could not leave the trip.");
+    }
+  };
 
   // Edit trip
   const handleEditTrip = () => {
@@ -184,32 +246,31 @@ const handleLeaveTrip = async () => {
   };
 
   // Reject user request
- const handleReject = async (userId) => {
-   try {
-     const response = await axios.post(
-       // Note tripId is in the URL
-       `${BASE_URL}/trip/user/cancel/${tripId}`,
-       // Possibly empty body or { user_id: userId } if needed
-       {},
-       {
-         headers: {
-           Authorization: `Bearer ${token}`,
-           Accept: "application/json",
-           "X-API-KEY": "DISCOVERJO91427",
-         },
-       }
-     );
-     if (response.status === 200) {
-       Alert.alert("Success", `User ID: ${userId} rejected!`);
-       const updatedRequests = userRequests.filter((u) => u.id !== userId);
-       setUserRequests(updatedRequests);
-     }
-   } catch (error) {
-     Alert.alert("Error", "Failed to reject user request.");
-     console.error(error);
-   }
- };
-
+  const handleReject = async (userId) => {
+    try {
+      const response = await axios.post(
+        // Note tripId is in the URL
+        `${BASE_URL}/trip/user/cancel/${tripId}`,
+        // Possibly empty body or { user_id: userId } if needed
+        {},
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            Accept: "application/json",
+            "X-API-KEY": "DISCOVERJO91427",
+          },
+        }
+      );
+      if (response.status === 200) {
+        Alert.alert("Success", `User ID: ${userId} rejected!`);
+        const updatedRequests = userRequests.filter((u) => u.id !== userId);
+        setUserRequests(updatedRequests);
+      }
+    } catch (error) {
+      Alert.alert("Error", "Failed to reject user request.");
+      console.error(error);
+    }
+  };
 
   if (isLoading) {
     return <ActivityIndicator size="large" color={COLORS.primary} />;
@@ -233,11 +294,9 @@ const handleLeaveTrip = async () => {
           contentContainerStyle={styles.container}
           showsVerticalScrollIndicator={false}
         >
-          {/* Top Header */}
           <DetailsHeader
             tripDetails={tripDetails}
             isCreator={isCreator}
-            // Pass down your new leaveTrip handler
             onHandPress={() => setModalVisible(true)}
             onEdit={handleEditTrip}
             onDelete={handleDeleteTrip}
@@ -270,20 +329,19 @@ const handleLeaveTrip = async () => {
               />
             </View>
 
-            {/* Tags & Info */}
             <TripTags tripDetails={tripDetails} />
             <TripInfo tripDetails={tripDetails} />
 
-            {/* Join / Chat / Pending Buttons (if trip hasn't ended) */}
             {isTripActive && (
               <JoinTrip
                 handleJoinTrip={handleJoinTrip}
                 isTripActive={isTripActive}
                 isUserJoined={isUserJoined}
                 isRequestPending={isRequestPending}
-                isCreator={isCreator} // Pass the isCreator state
+                isCreator={isCreator}
                 tripId={tripId}
                 token={token}
+                updateTripStatus={setIsRequestPending}
               />
             )}
             <HeightSpacer height={100} />
@@ -348,9 +406,21 @@ const handleLeaveTrip = async () => {
           />
         </ScrollView>
       </TripBackground>
+      <AwesomeAlert
+        show={alertVisible}
+        showProgress={false}
+        title={localizedText.error}
+        message={alertMessage} 
+        closeOnTouchOutside={true}
+        closeOnHardwareBackPress={true}
+        showCancelButton={false}
+        showConfirmButton={true}
+        confirmText="OK"
+        confirmButtonColor={COLORS.primary}
+        onConfirmPressed={() => setAlertVisible(false)}
+      />
     </MenuProvider>
   );
 };
-
 
 export default TripDetails;

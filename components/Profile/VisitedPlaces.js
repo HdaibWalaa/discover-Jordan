@@ -7,7 +7,7 @@ import { AuthContext } from "../../store/auth-context";
 import axios from "axios";
 import { COLORS, TEXT } from "../../constants/theme";
 import { AntDesign } from "@expo/vector-icons";
-import SelectPlace from "../trip/SelcetPlace";
+import SelectPlace from "../trip/SelectPlace";
 import BASE_URL from "../../hook/apiConfig";
 
 const VisitedPlaces = ({ visitedPlaces, refreshProfile }) => {

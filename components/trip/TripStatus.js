@@ -1,6 +1,8 @@
 import { StyleSheet, Text, View, Image } from "react-native";
 import React from "react";
 import { COLORS, SIZES, TEXT } from "../../constants/theme";
+import { useLanguage } from "../../store/context/LanguageContext";
+import translations from "../../translations/translations";
 import {
   widthPercentageToDP as wp,
   heightPercentageToDP as hp,
@@ -8,6 +10,9 @@ import {
 import ReusableText from "../Reusable/ReusableText";
 
 const TripStatus = ({ tripDetails }) => {
+  const { language } = useLanguage();
+  const t = translations[language]; // Get translated text
+
   const isActive = tripDetails.status === 1; // Check if the trip is active
 
   return (
@@ -18,7 +23,7 @@ const TripStatus = ({ tripDetails }) => {
           style={styles.placeIcon}
         />
         <ReusableText
-          text={`Place: ${tripDetails.place_name}`}
+          text={`${t.place}: ${tripDetails.place_name}`}
           family={"Medium"}
           size={TEXT.medium}
           color={COLORS.dark}
@@ -28,13 +33,11 @@ const TripStatus = ({ tripDetails }) => {
       <View
         style={[
           styles.statusBadge,
-          {
-            backgroundColor: isActive ? "#2DE78D" : "#FF4D4D", // Green for active, red for inactive
-          },
+          { backgroundColor: isActive ? "#2DE78D" : "#FF4D4D" }, // Green for active, red for inactive
         ]}
       >
         <Text style={styles.statusText}>
-          {isActive ? "Active" : "Inactive"} 
+          {isActive ? t.active : t.inactive}
         </Text>
       </View>
     </View>
@@ -57,11 +60,6 @@ const styles = StyleSheet.create({
     marginRight: wp("2%"),
     width: wp("6%"),
     height: wp("6%"),
-  },
-  placeName: {
-    fontSize: SIZES.large,
-    fontWeight: "bold",
-    color: COLORS.dark,
   },
   statusBadge: {
     paddingHorizontal: wp("4%"),

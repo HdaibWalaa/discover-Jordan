@@ -26,6 +26,8 @@ const FollowersModal = ({ isVisible, onClose, token, userId }) => {
         {
           headers: {
             Authorization: `Bearer ${token}`,
+            "X-API-KEY": "DISCOVERJO91427",
+            "Content-Language": "en",
           },
         }
       );
@@ -57,6 +59,8 @@ const FollowersModal = ({ isVisible, onClose, token, userId }) => {
         {
           headers: {
             Authorization: `Bearer ${token}`,
+            "X-API-KEY": "DISCOVERJO91427",
+            "Content-Language": "en",
           },
         }
       );

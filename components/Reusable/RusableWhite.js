@@ -1,6 +1,7 @@
 import React from "react";
 import { StyleSheet, View, ImageBackground } from "react-native";
 import { useTheme } from "../../store/context/ThemeContext";
+import { COLORS } from "../../constants/theme";
 
 const RusableWhite = ({ children }) => {
   const { mode } = useTheme();
@@ -36,6 +37,7 @@ const styles = StyleSheet.create({
     resizeMode: "cover",
     justifyContent: "center",
     top: -20,
+    backgroundColor:COLORS.white,
   },
   content: {
     flex: 1,

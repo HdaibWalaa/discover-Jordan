@@ -28,7 +28,11 @@ export const TripProvider = ({ children }) => {
   };
 
   const addTrip = (newTrip) => {
-    setTrips((prevTrips) => [newTrip, ...prevTrips]);
+    setTrips((prevTrips) => {
+      // Avoid adding duplicate trips
+      const tripExists = prevTrips.some((trip) => trip.id === newTrip.id);
+      return tripExists ? prevTrips : [newTrip, ...prevTrips];
+    });
   };
 
   return (

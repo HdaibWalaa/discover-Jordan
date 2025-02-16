@@ -1,6 +1,15 @@
 import React from "react";
-import { View, Text, StyleSheet, TouchableOpacity, Image } from "react-native";
+import {
+  View,
+  Text,
+  StyleSheet,
+  TouchableOpacity,
+  Image,
+  I18nManager,
+} from "react-native";
 import { COLORS } from "../../constants/theme";
+import { useLanguage } from "../../store/context/LanguageContext";
+import translations from "../../translations/translations";
 
 const GenderOption = ({
   label,
@@ -8,6 +17,7 @@ const GenderOption = ({
   isSelected,
   onPress,
   fullWidth,
+  rtl,
 }) => {
   return (
     <TouchableOpacity
@@ -26,19 +36,27 @@ const GenderOption = ({
       >
         <Image source={iconSource} style={styles.image} />
       </View>
-      <View style={styles.labelContainer}>
-        <Text style={styles.labelText}>{label}</Text>
+      <View style={[styles.labelContainer, rtl && styles.rtlText]}>
+        <Text
+          style={[styles.labelText, isSelected && { color: COLORS.primary }]}
+        >
+          {label}
+        </Text>
       </View>
     </TouchableOpacity>
   );
 };
 
 const SelectGender = ({ label, selectedGender, setSelectedGender }) => {
+  const { language } = useLanguage(); // Get selected language
+  const localizedText = translations[language] || translations["en"]; 
+  const rtl = language === "ar"; 
+
   const handleGenderSelect = (genderLabel) => {
     const genderMapping = {
-      "Male & Female": 0,
-      Male: 1,
-      Female: 2,
+      [localizedText["Male & Female"]]: 0,
+      [localizedText["Male"]]: 1,
+      [localizedText["Female"]]: 2,
     };
 
     setSelectedGender(genderMapping[genderLabel]);
@@ -46,28 +64,33 @@ const SelectGender = ({ label, selectedGender, setSelectedGender }) => {
 
   return (
     <View style={styles.container}>
-      {label && <Text style={styles.label}>{label}</Text>}
+      {label && (
+        <Text style={styles.label}>{localizedText[label] || label}</Text>
+      )}
       <View style={styles.optionsContainer}>
-        <View style={styles.row}>
+        <View style={[styles.row, rtl && styles.rtlRow]}>
           <GenderOption
-            label="Male"
+            label={localizedText["Male"]}
             iconSource={require("../../assets/images/icons/male.png")}
             isSelected={selectedGender === 1}
-            onPress={() => handleGenderSelect("Male")}
+            onPress={() => handleGenderSelect(localizedText["Male"])}
+            rtl={rtl}
           />
           <GenderOption
-            label="Female"
+            label={localizedText["Female"]}
             iconSource={require("../../assets/images/icons/female.png")}
             isSelected={selectedGender === 2}
-            onPress={() => handleGenderSelect("Female")}
+            onPress={() => handleGenderSelect(localizedText["Female"])}
+            rtl={rtl}
           />
         </View>
         <GenderOption
-          label="Male & Female"
+          label={localizedText["Male & Female"]}
           iconSource={require("../../assets/images/icons/both.png")}
           isSelected={selectedGender === 0}
-          onPress={() => handleGenderSelect("Male & Female")}
+          onPress={() => handleGenderSelect(localizedText["Male & Female"])}
           fullWidth
+          rtl={rtl}
         />
       </View>
     </View>
@@ -75,12 +98,10 @@ const SelectGender = ({ label, selectedGender, setSelectedGender }) => {
 };
 
 const styles = StyleSheet.create({
-  container: {
-   
-  },
+  container: {},
   label: {
     fontFamily: "Medium",
-    color:COLORS.dark,
+    color: COLORS.dark,
     fontSize: 14,
     fontWeight: "400",
     marginBottom: 10,

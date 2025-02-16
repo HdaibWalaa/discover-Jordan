@@ -244,8 +244,6 @@ export async function getUserProfile(token, language) {
   }
 }
 
-
-
 // Function to update user profile
 export async function updateUserProfile(data, token) {
   const url = `${BASE_URL}/profile/update`;
@@ -296,8 +294,10 @@ export const setUserLocation = async (
 
     return response.data;
   } catch (error) {
-    console.error("Error setting location:", error.response?.data || error.message);
+    console.error(
+      "Error setting location:",
+      error.response?.data || error.message
+    );
     throw error;
   }
 };
-

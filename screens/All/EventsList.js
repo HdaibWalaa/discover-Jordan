@@ -13,7 +13,7 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import { COLORS, SIZES, TEXT } from "../../constants/theme";
 import reusable from "../../components/Reusable/reusable.style";
 import moment from "moment";
-import { Video } from "expo-av"; // Import Video from expo-av
+import { Video } from "expo-av"; 
 import AllEventCard from "../../components/Tiles/Events/AllEventCard";
 import fetchEvents from "../../hook/event/fetchEvents";
 import { ReusableBackground, ReusableText } from "../../components";
@@ -124,4 +124,19 @@ const EventsList = () => {
 
 export default EventsList;
 
-const styles = StyleSheet.create({});
+const styles = StyleSheet.create({
+  noDataContainer: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  noDataVideo: {
+    width: 300,
+    height: 200,
+  },
+  noDataText: {
+    marginTop: 20,
+    fontSize: TEXT.large,
+    color: COLORS.gray,
+  },
+});

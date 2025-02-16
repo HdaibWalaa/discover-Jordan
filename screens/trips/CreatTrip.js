@@ -18,7 +18,7 @@ const CreateTrip = () => {
     <RusableWhite>
       <SafeAreaView style={[reusable.container]}>
         <View>
-          <View style={reusable.header1}>
+          {/* <View style={reusable.header1}>
             <View style={{ width: 300, top: -30 }}>
               <ReusableText
                 text={capitalize("Create Your Trip")}
@@ -27,7 +27,7 @@ const CreateTrip = () => {
                 color={COLORS.black}
               />
             </View>
-          </View>
+          </View> */}
         </View>
         <ScrollView
           showsVerticalScrollIndicator={false}

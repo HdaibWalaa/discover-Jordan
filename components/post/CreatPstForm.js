@@ -17,7 +17,7 @@ import VisitableType from "./VisitableType";
 import PostPrivacy from "./PostPrivacy";
 import HeightSpacer from "../Reusable/HeightSpacer";
 import { COLORS } from "../../constants/theme";
-import SelectPlace from "../trip/SelcetPlace";
+import SelectPlace from "../trip/SelectPlace";
 import SelectEvent from "./SelectEvent";
 import SelectPlan from "./SelectPlan";
 import SelectTrip from "./SelectTrip";

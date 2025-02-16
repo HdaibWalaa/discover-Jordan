@@ -76,18 +76,17 @@ const Profile = () => {
 
   const handleLogout = async () => {
     try {
-      authCtx.logout();
+      authCtx.logout(); // Clear the token
       navigation.reset({
         index: 0,
         routes: [{ name: "Onboarding" }],
       });
     } catch (error) {
-      Alert.alert(
-        translatedText.error || "Error",
-        translatedText.logoutError || "An error occurred during logout."
-      );
+      console.error("Logout error:", error);
+      Alert.alert("Logout Error", "An error occurred during logout.");
     }
   };
+
 
   if (isLoading) {
     return <ActivityIndicator size="large" color={COLORS.primary} />;

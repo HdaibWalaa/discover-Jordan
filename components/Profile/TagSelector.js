@@ -8,7 +8,7 @@ import {
   Alert,
 } from "react-native";
 import axios from "axios";
-import { COLORS, SIZES,TEXT } from "../../constants/theme";
+import { COLORS, SIZES, TEXT } from "../../constants/theme";
 import { AuthContext } from "../../store/auth-context";
 import BASE_URL from "../../hook/apiConfig";
 import ReusableText from "../Reusable/ReusableText";
@@ -16,7 +16,6 @@ import {
   widthPercentageToDP as wp,
   heightPercentageToDP as hp,
 } from "react-native-responsive-screen";
-import ReusableBtn from "../Buttons/ReusableBtn";
 
 const TagSelector = ({ selectedTags, onTagsChange }) => {
   const [tags, setTags] = useState([]);
@@ -29,11 +28,12 @@ const TagSelector = ({ selectedTags, onTagsChange }) => {
           headers: {
             Authorization: `Bearer ${authCtx.token}`,
             Accept: "application/json",
+            "X-API-KEY": "DISCOVERJO91427",
           },
         });
 
-        console.log("Fetched Tags:", response.data.data); // Log fetched tags
-        setTags(response.data.data); // Update state with tags
+        console.log("Fetched Tags:", response.data.data);
+        setTags(response.data.data);
       } catch (error) {
         Alert.alert("Error", "Failed to fetch tags. Please try again later.");
         console.error("Error fetching tags:", error);
@@ -44,13 +44,13 @@ const TagSelector = ({ selectedTags, onTagsChange }) => {
   }, [authCtx.token]);
 
   const handleTagPress = (tagId) => {
-    // Update selected tags
+    // Toggle tag selection
     const newTags = selectedTags.includes(tagId)
-      ? selectedTags.filter((id) => id !== tagId)
-      : [...selectedTags, tagId];
+      ? selectedTags.filter((id) => id !== tagId) // Remove if already selected
+      : [...selectedTags, tagId]; // Add if not selected
 
-    console.log("Updated Selected Tags:", newTags); // Log updated tags
-    onTagsChange(newTags);
+    console.log("Updated Selected Tags:", newTags);
+    onTagsChange(newTags); // Correctly updates selected tags
   };
 
   return (
@@ -124,22 +124,22 @@ const styles = StyleSheet.create({
     backgroundColor: COLORS.lightGray,
     borderRadius: 30,
     borderWidth: 1,
-    borderColor: COLORS.black, // Default black border for inactive
+    borderColor: COLORS.black,
   },
   selectedTagButton: {
-    borderColor: COLORS.primary, // Colored border for active tag
+    borderColor: COLORS.primary,
   },
   tagImage: {
     width: 40,
     height: 40,
-    marginRight: 10, // Space between image and text
+    marginRight: 10,
   },
   tagText: {
     color: COLORS.black,
     fontSize: SIZES.body4,
   },
   selectedTagText: {
-    color: COLORS.primary, // Change text color when selected
+    color: COLORS.primary,
   },
   headerContainer: {
     flexDirection: "row",

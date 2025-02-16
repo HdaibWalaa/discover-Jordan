@@ -1,11 +1,16 @@
 import React from "react";
 import { StyleSheet, Text, View, Image } from "react-native";
 import { COLORS, SIZES } from "../../constants/theme";
+import { useLanguage } from "../../store/context/LanguageContext";
+import translations from "../../translations/translations";
 
 const TripTags = ({ tripDetails }) => {
+  const { language } = useLanguage();
+  const t = translations[language]; // 🌍 Get translated text
+
   return (
     <View>
-      <Text style={styles.tagsTitle}>Tags:</Text>
+      <Text style={styles.tagsTitle}>{t.tags}:</Text>
       <View style={styles.tagsContainer}>
         {tripDetails.tags.map((tag) => (
           <View key={tag.name} style={styles.tagItem}>
@@ -29,7 +34,7 @@ const styles = StyleSheet.create({
   },
   tagsContainer: {
     flexDirection: "row",
-    flexWrap: "wrap", // This allows tags to wrap to a new line if they don't fit
+    flexWrap: "wrap", // Wraps tags to new line if needed
     marginBottom: 20,
   },
   tagItem: {
@@ -48,6 +53,7 @@ const styles = StyleSheet.create({
     width: 24,
     height: 24,
     marginRight: 8,
+    borderRadius: 12, // Rounded images
   },
   tagText: {
     fontSize: SIZES.medium,

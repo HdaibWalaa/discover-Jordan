@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { FlatList, View } from "react-native";
 import Input from "./Input";
-import SelectPlace from "./SelcetPlace";
+import SelectPlace from "./SelectPlace";
 import SelectGender from "./SelectGender";
 import SelectTags from "./SelectTags";
 import SelectType from "./SelectType";

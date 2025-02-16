@@ -27,6 +27,7 @@ const styles = StyleSheet.create({
     resizeMode: "cover",
     justifyContent: "center",
     top: -20,
+    backgroundColor:COLORS.white,
   },
   content: {
     flex: 1,

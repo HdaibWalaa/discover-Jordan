@@ -1,33 +1,75 @@
-import React from "react";
-import { StyleSheet, Text, View, TouchableOpacity } from "react-native";
+import React, { useState, useContext } from "react";
+import {
+  View,
+  Text,
+  TouchableOpacity,
+  ActivityIndicator,
+  Alert,
+  StyleSheet,
+} from "react-native";
 import { useNavigation } from "@react-navigation/native";
+import axios from "axios";
 import { COLORS } from "../../constants/theme";
 import {
   widthPercentageToDP as wp,
   heightPercentageToDP as hp,
 } from "react-native-responsive-screen";
+import BASE_URL from "../../hook/apiConfig";
+import { AuthContext } from "../../store/auth-context";
 
 export default function JoinTrip({
   tripId,
-  token,
   isTripActive,
   isUserJoined,
   isRequestPending,
-  isCreator, // New prop for creator
+  isCreator,
   handleJoinTrip,
+  updateTripStatus,
 }) {
+  const { token } = useContext(AuthContext);
   const navigation = useNavigation();
+  const [loading, setLoading] = useState(false);
 
-  const handleButtonPress = () => {
-    // Navigate to chat if user is joined or is the creator
+  const handleButtonPress = async () => {
     if (isUserJoined || isCreator) {
       navigation.navigate("ChatScreen", {
         tripId: tripId,
         userToken: token,
       });
-    } else {
-      // Call join logic for non-joined users
-      handleJoinTrip();
+      return;
+    }
+
+    // ✅ Join trip API call
+    try {
+      setLoading(true);
+      const response = await axios.post(
+        `${BASE_URL}/trip/join/${tripId}`,
+        {},
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            Accept: "application/json",
+            "X-API-KEY": "DISCOVERJO91427",
+          },
+        }
+      );
+
+      if (response.status === 200) {
+        Alert.alert("Success", "Your request to join the trip has been sent.");
+
+      
+        updateTripStatus(true);
+      } else {
+        Alert.alert("Error", "Failed to send join request.");
+      }
+    } catch (error) {
+      console.error(
+        "Error joining trip:",
+        error.response?.data || error.message
+      );
+      Alert.alert("Error", "Something went wrong while joining the trip.");
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -35,36 +77,28 @@ export default function JoinTrip({
     return null;
   }
 
-  // Show "Group Chat" for joined users or the creator
-  if (isUserJoined || isCreator) {
-    return (
-      <View style={styles.joinContainer}>
-        <TouchableOpacity style={styles.joinButton} onPress={handleButtonPress}>
-          <Text style={styles.joinButtonText}>Group Chat</Text>
-        </TouchableOpacity>
-      </View>
-    );
-  }
-
-  // Show "Request Pending" for users with pending requests
-  if (isRequestPending) {
-    return (
-      <View style={styles.joinContainer}>
-        <TouchableOpacity
-          style={[styles.joinButton, styles.pendingButton]}
-          disabled
-        >
-          <Text style={styles.joinButtonText}>Request Pending</Text>
-        </TouchableOpacity>
-      </View>
-    );
-  }
-
-  // Show "JOIN" for non-joined users
   return (
     <View style={styles.joinContainer}>
-      <TouchableOpacity style={styles.joinButton} onPress={handleButtonPress}>
-        <Text style={styles.joinButtonText}>JOIN</Text>
+      <TouchableOpacity
+        style={[
+          styles.joinButton,
+          isUserJoined || isCreator ? styles.chatButton : null,
+          isRequestPending ? styles.pendingButton : null,
+        ]}
+        onPress={handleButtonPress}
+        disabled={loading || isRequestPending}
+      >
+        {loading ? (
+          <ActivityIndicator size="small" color={COLORS.white} />
+        ) : (
+          <Text style={styles.joinButtonText}>
+            {isUserJoined || isCreator
+              ? "Group Chat"
+              : isRequestPending
+              ? "Request Pending"
+              : "JOIN"}
+          </Text>
+        )}
       </TouchableOpacity>
     </View>
   );

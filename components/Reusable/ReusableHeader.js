@@ -21,7 +21,7 @@ const ReusableHeader = ({ headerText }) => {
               <View>
                 <GoBack />
               </View>
-              <View style={{ marginRight: wp(23), top: hp(0.3) }}>
+              <View style={{ marginRight: wp(15), top: hp(0.3) }}>
                 <ReusableText
                   text={headerText}
                   family="Medium"
@@ -37,7 +37,6 @@ const ReusableHeader = ({ headerText }) => {
       </View>
     </View>
   );
-
 };
 
 const styles = StyleSheet.create({
@@ -65,7 +64,7 @@ const styles = StyleSheet.create({
     alignItems: "left",
   },
   headerText: {
-    marginRight: wp(6), 
+    marginRight: wp(6),
   },
 });
 

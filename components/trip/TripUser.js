@@ -22,7 +22,7 @@ const TripUser = ({ tripDetails }) => {
           <Text style={styles.attendanceCount}>
             {tripDetails.attendances.length}
           </Text>{" "}
-          / 52 Attendance
+          / {tripDetails.attendance_number}
         </Text>
       </View>
       <View style={styles.progressContainer}>

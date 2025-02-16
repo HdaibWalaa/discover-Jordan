@@ -4,7 +4,7 @@ import {
   Image,
   ImageBackground,
   TouchableOpacity,
-  Alert, // <-- Use standard RN Alert
+  Alert, 
 } from "react-native";
 import React, { useContext, useEffect, useState } from "react";
 import { createMaterialTopTabNavigator } from "@react-navigation/material-top-tabs";
@@ -16,8 +16,8 @@ import styles from "./topTab.style";
 import { AntDesign } from "@expo/vector-icons";
 import { useNavigation, useRoute } from "@react-navigation/native";
 import { AuthContext } from "../../store/auth-context";
-import axios from "axios"; // axios to fetch data
-import BASE_URL from "../../hook/apiConfig"; // your API config
+import axios from "axios"; 
+import BASE_URL from "../../hook/apiConfig"; 
 
 const Tab = createMaterialTopTabNavigator();
 
@@ -38,6 +38,8 @@ const OtherUserProfile = () => {
         {
           headers: {
             Authorization: `Bearer ${authCtx.token}`,
+            "X-API-KEY": "DISCOVERJO91427",
+            "Content-Language": language,
           },
         }
       );
@@ -55,22 +57,20 @@ const OtherUserProfile = () => {
     }
   };
 
-  // Handle follow/friend request
+ 
   const handleAddFriend = async () => {
     try {
       const formData = new FormData();
       formData.append("following_id", userId);
 
-      const response = await axios.post(
-        "https://dashboard.discoverjo.com/api/follow/create",
-        formData,
-        {
-          headers: {
-            Authorization: `Bearer ${authCtx.token}`,
-            "Content-Type": "multipart/form-data",
-          },
-        }
-      );
+      const response = await axios.post(`${BASE_URL}/follow/create`, formData, {
+        headers: {
+          Authorization: `Bearer ${authCtx.token}`,
+          "Content-Type": "multipart/form-data",
+          "X-API-KEY": "DISCOVERJO91427",
+          "Content-Language": language,
+        },
+      });
 
       if (response.status === 200) {
         Alert.alert("Success", "Follow request sent successfully.");

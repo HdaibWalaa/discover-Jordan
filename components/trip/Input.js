@@ -21,7 +21,7 @@ function Input({
         {iconSource && <Image source={iconSource} style={styles.icon} />}
         <TextInput
           placeholder={placeholder}
-          placeholderTextColor={COLORS.gray} // Use COLORS.gray for placeholder
+          placeholderTextColor={COLORS.gray} 
           style={[
             styles.input,
             styles.placeholder,

@@ -1,8 +1,15 @@
 import React, { useState, useContext } from "react";
-import { View, ScrollView, Text } from "react-native";
+import {
+  View,
+  Text,
+  KeyboardAvoidingView,
+  Platform,
+  FlatList,
+} from "react-native";
 import { useNavigation } from "@react-navigation/native";
+import { ScrollView } from "react-native-virtualized-view";
 import Input from "./Input";
-import SelectPlace from "./SelcetPlace";
+import SelectPlace from "./SelectPlace";
 import SelectGender from "./SelectGender";
 import SelectTags from "./SelectTags";
 import SelectType from "./SelectType";
@@ -14,8 +21,13 @@ import { AuthContext } from "../../store/auth-context";
 import { usePostTrip } from "../../hook/trip/usePostTrip";
 import HeightSpacer from "../Reusable/HeightSpacer";
 import AwesomeAlert from "react-native-awesome-alerts";
+import { useLanguage } from "../../store/context/LanguageContext";
+import translations from "../../translations/translations";
 
 const CreateTripForm = () => {
+  const { language } = useLanguage();
+  const localizedText = translations[language] || translations["en"];
+
   const [tripName, setTripName] = useState("");
   const [selectedPlace, setSelectedPlace] = useState("");
   const [tripDate, setTripDate] = useState("");
@@ -34,11 +46,11 @@ const CreateTripForm = () => {
   const [timeError, setTimeError] = useState("");
   const [tagsError, setTagsError] = useState("");
 
-  // State for the alert
+ 
   const [showAlert, setShowAlert] = useState(false);
   const [alertTitle, setAlertTitle] = useState("");
   const [alertMessage, setAlertMessage] = useState("");
-  const [alertType, setAlertType] = useState("success"); // "success" or "error"
+  const [alertType, setAlertType] = useState("success"); 
 
   const authCtx = useContext(AuthContext);
   const token = authCtx.token;
@@ -47,7 +59,7 @@ const CreateTripForm = () => {
   const validateDate = (date) => {
     const datePattern = /^\d{4}-\d{2}-\d{2}$/;
     if (!datePattern.test(date)) {
-      setDateError("Please enter the date in this format: YYYY-MM-DD");
+      setDateError(localizedText.invalidDateFormat);
       return false;
     }
     setDateError("");
@@ -57,7 +69,7 @@ const CreateTripForm = () => {
   const validateTime = (time) => {
     const timePattern = /^\d{2}:\d{2}:\d{2}$/;
     if (!timePattern.test(time)) {
-      setTimeError("Please enter the time in this format: HH:MM:SS");
+      setTimeError(localizedText.invalidTimeFormat);
       return false;
     }
     setTimeError("");
@@ -66,105 +78,110 @@ const CreateTripForm = () => {
 
   const validateTags = (tags) => {
     if (tags.length < 3) {
-      setTagsError("Please select at least three tags.");
+      setTagsError(localizedText.selectAtLeastThreeTags);
       return false;
     }
     setTagsError("");
     return true;
   };
 
-  const handlePostTrip = async () => {
-    const isDateValid = validateDate(tripDate);
-    const isTimeValid = validateTime(tripTime);
-    const areTagsValid = validateTags(selectedTags);
+ const handlePostTrip = async () => {
+   const isDateValid = validateDate(tripDate);
+   const isTimeValid = validateTime(tripTime);
+   const areTagsValid = validateTags(selectedTags);
 
-    if (
-      !tripName ||
-      !selectedPlace ||
-      !isDateValid ||
-      !isTimeValid ||
-      !minAge ||
-      !maxAge ||
-      !cost ||
-      !description ||
-      !attendanceNumber ||
-      !areTagsValid
-    ) {
-      setAlertType("error");
-      setAlertTitle("Error");
-      setAlertMessage("Please correct the highlighted fields.");
-      setShowAlert(true);
-      return;
-    }
+   if (
+     !tripName ||
+     !selectedPlace ||
+     !isDateValid ||
+     !isTimeValid ||
+     !minAge ||
+     !maxAge ||
+     !cost ||
+     !description ||
+     !attendanceNumber ||
+     !areTagsValid
+   ) {
+     setAlertType("error");
+     setAlertTitle(localizedText.error);
+     setAlertMessage(localizedText.correctHighlightedFields);
+     setShowAlert(true);
+     return;
+   }
 
-    const tripData = {
-      tripName,
-      placeId: selectedPlace,
-      tripDate,
-      tripTime,
-      minAge,
-      maxAge,
-      cost,
-      description,
-      attendanceNumber,
-      selectedTags,
-      gender: selectedGender,
-      tripType: selectType,
-    };
+   const tripData = {
+     tripName,
+     placeId: selectedPlace,
+     tripDate,
+     tripTime,
+     minAge,
+     maxAge,
+     cost,
+     description,
+     attendanceNumber,
+     selectedTags,
+     gender: selectedGender,
+     tripType: selectType, 
+     users:
+       selectType === "2"
+         ? selectUsers.map((user) => user.id).filter(Boolean)
+         : [], 
+   };
 
-    try {
-      console.log("Sending trip data:", tripData);
-      console.log("Using token:", token);
+   try {
+     const response = await usePostTrip(
+       token,
+       tripData.tripType,
+       tripData.placeId,
+       tripData.tripName,
+       tripData.description,
+       tripData.cost,
+       tripData.minAge,
+       tripData.maxAge,
+       tripData.gender,
+       tripData.tripDate,
+       tripData.tripTime,
+       tripData.attendanceNumber,
+       tripData.selectedTags,
+       tripData.users
+     );
 
-      const response = await usePostTrip(
-        token,
-        tripData.tripType,
-        tripData.placeId,
-        tripData.tripName,
-        tripData.description,
-        tripData.cost,
-        tripData.minAge,
-        tripData.maxAge,
-        tripData.gender,
-        tripData.tripDate,
-        tripData.tripTime,
-        tripData.attendanceNumber,
-        tripData.selectedTags,
-        selectUsers
-      );
+     setAlertType("success");
+     setAlertTitle(localizedText.congratulations);
+     setAlertMessage(response.msg || localizedText.tripCreatedSuccess);
+     setShowAlert(true);
 
-      console.log("Response data:", response);
+     setTimeout(() => {
+       setShowAlert(false);
+       navigation.navigate("AllTrip");
+     }, 2000);
+   } catch (error) {
+     let errorMessage = localizedText.tripCreationError;
 
-      setAlertType("success");
-      setAlertTitle("Congratulations");
-      setAlertMessage(response.msg || "Trip created successfully!");
-      setShowAlert(true);
+     if (error.response && error.response.data && error.response.data.msg) {
+       const apiMessage = error.response.data.msg;
+       errorMessage = Array.isArray(apiMessage)
+         ? apiMessage.join("\n")
+         : apiMessage;
+     }
 
-      // Navigate to AllTrip screen after a short delay to let the user see the success message
-      setTimeout(() => {
-        setShowAlert(false);
-        navigation.navigate("AllTrip");
-      }, 2000);
-    } catch (error) {
-      console.error("Error during trip creation:", error);
-      setAlertType("error");
-      setAlertTitle("Oops");
-      setAlertMessage(
-        error.message || "Failed to create trip. Please try again."
-      );
-      setShowAlert(true);
-    }
-  };
+     setAlertType("error");
+     setAlertTitle(localizedText.oops);
+     setAlertMessage(errorMessage);
+     setShowAlert(true);
+   }
+ };
+
 
   return (
     <>
-      <ScrollView
+      <View
         contentContainerStyle={styles.scrollViewContent}
         showsVerticalScrollIndicator={false}
       >
         <View style={[styles.formContainer, { gap: 20 }]}>
           <Input
-            label="Trip Name"
+            label={localizedText.tripName}
             onUpdateValue={setTripName}
             value={tripName}
             isInvalid={false}
@@ -174,12 +191,12 @@ const CreateTripForm = () => {
             width={350}
           />
           <SelectGender
-            label="Select Gender"
+            label={localizedText.gender}
             selectedGender={selectedGender}
             setSelectedGender={setSelectedGender}
           />
           <SelectType
-            label="Select The Type Of The Trip"
+            label={localizedText.tripType}
             iconSource={require("../../assets/images/icons/checklist.png")}
             onValueChange={setSelectType}
             value={selectType}
@@ -187,17 +204,19 @@ const CreateTripForm = () => {
           />
           {selectType === "2" && (
             <SelectUsers
-              label="Select Users"
+              label={localizedText.selectUsers}
               iconSource={require("../../assets/images/icons/add-user.png")}
               iconSource2={require("../../assets/images/icons/Iconly.png")}
-              onValueChange={setSelectUsers}
+              onValueChange={(selected) => {
+                const validUsers = selected.filter((user) => user !== null);
+                setSelectUsers(validUsers);
+              }}
               value={selectUsers}
               width={350}
-              userId={authCtx.userId}
             />
           )}
           <SelectPlace
-            label="Place Name"
+            label={localizedText.placeName}
             iconSource={require("../../assets/images/icons/place.png")}
             iconSource2={require("../../assets/images/icons/Iconly.png")}
             onValueChange={setSelectedPlace}
@@ -207,7 +226,7 @@ const CreateTripForm = () => {
           <View style={styles.TimeContainer}>
             <View style={{ width: 170 }}>
               <Input
-                label="Trip Date"
+                label={localizedText.date}
                 onUpdateValue={(value) => {
                   setTripDate(value);
                   validateDate(value);
@@ -225,7 +244,7 @@ const CreateTripForm = () => {
             </View>
             <View style={{ width: 200 }}>
               <Input
-                label="Time"
+                label={localizedText.time}
                 onUpdateValue={(value) => {
                   setTripTime(value);
                   validateTime(value);
@@ -244,7 +263,7 @@ const CreateTripForm = () => {
           </View>
           <View style={styles.AgeContainer}>
             <Input
-              label="Min Age"
+              label={localizedText.minAge}
               onUpdateValue={setMinAge}
               value={minAge}
               isInvalid={false}
@@ -254,7 +273,7 @@ const CreateTripForm = () => {
               width={170}
             />
             <Input
-              label="Max Age"
+              label={localizedText.maxAge}
               onUpdateValue={setMaxAge}
               value={maxAge}
               isInvalid={false}
@@ -265,7 +284,7 @@ const CreateTripForm = () => {
             />
           </View>
           <Input
-            label="Number of Attendance"
+            label={localizedText.attendanceNumber}
             onUpdateValue={setAttendanceNumber}
             value={attendanceNumber}
             isInvalid={false}
@@ -275,7 +294,7 @@ const CreateTripForm = () => {
             width={350}
           />
           <Input
-            label="Cost"
+            label={localizedText.cost}
             onUpdateValue={setCost}
             value={cost}
             isInvalid={false}
@@ -285,7 +304,7 @@ const CreateTripForm = () => {
             width={350}
           />
           <Input
-            label="Trip Description"
+            label={localizedText.description}
             onUpdateValue={setDescription}
             value={description}
             isInvalid={false}
@@ -296,7 +315,7 @@ const CreateTripForm = () => {
           />
 
           <SelectTags
-            label="Select Tags"
+            label={localizedText.tags}
             onValueChange={setSelectedTags}
             value={selectedTags}
           />
@@ -304,17 +323,17 @@ const CreateTripForm = () => {
 
           <View style={styles.postButtonContainer}>
             <ReusableBtn
-              btnText="POST"
+              btnText={localizedText.post}
               backgroundColor={COLORS.primary}
               textColor={COLORS.white}
-              width={90} // Ensure width is a valid number
-              height={6} // Ensure height is a valid number
+              width={90}
+              height={6}
               onPress={handlePostTrip}
             />
           </View>
           <HeightSpacer height={50} />
         </View>
-      </ScrollView>
+      </View>
 
       <AwesomeAlert
         show={showAlert}
@@ -325,7 +344,7 @@ const CreateTripForm = () => {
         closeOnHardwareBackPress={false}
         showCancelButton={false}
         showConfirmButton={true}
-        confirmText="Close"
+        confirmText={localizedText.close}
         confirmButtonColor={alertType === "success" ? "#4CAF50" : "#F44336"}
         onConfirmPressed={() => {
           setShowAlert(false);

@@ -13,7 +13,7 @@ import Slides from "../../components/Onboard/Slides";
 import axios from "axios";
 import BASE_URL from "../../hook/apiConfig";
 
-// Function to detect device language
+
 const getDeviceLanguage = () => {
   const deviceLanguage =
     Platform.OS === "ios"
@@ -38,28 +38,28 @@ const Onboarding = ({ navigation }) => {
 
   useEffect(() => {
     // Fetch the data from the API
- const fetchSlides = async () => {
-   try {
-     const response = await axios.get(`${BASE_URL}/onboarding/images`, {
-       headers: {
-         "Content-Language": language,
-         "X-API-KEY": "DISCOVERJO91427",
-       },
-     });
+    const fetchSlides = async () => {
+      try {
+        const response = await axios.get(`${BASE_URL}/onboarding/images`, {
+          headers: {
+            "Content-Language": language,
+            "X-API-KEY": "DISCOVERJO91427",
+          },
+        });
 
-     const apiSlides = response.data.data.map((item) => ({
-       id: item.id,
-       title: item.title,
-       subTitle: item.content,
-       image: { uri: item.image },
-     }));
-     setSlides(apiSlides);
-   } catch (error) {
-     console.error("Error fetching slides:", error);
-   } finally {
-     setIsLoading(false);
-   }
- };
+        const apiSlides = response.data.data.map((item) => ({
+          id: item.id,
+          title: item.title,
+          subTitle: item.content,
+          image: { uri: item.image },
+        }));
+        setSlides(apiSlides);
+      } catch (error) {
+        console.error("Error fetching slides:", error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
     fetchSlides();
   }, [language]);
 

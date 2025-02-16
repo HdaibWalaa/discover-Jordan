@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useCallback } from "react";
 import { View, Text, ScrollView, FlatList } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import * as api from "../../services/apiService"; 
+import * as api from "../../services/apiService";
 import ReusableTile from "../../components/Reusable/ReusableTile";
 import styles from "./search.style";
 import reusable from "../../components/Reusable/reusable.style";
@@ -10,7 +10,7 @@ import SearchInput from "../../components/Serach&Filter/SerachInput";
 import TypeTabs from "../../components/Serach&Filter/TypeTabs";
 import { useTheme } from "../../store/context/ThemeContext";
 import { useLanguage } from "../../store/context/LanguageContext";
-import { COLORS,TEXT,SIZES } from "../../constants/theme";
+import { COLORS, TEXT } from "../../constants/theme";
 import ReusableText from "../../components/Reusable/ReusableText";
 
 const endpoints = [
@@ -27,14 +27,16 @@ const endpoints = [
 ];
 
 const Search = ({ navigation }) => {
+  // ✅ Ensure Hooks Are Always in the Same Order
   const { mode } = useTheme();
   const isDarkMode = mode === "dark";
-  const { translations, language } = useLanguage(); 
+  const { translations, language } = useLanguage();
   const [searchKey, setSearchKey] = useState("");
   const [selectedType, setSelectedType] = useState("all");
   const [results, setResults] = useState({});
   const [loading, setLoading] = useState(false);
 
+  // ✅ Optimize Search Function to Prevent Unnecessary Re-renders
   const performSearch = useCallback(
     debounce(async (key) => {
       if (!key.trim()) {
@@ -42,21 +44,20 @@ const Search = ({ navigation }) => {
         return;
       }
 
-      setLoading(true); 
+      setLoading(true);
       const allResults = {};
 
       try {
         const searchPromises = endpoints.map(({ key, fn }) =>
-          fn(key === "places" ? key : searchKey, language)
+          fn(key, language) // ✅ Pass key directly
             .then((data) => ({ key, data }))
             .catch((error) => {
               console.error(`Error fetching ${key}:`, error);
-              return { key, data: [] }; 
+              return { key, data: [] };
             })
         );
 
         const responses = await Promise.all(searchPromises);
-
         responses.forEach(({ key, data }) => {
           allResults[key] = data || [];
         });
@@ -65,15 +66,18 @@ const Search = ({ navigation }) => {
       } catch (error) {
         console.error("Error during search:", error);
       } finally {
-        setLoading(false); // Hide loading indicator
+        setLoading(false);
       }
     }, 500),
-    [language]
+    [language] // ✅ Avoid frequent re-renders
   );
 
+  // ✅ Ensure Hooks Are Called in the Same Order
   useEffect(() => {
-    performSearch(searchKey);
-  }, [searchKey, language]);
+    if (searchKey.trim() !== "") {
+      performSearch(searchKey);
+    }
+  }, [searchKey]); // ✅ Only depend on `searchKey`
 
   const renderSection = (title, data) => (
     <>
@@ -83,25 +87,21 @@ const Search = ({ navigation }) => {
             text={translations[title] || title}
             family={"SemiBold"}
             size={TEXT.medium}
-            color={COLORS.black}
-            style={[
-              styles.sectionTitle,
-              { color: isDarkMode ? COLORS.white : COLORS.black },
-            ]}
+            color={isDarkMode ? COLORS.white : COLORS.black}
+            style={styles.sectionTitle}
           />
           <FlatList
             data={data}
             horizontal
-            keyExtractor={(item) => {
-              const itemId =
-                item.id ||
-                item.place_id ||
-                `${title}_${item.name || item.title}`;
-              return itemId.toString();
-            }}
+            keyExtractor={(item, index) =>
+              item.id ? item.id.toString() : `${title}_${index}`
+            } // ✅ Ensure unique keys
             renderItem={({ item }) => (
               <ReusableTile
                 item={item}
+                imageUri={
+                  item.image || "https://your-default-image-url.com/default.jpg"
+                }
                 onPress={() => {
                   switch (title) {
                     case "places":
@@ -112,8 +112,10 @@ const Search = ({ navigation }) => {
                       });
                       break;
                     case "trips":
-                    case "guideTrips":
                       navigation.navigate("TripDetails", { id: item.id });
+                      break;
+                    case "guideTrips":
+                      navigation.navigate("GuideTripDetails", { id: item.id });
                       break;
                     case "plans":
                       navigation.navigate("PlanDetails", { id: item.id });
@@ -151,16 +153,14 @@ const Search = ({ navigation }) => {
       style={[
         reusable.container,
         {
-          backgroundColor: isDarkMode
-            ? COLORS.navey
-            : COLORS.lightBackground,
+          backgroundColor: isDarkMode ? COLORS.navey : COLORS.lightBackground,
         },
       ]}
     >
       <SearchInput
         searchKey={searchKey}
         setSearchKey={setSearchKey}
-        placeholder={translations.searchPlaceholder} 
+        placeholder={translations.searchPlaceholder}
       />
       <TypeTabs selectedType={selectedType} onSelectType={setSelectedType} />
 

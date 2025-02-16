@@ -1,12 +1,17 @@
 import React, { useState } from "react";
-import { StyleSheet, View, Image, FlatList, Dimensions } from "react-native";
+import { StyleSheet, View, Image, FlatList, Dimensions ,Text} from "react-native";
 import { COLORS } from "../../constants/theme";
+import { useLanguage } from "../../store/context/LanguageContext";
+import translations from "../../translations/translations";
 import {
   widthPercentageToDP as wp,
   heightPercentageToDP as hp,
 } from "react-native-responsive-screen";
 
 const TripImageGallery = ({ tripDetails }) => {
+  const { language } = useLanguage();
+  const t = translations[language]; 
+
   const [currentIndex, setCurrentIndex] = useState(0);
   const screenWidth = wp("100%");
 
@@ -15,7 +20,15 @@ const TripImageGallery = ({ tripDetails }) => {
     !tripDetails.place_gallery ||
     tripDetails.place_gallery.length === 0
   ) {
-    return null;
+    return (
+      <View style={styles.noImagesContainer}>
+        <Image
+          source={require("../../assets/images/default/defaultpost.png")}
+          style={styles.noImage}
+        />
+        <Text style={styles.noImagesText}>{t.noImagesAvailable}</Text>
+      </View>
+    );
   }
 
   const onScroll = (event) => {
@@ -34,10 +47,7 @@ const TripImageGallery = ({ tripDetails }) => {
         renderItem={({ item }) => (
           <Image
             source={{ uri: item }}
-            style={[
-              styles.image,
-              { width: screenWidth - wp("10%") },
-            ]}
+            style={[styles.image, { width: screenWidth - wp("10%") }]}
           />
         )}
         keyExtractor={(item, index) => index.toString()}
@@ -71,28 +81,43 @@ const styles = StyleSheet.create({
     top: hp(-3),
   },
   image: {
-    height: hp("25%"), // 25% of screen height
+    height: hp("25%"),
     resizeMode: "cover",
-    borderRadius: wp("4%"), // 4% of screen width
-    marginHorizontal: wp("5%"), // 2% of screen width
+    borderRadius: wp("4%"),
+    marginHorizontal: wp("5%"),
   },
   paginationContainer: {
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "center",
-    marginTop: hp("1.5%"), // 1.5% of screen height
+    marginTop: hp("1.5%"),
   },
   paginationDot: {
-    width: wp("2.5%"), // 2.5% of screen width
-    height: wp("2.5%"), // 2.5% of screen width (same as width to make it circular)
-    borderRadius: wp("1.25%"), // Half of width to make it circular
-    marginHorizontal: wp("1%"), // 1% of screen width
+    width: wp("2.5%"),
+    height: wp("2.5%"),
+    borderRadius: wp("1.25%"),
+    marginHorizontal: wp("1%"),
   },
   paginationDotActive: {
     backgroundColor: COLORS.secondary,
-    width: wp("7%"), // 5% of screen width for the active dot
+    width: wp("6%"),
   },
   paginationDotInactive: {
     backgroundColor: COLORS.lightBlue,
+  },
+  noImagesContainer: {
+    alignItems: "center",
+    justifyContent: "center",
+    marginTop: hp(5),
+  },
+  noImage: {
+    width: wp(40),
+    height: hp(20),
+    resizeMode: "contain",
+  },
+  noImagesText: {
+    marginTop: hp(2),
+    color: COLORS.gray,
+    fontSize: 16,
   },
 });

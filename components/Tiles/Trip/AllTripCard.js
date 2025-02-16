@@ -1,26 +1,82 @@
-import React from "react";
-import { View, Text, Image, StyleSheet, TouchableOpacity } from "react-native";
+import React, { useContext, useState } from "react";
+import {
+  View,
+  Text,
+  Image,
+  StyleSheet,
+  TouchableOpacity,
+  ActivityIndicator,
+} from "react-native";
 import { useNavigation } from "@react-navigation/native";
+import axios from "axios";
 import {
   widthPercentageToDP as wp,
   heightPercentageToDP as hp,
-} from "react-native-responsive-screen"; // Import responsive functions
+} from "react-native-responsive-screen";
 import { COLORS, SIZES, TEXT } from "../../../constants/theme";
 import ReusableText from "../../Reusable/ReusableText";
+import { useLanguage } from "../../../store/context/LanguageContext";
+import translations from "../../../translations/translations";
+import { AuthContext } from "../../../store/auth-context";
+import BASE_URL from "../../../hook/apiConfig";
 
-// Paths to the images
 const heartImage = require("../../../assets/images/icons/heart.png");
+const heartFilledImage = require("../../../assets/images/icons/heart-filled.png"); // Add a filled heart icon
 const pinImage = require("../../../assets/images/icons/pin.png");
 const walletImage = require("../../../assets/images/icons/money.png");
 
 const AllTripCard = ({ item, isFirst }) => {
-  const capitalize = (str) =>
-    str
-      .split(" ")
-      .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
-      .join(" ");
+  const { language } = useLanguage();
+  const localizedText = translations[language] || translations["en"];
   const navigation = useNavigation();
-  const users = item.users || [];
+  const { token } = useContext(AuthContext);
+  const users = item.users_number || [];
+
+  // ✅ State for favorite status
+  const [isFavorite, setIsFavorite] = useState(item.favorite);
+  const [loadingFavorite, setLoadingFavorite] = useState(false);
+
+  // ✅ Toggle Favorite Status (POST or DELETE API)
+  const handleToggleFavorite = async () => {
+    if (loadingFavorite) return; // Prevent multiple clicks while loading
+
+    setLoadingFavorite(true);
+    try {
+      if (isFavorite) {
+       
+        await axios.delete(`${BASE_URL}/trip/favorite/${item.id}/delete`, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            Accept: "application/json",
+            "X-API-KEY": "DISCOVERJO91427",
+          },
+        });
+      } else {
+       
+        await axios.post(
+          `${BASE_URL}/trip/favorite/${item.id}`,
+          {},
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+              Accept: "application/json",
+              "X-API-KEY": "DISCOVERJO91427",
+            },
+          }
+        );
+      }
+
+      // ✅ Update UI State
+      setIsFavorite(!isFavorite);
+    } catch (error) {
+      console.error(
+        "Error toggling favorite:",
+        error.response?.data || error.message
+      );
+    } finally {
+      setLoadingFavorite(false);
+    }
+  };
 
   return (
     <TouchableOpacity
@@ -29,7 +85,7 @@ const AllTripCard = ({ item, isFirst }) => {
     >
       <View style={styles.rowContainer}>
         <Image
-          source={{ uri: item.image || placeholderImage }}
+          source={{ uri: item.image }}
           style={styles.image}
           onError={() => {
             console.warn("Failed to load image, using fallback.");
@@ -38,13 +94,26 @@ const AllTripCard = ({ item, isFirst }) => {
         <View style={styles.cardContent}>
           <View style={styles.header}>
             <ReusableText
-              text={capitalize(item.name)}
+              text={item.name}
               family={"Bold"}
               size={SIZES.large}
               color={COLORS.black}
             />
-            <TouchableOpacity style={styles.heartContainer}>
-              <Image source={heartImage} style={styles.heartIcon} />
+
+          
+            <TouchableOpacity
+              style={styles.heartContainer}
+              onPress={handleToggleFavorite}
+              disabled={loadingFavorite}
+            >
+              {loadingFavorite ? (
+                <ActivityIndicator size="small" color={COLORS.primary} />
+              ) : (
+                <Image
+                  source={isFavorite ? heartFilledImage : heartImage}
+                  style={styles.heartIcon}
+                />
+              )}
             </TouchableOpacity>
           </View>
           <View style={styles.detailsContainer}>
@@ -63,7 +132,7 @@ const AllTripCard = ({ item, isFirst }) => {
                 style={[styles.icon, styles.grayTint]}
               />
               <ReusableText
-                text={`${item.price}JOD`}
+                text={`${item.price} ${localizedText.currency}`}
                 family="Medium"
                 size={TEXT.small}
                 color={COLORS.lightGreen}

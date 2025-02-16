@@ -14,35 +14,28 @@ import {
 } from "react-native-responsive-screen";
 import ReusableBtn from "../Buttons/ReusableBtn";
 
-const TagsForm = ({ selectedTags, setSelectedTags, handleSubmit }) => {
+const TagsForm = ({ allTags, selectedTags, setSelectedTags, handleSubmit }) => {
   return (
     <View>
-      <ScrollView
-        style={styles.tagScrollView}
-        contentContainerStyle={styles.tagScrollContent}
-      >
+      <ScrollView>
         <TagSelector
-          selectedTags={selectedTags} // Pre-selected tags
-          onTagsChange={setSelectedTags} // Update tags when user modifies selection
+          allTags={allTags}
+          selectedTags={selectedTags}
+          onTagsChange={setSelectedTags}
         />
       </ScrollView>
-     
-        <ReusableBtn
-          btnText={"DONE"}
-          backgroundColor={COLORS.primary}
-          width={75}
-          height={6}
-          borderColor={COLORS.primary}
-          borderWidth={0}
-          textColor={COLORS.black}
-          onPress={handleSubmit} 
-        />
-       
+      <ReusableBtn
+        btnText="DONE"
+        backgroundColor={COLORS.primary}
+        textColor={COLORS.black}
+        onPress={handleSubmit}
+      />
     </View>
   );
 };
 
 export default TagsForm;
+
 
 const styles = StyleSheet.create({
   tagScrollView: {
