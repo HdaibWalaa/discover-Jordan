@@ -53,7 +53,7 @@ const styles = StyleSheet.create({
     width: 24,
     height: 24,
     marginRight: 8,
-    borderRadius: 12, // Rounded images
+    borderRadius: 12,
   },
   tagText: {
     fontSize: SIZES.medium,

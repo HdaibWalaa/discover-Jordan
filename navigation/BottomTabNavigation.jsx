@@ -282,7 +282,7 @@ const HomeStack = () => {
           options={{
             tabBarShowLabel: false,
             header: () => (
-              <ReusableHeader headerText={"EditTrip".toUpperCase()} />
+              <ReusableHeader headerText={"Edit Your Trip".toUpperCase()} />
             ),
           }}
         />

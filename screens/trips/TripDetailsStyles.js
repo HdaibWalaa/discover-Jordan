@@ -20,12 +20,12 @@ const styles = StyleSheet.create({
   tabsContainer: {
     flexDirection: "row",
     justifyContent: "center",
-    marginTop: 10,
-    marginBottom: 20,
+  
   },
   tab: {
     paddingVertical: 10,
     paddingHorizontal: 30,
+    top:-50,
   },
   activeTab: {
     borderBottomWidth: 2,

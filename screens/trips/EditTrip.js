@@ -3,7 +3,7 @@ import { SafeAreaView, FlatList, View } from "react-native";
 import reusable from "../../components/Reusable/reusable.style";
 import ReusableText from "../../components/Reusable/ReusableText";
 import { COLORS, TEXT } from "../../constants/theme";
-import EditTripForm from "../../components/trip/EditTripForm";
+import EditTripForm from "../../components/trip/edit/EditTripForm";
 
 const EditTrip = ({ route }) => {
   const { tripDetails, onUpdateTrip } = route.params;

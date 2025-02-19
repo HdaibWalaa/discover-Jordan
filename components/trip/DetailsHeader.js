@@ -6,11 +6,12 @@ import {
   TouchableOpacity,
   Image,
   ActivityIndicator,
+  Modal,
 } from "react-native";
-import { SIZES, COLORS, TEXT } from "../../constants/theme";
+import { COLORS, TEXT, SIZES } from "../../constants/theme";
+import { Ionicons } from "@expo/vector-icons";
+import { ReusableText } from "../index";
 import GoBack from "../Buttons/GoBack";
-import ReusableText from "../Reusable/ReusableText";
-import ReusableRegionLocation from "../Reusable/ReusableRegionLocation";
 import { AuthContext } from "../../store/auth-context";
 import { useLanguage } from "../../store/context/LanguageContext";
 import translations from "../../translations/translations";
@@ -20,15 +21,11 @@ import {
   widthPercentageToDP as wp,
   heightPercentageToDP as hp,
 } from "react-native-responsive-screen";
-import {
-  Menu,
-  MenuOptions,
-  MenuOption,
-  MenuTrigger,
-} from "react-native-popup-menu";
 
 const heartImage = require("../../assets/images/icons/heart.png");
 const heartFilledImage = require("../../assets/images/icons/heart-filled.png");
+const handImage = require("../../assets/images/icons/hand.png");
+const moreImage = require("../../assets/images/icons/more.png");
 
 const DetailsHeader = ({
   tripDetails,
@@ -38,14 +35,18 @@ const DetailsHeader = ({
   onHandPress,
   onLeaveTrip,
   isUserJoined,
+  pendingRequestsCount,
 }) => {
   const { token } = useContext(AuthContext);
   const { language } = useLanguage();
-  const t = translations[language]; // Use translated text
+  const t = translations[language];
 
   // ✅ State for favorite
   const [isFavorite, setIsFavorite] = useState(tripDetails.favorite);
   const [loadingFavorite, setLoadingFavorite] = useState(false);
+
+  // ✅ State for modal
+  const [modalVisible, setModalVisible] = useState(false);
 
   // ✅ Toggle Favorite Status (POST or DELETE API)
   const handleToggleFavorite = async () => {
@@ -98,30 +99,22 @@ const DetailsHeader = ({
         <View style={styles.rightButtonsContainer}>
           {isCreator ? (
             <>
-              {/* More Menu */}
-              <Menu>
-                <MenuTrigger customStyles={triggerStyles}>
-                  <Image
-                    source={require("../../assets/images/icons/more.png")}
-                    style={styles.moreIcon}
-                  />
-                </MenuTrigger>
-                <MenuOptions>
-                  <MenuOption onSelect={onEdit}>
-                    <Text style={styles.menuText}>{t.edit}</Text>
-                  </MenuOption>
-                  <MenuOption onSelect={onDelete}>
-                    <Text style={styles.menuText}>{t.delete}</Text>
-                  </MenuOption>
-                </MenuOptions>
-              </Menu>
+              {/* More Menu Button (Opens Modal) */}
+              <TouchableOpacity
+                style={styles.moreButton}
+                onPress={() => setModalVisible(true)}
+              >
+                <Image source={moreImage} style={styles.moreIcon} />
+              </TouchableOpacity>
 
-              {/* Requests (Hand) Button */}
+              {/* Requests (Hand) Button with Badge */}
               <TouchableOpacity style={styles.handButton} onPress={onHandPress}>
-                <Image
-                  source={require("../../assets/images/icons/hand.png")}
-                  style={styles.handIcon}
-                />
+                <Image source={handImage} style={styles.handIcon} />
+                {pendingRequestsCount > 0 && (
+                  <View style={styles.requestBadge}>
+                    <Text style={styles.badgeText}>{pendingRequestsCount}</Text>
+                  </View>
+                )}
               </TouchableOpacity>
             </>
           ) : (
@@ -152,17 +145,55 @@ const DetailsHeader = ({
           </TouchableOpacity>
         </View>
       </View>
-
-      <View style={styles.ButtomHeader}>
-        <ReusableText
-          text={tripDetails.name.toUpperCase()}
-          family={"Medium"}
-          size={TEXT.large}
-          color={COLORS.dark}
-          style={styles.titleText}
-        />
-        <ReusableRegionLocation region={tripDetails.region} />
-      </View>
+      <Modal
+        animationType="slide"
+        transparent
+        visible={modalVisible}
+        onRequestClose={() => setModalVisible(false)}
+      >
+        <View style={styles.centeredView}>
+          <View style={styles.modalView}>
+            <View style={styles.buttonContainer}>
+              <TouchableOpacity style={styles.deleteButton} onPress={onDelete}>
+                <ReusableText
+                  text={"DELETE"}
+                  family={"SemiBold"}
+                  size={TEXT.xmedium}
+                  color={COLORS.white}
+                  align={"center"}
+                  style={styles.buttonText}
+                />
+              </TouchableOpacity>
+              <TouchableOpacity
+                style={styles.deactivateButton}
+                onPress={onEdit}
+              >
+                <ReusableText
+                  text={"EDIT"}
+                  family={"SemiBold"}
+                  size={TEXT.xmedium}
+                  color={COLORS.black}
+                  align={"center"}
+                  style={styles.buttonText}
+                />
+              </TouchableOpacity>
+            </View>
+            <TouchableOpacity
+              style={styles.closeButtonContainer}
+              onPress={() => setModalVisible(false)}
+            >
+              <ReusableText
+                text={"close"}
+                family={"SemiBold"}
+                size={TEXT.xmedium}
+                color={COLORS.black}
+                align={"center"}
+                style={styles.closeButton}
+              />
+            </TouchableOpacity>
+          </View>
+        </View>
+      </Modal>
     </View>
   );
 };
@@ -171,8 +202,9 @@ export default DetailsHeader;
 
 const styles = StyleSheet.create({
   header: {
-    paddingTop: hp("5%"),
+    paddingTop: hp("6%"),
     paddingHorizontal: wp("5%"),
+    marginBottom: hp("2%"),
   },
   TopHeader: {
     flexDirection: "row",
@@ -237,29 +269,85 @@ const styles = StyleSheet.create({
     color: "#fff",
     fontSize: SIZES.small,
   },
-  ButtomHeader: {
+  requestBadge: {
+    position: "absolute",
+    top: -5,
+    right: -5,
+    backgroundColor: "red",
+    borderRadius: wp("4%"),
+    width: wp("5%"),
+    height: wp("5%"),
+    justifyContent: "center",
     alignItems: "center",
-    marginBottom: hp("2%"),
-    top: hp(-2),
   },
-  titleText: {
-    textAlign: "center",
+  badgeText: {
+    color: COLORS.white,
+    fontSize: SIZES.small,
+    fontWeight: "bold",
   },
-  menuText: {
-    padding: 10,
-    fontSize: SIZES.medium,
-    color: COLORS.dark,
+  centeredView: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+    backgroundColor: "rgba(0, 0, 0, 0.5)",
+  },
+  modalView: {
+    width: wp("90%"),
+    backgroundColor: "white",
+    borderRadius: wp("5%"),
+    padding: wp("7%"),
+    alignItems: "center",
+    shadowColor: "#000",
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.25,
+    shadowRadius: 4,
+    elevation: 5,
+    position: "relative",
+  },
+  closeButtonContainer: {
+    alignItems: "center",
+    paddingVertical: wp("2%"),
+    top: wp("2%"),
+  },
+  closeButton: {
+    backgroundColor: "#FFFFFF",
+    borderWidth: 1,
+    borderColor: COLORS.primary,
+    padding: hp("2%"),
+    borderRadius: wp("3%"),
+    width: wp("35%"),
+    alignItems: "center",
+  },
+  modalTitle: {
+    marginBottom: hp("1%"),
+  },
+  modalText: {
+    marginBottom: hp("3%"),
+  },
+  buttonContainer: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    width: "100%",
+    gap: hp("1%"),
+    paddingHorizontal: hp("2%"),
+  },
+  deleteButton: {
+    backgroundColor: "#FF4500",
+    padding: hp("2%"),
+    borderRadius: wp("3%"),
+    width: wp("35%"),
+    alignItems: "center",
+  },
+  deactivateButton: {
+    backgroundColor: "#FFFFFF",
+    borderWidth: 1,
+    borderColor: "#FF4500",
+    padding: hp("2%"),
+    borderRadius: wp("3%"),
+    width: wp("35%"),
+    alignItems: "center",
   },
 });
-
-const triggerStyles = {
-  triggerTouchable: {
-    style: {
-      padding: wp("2%"),
-      borderColor: COLORS.dark,
-      borderRadius: wp("3%"),
-      borderWidth: 1,
-      marginLeft: wp("2%"),
-    },
-  },
-};

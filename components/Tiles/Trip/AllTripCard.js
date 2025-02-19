@@ -184,9 +184,9 @@ const styles = StyleSheet.create({
   },
   image: {
     width: wp("24%"),
-    height: wp("24%"),
+    height: wp("25%"),
     borderRadius: wp("2%"),
-    marginBottom: hp("-1%"),
+   
   },
   cardContent: {
     flex: 1,

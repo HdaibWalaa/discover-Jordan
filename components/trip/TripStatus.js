@@ -51,10 +51,12 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
+    top: wp("3%"),
   },
   placeNameContainer: {
     flexDirection: "row",
     alignItems: "center",
+    width: wp("50%"),
   },
   placeIcon: {
     marginRight: wp("2%"),
