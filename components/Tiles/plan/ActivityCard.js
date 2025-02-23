@@ -7,11 +7,11 @@ const ActivityCard = ({ activity, showConnector }) => {
   const [modalVisible, setModalVisible] = useState(false);
 
   const formatTime = (time) => {
-    const [hour, minute] = time.split(":"); // Split the time string into hours and minutes
-    let hourInt = parseInt(hour, 10); // Convert the hour part to an integer
-    const period = hourInt >= 12 ? "pm" : "am"; // Determine if it's am or pm
-    hourInt = hourInt % 12 || 12; // Convert to 12-hour format, making sure 0 becomes 12
-    return `${hourInt}:${minute}${period}`; // Format the final time string
+    const [hour, minute] = time.split(":");
+    let hourInt = parseInt(hour, 10); 
+    const period = hourInt >= 12 ? "pm" : "am"; 
+    hourInt = hourInt % 12 || 12; 
+    return `${hourInt}:${minute}${period}`; 
   };
 
   return (

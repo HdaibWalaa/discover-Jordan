@@ -27,7 +27,7 @@ const endpoints = [
 ];
 
 const Search = ({ navigation }) => {
-  // ✅ Ensure Hooks Are Always in the Same Order
+
   const { mode } = useTheme();
   const isDarkMode = mode === "dark";
   const { translations, language } = useLanguage();
@@ -36,7 +36,7 @@ const Search = ({ navigation }) => {
   const [results, setResults] = useState({});
   const [loading, setLoading] = useState(false);
 
-  // ✅ Optimize Search Function to Prevent Unnecessary Re-renders
+
   const performSearch = useCallback(
     debounce(async (key) => {
       if (!key.trim()) {
@@ -49,7 +49,7 @@ const Search = ({ navigation }) => {
 
       try {
         const searchPromises = endpoints.map(({ key, fn }) =>
-          fn(key, language) // ✅ Pass key directly
+          fn(key, language) 
             .then((data) => ({ key, data }))
             .catch((error) => {
               console.error(`Error fetching ${key}:`, error);
@@ -69,15 +69,15 @@ const Search = ({ navigation }) => {
         setLoading(false);
       }
     }, 500),
-    [language] // ✅ Avoid frequent re-renders
+    [language] 
   );
 
-  // ✅ Ensure Hooks Are Called in the Same Order
+ 
   useEffect(() => {
     if (searchKey.trim() !== "") {
       performSearch(searchKey);
     }
-  }, [searchKey]); // ✅ Only depend on `searchKey`
+  }, [searchKey]); 
 
   const renderSection = (title, data) => (
     <>
@@ -95,7 +95,7 @@ const Search = ({ navigation }) => {
             horizontal
             keyExtractor={(item, index) =>
               item.id ? item.id.toString() : `${title}_${index}`
-            } // ✅ Ensure unique keys
+            } 
             renderItem={({ item }) => (
               <ReusableTile
                 item={item}

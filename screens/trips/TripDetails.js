@@ -4,7 +4,7 @@ import {
   Text,
   Image,
   ActivityIndicator,
-  ScrollView,
+  FlatList,
   Alert,
   TouchableOpacity,
   Modal,
@@ -38,11 +38,12 @@ import DetailsReview from "../../components/Tiles/Trip/DetailsReview";
 import DetailsPosts from "../../components/Tiles/Trip/DetailsPosts";
 
 const TripDetails = ({ route, navigation }) => {
-    const authCtx = useContext(AuthContext);
+  const authCtx = useContext(AuthContext);
   const { tripId } = route.params;
-  const { token } = useContext(AuthContext);
+  const { token } = authCtx;
   const { language } = useLanguage();
   const t = translations[language];
+
   const [alertVisible, setAlertVisible] = useState(false);
   const [alertMessage, setAlertMessage] = useState("");
   const [isCreator, setIsCreator] = useState(false);
@@ -51,24 +52,10 @@ const TripDetails = ({ route, navigation }) => {
   const [userRequests, setUserRequests] = useState([]);
   const [modalVisible, setModalVisible] = useState(false);
   const [activeTab, setActiveTab] = useState("posts");
-  const [navigateToEdit, setNavigateToEdit] = useState(false);
-  const localizedText = translations[finalLanguage] || translations["en"];
-  const finalLanguage = userPreferredLanguage || systemLanguage;
-  const { language: userPreferredLanguage } = useLanguage();
   const [pendingRequestsCount, setPendingRequestsCount] = useState(0);
-  const { tripDetails, isLoading, error, joinTrip, deleteTrip, editTrip } =
-    FetchTrip(tripId, token, language);
-  const deviceLanguage =
-    Platform.OS === "ios"
-      ? NativeModules.SettingsManager.settings.AppleLocale ||
-        NativeModules.SettingsManager.settings.AppleLanguages[0]
-      : NativeModules.I18nManager.localeIdentifier;
 
-  let systemLanguage = deviceLanguage.includes("_")
-    ? deviceLanguage.split("_")[0]
-    : deviceLanguage.split("-")[0];
+  const { tripDetails, isLoading, error } = FetchTrip(tripId, token, language);
 
-  systemLanguage = systemLanguage || "en";
   useEffect(() => {
     if (tripDetails) {
       setPendingRequestsCount(
@@ -105,192 +92,8 @@ const TripDetails = ({ route, navigation }) => {
     }
   }, [tripDetails, token]);
 
-  const handleJoinTrip = async () => {
-    try {
-      const response = await axios.post(
-        `${BASE_URL}/trip/join/${tripId}`,
-        {},
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-            Accept: "application/json",
-            "X-API-KEY": "DISCOVERJO91427",
-            "Content-Language": language,
-          },
-        }
-      );
-
-      if (response.status === 200) {
-        Alert.alert(localizedText.success, localizedText.joinSuccess);
-        setIsRequestPending(true);
-      }
-    } catch (error) {
-      console.error(
-        "Error joining trip:",
-        error.response?.data || error.message
-      );
-
-      let errorMsg = localizedText.joinError;
-      if (error.response?.data?.msg) {
-        errorMsg = Array.isArray(error.response.data.msg)
-          ? error.response.data.msg.join("\n")
-          : error.response.data.msg;
-      }
-
-      setAlertMessage(errorMsg);
-      setAlertVisible(true);
-    }
-  };
-
-  const handleAccept = async (userId) => {
-    try {
-      const response = await axios.post(
-        `${BASE_URL}/trip/user/accept`,
-        { trip_id: tripId, user_id: userId },
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-            Accept: "application/json",
-            "X-API-KEY": "DISCOVERJO91427",
-          },
-        }
-      );
-
-      if (response.status === 200) {
-        Alert.alert(t.success, `${t.userAccepted}: ${userId}`);
-
-        // ✅ Update state dynamically without refresh
-        setUserRequests((prev) => prev.filter((u) => u.id !== userId));
-        setPendingRequestsCount((prev) => Math.max(prev - 1, 0));
-      }
-    } catch (error) {
-      Alert.alert(t.error, t.failedToAccept);
-    }
-  };
-
-  // **Handle user tapping "LEAVE" button**
-  const handleLeaveTrip = async () => {
-    try {
-      const response = await axios.delete(
-        `${BASE_URL}/trip/join/cancel/${tripId}`,
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-            Accept: "application/json",
-            "X-API-KEY": "DISCOVERJO91427",
-          },
-        }
-      );
-
-      if (response.status === 200) {
-        Alert.alert("Success", "You have left the trip.");
-        setIsUserJoined(false);
-        setIsRequestPending(false);
-      }
-    } catch (err) {
-      console.log("Error leaving trip:", err.message);
-      if (err.response) {
-        console.log("Error response data:", err.response.data);
-        console.log("Error response status:", err.response.status);
-      }
-      Alert.alert("Error", "Could not leave the trip.");
-    }
-  };
-
-  // Edit trip
-const handleEditTrip = () => {
-  setModalVisible(false); // Close modal
-  navigation.navigate("EditTrip", { tripDetails });
-};
-
-
-  // ✅ useEffect watches `navigateToEdit` and ensures the modal is closed before navigating
-  useEffect(() => {
-    if (!modalVisible && navigateToEdit) {
-      setNavigateToEdit(false);
-      navigation.navigate("EditTrip", { tripDetails });
-    }
-  }, [modalVisible, navigateToEdit]);
-
-  // Delete trip
-  const handleDeleteTrip = async () => {
-    Alert.alert("Delete Trip", "Are you sure you want to delete this trip?", [
-      { text: "Cancel", style: "cancel" },
-      {
-        text: "Delete",
-        style: "destructive",
-        onPress: async () => {
-          try {
-            const response = await axios.delete(
-              `${BASE_URL}/trip/delete/${tripId}`,
-              {
-                headers: {
-                  Authorization: `Bearer ${token}`,
-                  Accept: "application/json",
-                  "X-API-KEY": "DISCOVERJO91427",
-                },
-              }
-            );
-
-            if (response.status === 200) {
-              Alert.alert("Success", "Trip deleted successfully!");
-
-              // ✅ Close modal before navigating
-              setModalVisible(false);
-
-              // ✅ Navigate back after delete
-              navigation.navigate("AllTrip");
-            }
-          } catch (error) {
-            Alert.alert("Error", "Failed to delete the trip.");
-            console.error(
-              "Error deleting trip:",
-              error.response?.data || error.message
-            );
-          }
-        },
-      },
-    ]);
-  };
-
-  const handleReject = async (userId) => {
-    try {
-      const response = await axios.post(
-        // Check if API needs DELETE instead
-        `${BASE_URL}/trip/user/cancel/${tripId}`, // Ensure correct endpoint
-        { user_id: userId }, // Some APIs require the ID in the body
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-            Accept: "application/json",
-            "X-API-KEY": "DISCOVERJO91427",
-          },
-        }
-      );
-
-      if (response.status === 200) {
-        Alert.alert("Success", `User ID: ${userId} rejected!`);
-
-        // ✅ Update UI dynamically without refresh
-        setUserRequests((prev) => prev.filter((u) => u.id !== userId));
-        setPendingRequestsCount((prev) => Math.max(prev - 1, 0)); // Ensure count never goes negative
-      }
-    } catch (error) {
-      console.error(
-        "Error rejecting user:",
-        error.response?.data || error.message
-      );
-
-      let errorMsg = "Failed to reject user request.";
-      if (error.response?.data?.msg) {
-        errorMsg = Array.isArray(error.response.data.msg)
-          ? error.response.data.msg.join("\n")
-          : error.response.data.msg;
-      }
-
-      Alert.alert("Error", errorMsg);
-    }
-  };
+  const isTripActive = new Date(tripDetails?.date) >= new Date();
+  const isTripEnd = new Date(tripDetails?.date) <= new Date();
 
   if (isLoading) {
     return <ActivityIndicator size="large" color={COLORS.primary} />;
@@ -300,145 +103,163 @@ const handleEditTrip = () => {
     return (
       <View style={styles.centered}>
         <Text>
-          {localizedText.error}: {error.message}
+          {t.error}: {error.message}
         </Text>
       </View>
     );
   }
+const handleLeaveTrip = async () => {
+  try {
+    const response = await axios.delete(
+      `${BASE_URL}/trip/join/cancel/${tripId}`,
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          Accept: "application/json",
+          "X-API-KEY": "DISCOVERJO91427",
+        },
+      }
+    );
 
-  const isTripActive = new Date(tripDetails.date) >= new Date();
-  const isTripEnd = new Date(tripDetails.date) <= new Date();
+    if (response.status === 200) {
+      Alert.alert("Success", "You have left the trip.");
+      setIsUserJoined(false);
+      setIsRequestPending(false);
+    }
+  } catch (err) {
+    console.log("Error leaving trip:", err.message);
+    if (err.response) {
+      console.log("Error response data:", err.response.data);
+      console.log("Error response status:", err.response.status);
+    }
+    Alert.alert("Error", "Could not leave the trip.");
+  }
+};
 
   return (
     <MenuProvider>
       <TripBackground>
-        <ScrollView
-          contentContainerStyle={styles.container}
-          showsVerticalScrollIndicator={false}
-        >
-          <DetailsHeader
-            tripDetails={tripDetails}
-            isCreator={isCreator}
-            onHandPress={() => setModalVisible(true)}
-            onEdit={handleEditTrip}
-            onDelete={handleDeleteTrip}
-            onLeaveTrip={handleLeaveTrip}
-            isUserJoined={isUserJoined}
-            pendingRequestsCount={pendingRequestsCount}
-            setPendingRequestsCount={setPendingRequestsCount}
-          />
-          {/* Image Gallery */}
-          <TripImageGallery tripDetails={tripDetails} />
-          {/* Main Content */}
-          <View style={styles.detailsContainer}>
-            <TripStatus tripDetails={tripDetails} />
-            <TripTime tripDetails={tripDetails} />
-            <TripUser tripDetails={tripDetails} tripId={tripId} />
-
-            {/* Description */}
-            <View style={styles.descriptionContainer}>
-              <ReusableText
-                text="Description"
-                family="SemiBold"
-                size={SIZES.large}
-                color={COLORS.black}
-              />
-              <ReusableText
-                text={tripDetails.description}
-                family="Regular"
-                size={SIZES.medium}
-                color={COLORS.gray}
-              />
-            </View>
-
-            <TripTags tripDetails={tripDetails} />
-            <TripInfo tripDetails={tripDetails} />
-
-            {isTripActive && (
-              <JoinTrip
-                handleJoinTrip={handleJoinTrip}
-                isTripActive={isTripActive}
-                isUserJoined={isUserJoined}
-                isRequestPending={isRequestPending}
+        <FlatList
+          data={[]} 
+          keyExtractor={() => "dummy"} 
+          ListHeaderComponent={
+            <>
+              <DetailsHeader
+                tripDetails={tripDetails}
                 isCreator={isCreator}
-                tripId={tripId}
-                token={token}
-                updateTripStatus={setIsRequestPending}
+                onHandPress={() => setModalVisible(true)}
+                isUserJoined={isUserJoined}
+                pendingRequestsCount={pendingRequestsCount}
+                setPendingRequestsCount={setPendingRequestsCount}
+                onLeaveTrip={handleLeaveTrip}
               />
-            )}
-            <HeightSpacer height={100} />
+              <TripImageGallery tripDetails={tripDetails} />
+              <View style={styles.detailsContainer}>
+                <TripStatus tripDetails={tripDetails} />
+                <TripTime tripDetails={tripDetails} />
+                <TripUser tripDetails={tripDetails} tripId={tripId} />
 
-            {/* Example: show tabs if trip ended */}
-            {isTripEnd && (
-              <View style={styles.tabsContainer}>
-                <TouchableOpacity
-                  style={[
-                    styles.tab,
-                    activeTab === "posts" && styles.activeTab,
-                  ]}
-                  onPress={() => setActiveTab("posts")}
-                >
-                  <Text
-                    style={[
-                      styles.tabText,
-                      activeTab === "posts" && styles.activeTabText,
-                    ]}
-                  >
-                    Posts
-                  </Text>
-                </TouchableOpacity>
-                <TouchableOpacity
-                  style={[
-                    styles.tab,
-                    activeTab === "reviews" && styles.activeTab,
-                  ]}
-                  onPress={() => setActiveTab("reviews")}
-                >
-                  <Text
-                    style={[
-                      styles.tabText,
-                      activeTab === "reviews" && styles.activeTabText,
-                    ]}
-                  >
-                    Reviews
-                  </Text>
-                </TouchableOpacity>
-              </View>
-            )}
+                <View style={styles.descriptionContainer}>
+                  <ReusableText
+                    text="Description"
+                    family="SemiBold"
+                    size={SIZES.large}
+                    color={COLORS.black}
+                  />
+                  <ReusableText
+                    text={tripDetails.description}
+                    family="Regular"
+                    size={SIZES.medium}
+                    color={COLORS.gray}
+                  />
+                </View>
 
-            {isTripEnd && activeTab === "posts" && (
-              <View style={styles.tabContent}>
-                 <DetailsPosts posts={tripDetails.posts} token={authCtx.token} />
+                <TripTags tripDetails={tripDetails} />
+                <TripInfo tripDetails={tripDetails} />
+
+                {isTripActive && (
+                  <JoinTrip
+                    handleJoinTrip={() => {}}
+                    isTripActive={isTripActive}
+                    isUserJoined={isUserJoined}
+                    isRequestPending={isRequestPending}
+                    isCreator={isCreator}
+                    tripId={tripId}
+                    token={token}
+                    updateTripStatus={setIsRequestPending}
+                  />
+                )}
               </View>
-            )}
-            {isTripEnd && activeTab === "reviews" && (
-              <View style={styles.tabContent}>
-               <DetailsReview
-              reviewsData={tripDetails.reviews} 
-              placeId={tripDetails.id}
-              token={authCtx.token}
-            />
-              </View>
-            )}
-          </View>
-          {/* Creator-only requests modal */}
-          <RequestsModal
-            modalVisible={modalVisible}
-            setModalVisible={setModalVisible}
-            userRequests={userRequests}
-            handleAccept={handleAccept}
-            handleReject={handleReject}
-          />
-        </ScrollView>
+
+              <HeightSpacer height={70} />
+
+              {isTripEnd && (
+                <View style={styles.tabsContainer}>
+                  <TouchableOpacity
+                    style={[
+                      styles.tab,
+                      activeTab === "posts" && styles.activeTab,
+                    ]}
+                    onPress={() => setActiveTab("posts")}
+                  >
+                    <Text
+                      style={[
+                        styles.tabText,
+                        activeTab === "posts" && styles.activeTabText,
+                      ]}
+                    >
+                      Posts
+                    </Text>
+                  </TouchableOpacity>
+                  <TouchableOpacity
+                    style={[
+                      styles.tab,
+                      activeTab === "reviews" && styles.activeTab,
+                    ]}
+                    onPress={() => setActiveTab("reviews")}
+                  >
+                    <Text
+                      style={[
+                        styles.tabText,
+                        activeTab === "reviews" && styles.activeTabText,
+                      ]}
+                    >
+                      Reviews
+                    </Text>
+                  </TouchableOpacity>
+                </View>
+              )}
+            </>
+          }
+          ListFooterComponent={
+            <>
+              {isTripEnd && activeTab === "posts" && (
+                <DetailsPosts posts={tripDetails.posts} token={authCtx.token} />
+              )}
+              {isTripEnd && activeTab === "reviews" && (
+                <DetailsReview
+                  reviewsData={tripDetails.reviews}
+                  placeId={tripDetails.id}
+                  token={authCtx.token}
+                />
+              )}
+              <RequestsModal
+                modalVisible={modalVisible}
+                setModalVisible={setModalVisible}
+                userRequests={userRequests}
+                handleAccept={() => {}}
+                handleReject={() => {}}
+              />
+            </>
+          }
+        />
       </TripBackground>
+
       <AwesomeAlert
         show={alertVisible}
-        showProgress={false}
-        title={localizedText.error}
+        title={t.error}
         message={alertMessage}
         closeOnTouchOutside={true}
-        closeOnHardwareBackPress={true}
-        showCancelButton={false}
         showConfirmButton={true}
         confirmText="OK"
         confirmButtonColor={COLORS.primary}

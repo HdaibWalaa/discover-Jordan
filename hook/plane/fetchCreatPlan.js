@@ -2,7 +2,6 @@ import axios from "axios";
 import BASE_URL from "../apiConfig";
 
 const fetchCreatPlan = async (planData, token) => {
-  console.log("Sending plan data to API:", planData); // Log the plan data
   try {
     const response = await axios.post(`${BASE_URL}/plan/create`, planData, {
       headers: {
@@ -12,18 +11,38 @@ const fetchCreatPlan = async (planData, token) => {
       },
     });
 
-    console.log("API Response:", response.data); // Log the response from API
+    if (!response.data?.id) {
+      return {
+        error: true,
+        msg: response.data?.msg || "Missing plan ID in response",
+      };
+    }
+
     return response.data;
   } catch (error) {
+    let errorMsg = "An unexpected error occurred";
+
     if (error.response) {
-      console.error("Error creating plan:", error.response.data);
+      // Handle validation errors array
+      if (Array.isArray(error.response.data)) {
+        errorMsg = error.response.data
+          .map((err) => err.replace("Error: ", ""))
+          .join("\n");
+      } else {
+        errorMsg =
+          error.response.data?.message ||
+          error.response.data?.msg ||
+          `Server error: ${error.response.status}`;
+      }
     } else if (error.request) {
-      console.error("No response received:", error.request);
+      errorMsg = "No response from server. Check your internet connection.";
     } else {
-      console.error("Error setting up request:", error.message);
+      errorMsg = error.message;
     }
-    throw error;
+
+    throw new Error(errorMsg);
   }
 };
+
 
 export default fetchCreatPlan;

@@ -30,6 +30,8 @@ const PlanDetails = () => {
   const [showFullDescription, setShowFullDescription] = useState(false);
   const authCtx = useContext(AuthContext);
   const route = useRoute();
+  const { id } = route.params;
+  console.log("Plan ID from route params:", id);
 
   useEffect(() => {
     const deviceLanguage =

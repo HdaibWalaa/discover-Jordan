@@ -140,6 +140,7 @@ export default {
     join: "JOIN",
     groupChat: "Group Chat",
     requestPending: "Request Pending",
+    noTripFound: "There are no trips on this date. Be the first to create one!",
   },
 
   ar: {
@@ -283,5 +284,6 @@ export default {
     join: "انضم",
     groupChat: "دردشة المجموعة",
     requestPending: "الطلب معلق",
+    noTripFound:"لا توجد رحلات في هذا التاريخ. كن الأول في إنشائها!",
   },
 };

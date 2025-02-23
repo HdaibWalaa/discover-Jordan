@@ -155,9 +155,7 @@ const AllTrip = () => {
                 shouldPlay
                 isLooping
               />
-              <Text style={styles.noDataText}>
-                {localizedText.noTripsFound}
-              </Text>
+              <Text style={styles.noDataText}>{localizedText.noTripFound}</Text>
             </View>
           )}
 

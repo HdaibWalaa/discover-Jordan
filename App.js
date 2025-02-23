@@ -173,11 +173,7 @@ function AppStack() {
           <Stack.Screen
             name="Search"
             component={Search}
-            options={{
-              header: () => (
-                <ReusableHeader headerText={"Search".toUpperCase()} />
-              ),
-            }}
+            options={{ headerShown: false }}
           />
           <Stack.Screen
             name="EditUserProfile"

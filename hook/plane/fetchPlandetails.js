@@ -29,4 +29,4 @@ const fetchPlanDetails = async (id, token, language) => {
   }
 };
 
-export default fetchPlanDetails;
+export default fetchPlanDetails; 
