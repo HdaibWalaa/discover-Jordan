@@ -3,20 +3,29 @@ import { View, Text, Image, TouchableOpacity, Modal } from "react-native";
 import styles from "./ActivityCardStyles"; // Import the styles for the card
 import { Ionicons } from "@expo/vector-icons"; // Example for an icon library
 
-const ActivityCard = ({ activity, showConnector }) => {
+const ActivityCard = ({
+  activity,
+  showConnector,
+  isLastCard,
+  onEditActivity, // New prop for handling edit action
+}) => {
   const [modalVisible, setModalVisible] = useState(false);
 
   const formatTime = (time) => {
     const [hour, minute] = time.split(":");
-    let hourInt = parseInt(hour, 10); 
-    const period = hourInt >= 12 ? "pm" : "am"; 
-    hourInt = hourInt % 12 || 12; 
-    return `${hourInt}:${minute}${period}`; 
+    let hourInt = parseInt(hour, 10);
+
+    const period = hourInt >= 12 ? "pm" : "am";
+
+    hourInt = hourInt % 12 || 12;
+    return `${hourInt}:${minute}${period}`;
   };
 
   return (
     <>
-      <View style={styles.cardContainer}>
+      <View
+        style={isLastCard ? styles.lastCardContainer : styles.cardContainer}
+      >
         <View style={styles.timelineContainer}>
           <View style={styles.timelineBackground} />
           <Ionicons
@@ -50,12 +59,25 @@ const ActivityCard = ({ activity, showConnector }) => {
               )}`}
             </Text>
           </View>
-          <TouchableOpacity
-            style={styles.activityButton}
-            onPress={() => setModalVisible(true)}
-          >
-            <Ionicons name="open-outline" size={24} color="black" />
-          </TouchableOpacity>
+          <View style={styles.activityButtons}>
+            {/* Edit button */}
+            {onEditActivity && (
+              <TouchableOpacity
+                style={styles.activityButton}
+                onPress={() => onEditActivity(activity)}
+              >
+                <Ionicons name="pencil-outline" size={22} color="black" />
+              </TouchableOpacity>
+            )}
+
+            {/* View details button */}
+            <TouchableOpacity
+              style={styles.activityButton}
+              onPress={() => setModalVisible(true)}
+            >
+              <Ionicons name="open-outline" size={22} color="black" />
+            </TouchableOpacity>
+          </View>
         </View>
       </View>
 
@@ -69,7 +91,9 @@ const ActivityCard = ({ activity, showConnector }) => {
         <View style={styles.modalOverlay}>
           <View style={styles.modalContent}>
             <Text style={styles.modalTitle}>{activity.name}</Text>
-            <Text style={styles.modalText}>{activity.note}</Text>
+            <Text style={styles.modalText}>
+              {activity.note || "No additional information available."}
+            </Text>
             <TouchableOpacity
               style={styles.modalCloseButton}
               onPress={() => setModalVisible(false)}

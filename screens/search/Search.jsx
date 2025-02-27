@@ -1,189 +1,205 @@
-import React, { useState, useEffect, useCallback } from "react";
-import { View, Text, ScrollView, FlatList } from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
-import * as api from "../../services/apiService";
-import ReusableTile from "../../components/Reusable/ReusableTile";
-import styles from "./search.style";
-import reusable from "../../components/Reusable/reusable.style";
-import { debounce } from "../../util/debounce";
-import SearchInput from "../../components/Serach&Filter/SerachInput";
-import TypeTabs from "../../components/Serach&Filter/TypeTabs";
+import React, { useState, useEffect } from "react";
+import { View, Text, ActivityIndicator } from "react-native";
+import { TEXT, COLORS } from "../../constants/theme";
+import { useRoute } from "@react-navigation/native";
 import { useTheme } from "../../store/context/ThemeContext";
 import { useLanguage } from "../../store/context/LanguageContext";
-import { COLORS, TEXT } from "../../constants/theme";
-import ReusableText from "../../components/Reusable/ReusableText";
+import translations from "../../translations/translations";
+import SearchTrips from "../../components/Serach&Filter/SearchTrips";
+import SearchPlans from "../../components/Serach&Filter/SearchPlans";
+import SearchPlaces from "../../components/Serach&Filter/SearchPlaces";
+import SearchEvents from "../../components/Serach&Filter/SearchEvents";
+import SearchUseres from "../../components/Serach&Filter/SearchUseres";
+import SearchVolunteers from "../../components/Serach&Filter/SearchVolunteers";
+import SearchGuideTrips from "../../components/Serach&Filter/SearchGuideTrips";
+import { FontAwesome5 } from "react-native-vector-icons";
+import axios from "axios";
+import BASE_URL from "../../hook/apiConfig";
+import { debounce } from "../../util/debounce";
+import SearchInput from "../../components/Serach&Filter/SearchInput";
+import TypeTabs from "../../components/Serach&Filter/TypeTabs";
+import styles from "./search.style";
 
-const endpoints = [
-  { key: "places", fn: api.searchPlaces },
-  { key: "trips", fn: api.searchTrips },
-  { key: "plans", fn: api.searchPlans },
-  { key: "users", fn: api.searchUsers },
-  { key: "popularPlaces", fn: api.searchPopularPlaces },
-  { key: "topTenPlaces", fn: api.searchTopTenPlaces },
-  { key: "events", fn: api.searchEvents },
-  { key: "volunteering", fn: api.searchVolunteering },
-  { key: "categories", fn: api.searchCategories },
-  { key: "guideTrips", fn: api.searchGuideTrips },
-];
-
-const Search = ({ navigation }) => {
-
+const Search = () => {
   const { mode } = useTheme();
-  const isDarkMode = mode === "dark";
-  const { translations, language } = useLanguage();
-  const [searchKey, setSearchKey] = useState("");
-  const [selectedType, setSelectedType] = useState("all");
-  const [results, setResults] = useState({});
+  const { language } = useLanguage();
+  const route = useRoute();
+  const [searchQuery, setSearchQuery] = useState("");
+  const [selectedType, setSelectedType] = useState(1); // Using numeric IDs now
+  const [results, setResults] = useState({
+    all: [],
+    places: [],
+    trips: [],
+    events: [],
+    plans: [],
+    volunteering: [],
+    guideTrips: [],
+  });
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
+  const [searchPerformed, setSearchPerformed] = useState(false);
+  const [firstLoad, setFirstLoad] = useState(true); // Track first screen load
 
+  const currentLanguage = language || "en";
 
-  const performSearch = useCallback(
-    debounce(async (key) => {
-      if (!key.trim()) {
-        setResults({});
-        return;
-      }
+  const performSearch = debounce(async (query) => {
+    if (!query.trim()) {
+      setResults({
+        all: [],
+        places: [],
+        trips: [],
+        events: [],
+        plans: [],
+        volunteering: [],
+        guideTrips: [],
+      });
+      setSearchPerformed(false);
+      return;
+    }
 
-      setLoading(true);
-      const allResults = {};
+    setSearchPerformed(true);
+    setFirstLoad(false); // Mark that the user has searched
+    setLoading(true);
+    try {
+      const response = await axios.get(`${BASE_URL}/all/search`, {
+        params: { query },
+        headers: {
+          "Content-Language": language,
+          "X-API-KEY": "DISCOVERJO91427",
+        },
+      });
 
-      try {
-        const searchPromises = endpoints.map(({ key, fn }) =>
-          fn(key, language) 
-            .then((data) => ({ key, data }))
-            .catch((error) => {
-              console.error(`Error fetching ${key}:`, error);
-              return { key, data: [] };
-            })
-        );
+      const transformedResults = {
+        all: [
+          ...(response.data?.data?.places?.data || []),
+          ...(response.data?.data?.trips?.data || []),
+          ...(response.data?.data?.events?.data || []),
+          ...(response.data?.data?.plans?.data || []),
+          ...(response.data?.data?.volunteering?.data || []),
+          ...(response.data?.data?.guide_trips?.data || []),
+        ],
+        places: response.data?.data?.places?.data || [],
+        trips: response.data?.data?.trips?.data || [],
+        events: response.data?.data?.events?.data || [],
+        plans: response.data?.data?.plans?.data || [],
+        volunteering: response.data?.data?.volunteering?.data || [],
+        guideTrips: response.data?.data?.guide_trips?.data || [],
+      };
 
-        const responses = await Promise.all(searchPromises);
-        responses.forEach(({ key, data }) => {
-          allResults[key] = data || [];
-        });
+      setResults(transformedResults);
+      setError(null);
+    } catch (error) {
+      console.error("Search error:", error);
+      setError(translations[currentLanguage].searchError || "Search failed");
+      setResults({
+        all: [],
+        places: [],
+        trips: [],
+        events: [],
+        plans: [],
+        volunteering: [],
+        guideTrips: [],
+      });
+    } finally {
+      setLoading(false);
+    }
+  }, 500);
 
-        setResults(allResults);
-      } catch (error) {
-        console.error("Error during search:", error);
-      } finally {
-        setLoading(false);
-      }
-    }, 500),
-    [language] 
+  useEffect(() => {
+    performSearch(searchQuery);
+  }, [searchQuery]);
+
+  // Skeleton loader component for a better loading experience
+  const SkeletonLoader = () => (
+    <View style={styles.skeletonContainer}>
+      {[1, 2, 3, 4].map((item) => (
+        <View key={item} style={styles.skeletonItem}>
+          <View style={styles.skeletonImage} />
+          <View style={styles.skeletonContent}>
+            <View style={styles.skeletonTitle} />
+            <View style={styles.skeletonText} />
+            <View style={styles.skeletonText} />
+          </View>
+        </View>
+      ))}
+    </View>
   );
 
- 
-  useEffect(() => {
-    if (searchKey.trim() !== "") {
-      performSearch(searchKey);
-    }
-  }, [searchKey]); 
-
-  const renderSection = (title, data) => (
-    <>
-      {data && data.length > 0 && (
-        <View style={styles.sectionContainer}>
-          <ReusableText
-            text={translations[title] || title}
-            family={"SemiBold"}
-            size={TEXT.medium}
-            color={isDarkMode ? COLORS.white : COLORS.black}
-            style={styles.sectionTitle}
-          />
-          <FlatList
-            data={data}
-            horizontal
-            keyExtractor={(item, index) =>
-              item.id ? item.id.toString() : `${title}_${index}`
-            } 
-            renderItem={({ item }) => (
-              <ReusableTile
-                item={item}
-                imageUri={
-                  item.image || "https://your-default-image-url.com/default.jpg"
-                }
-                onPress={() => {
-                  switch (title) {
-                    case "places":
-                    case "popularPlaces":
-                    case "topTenPlaces":
-                      navigation.navigate("PlaceDetails", {
-                        id: item.id || item.place_id,
-                      });
-                      break;
-                    case "trips":
-                      navigation.navigate("TripDetails", { id: item.id });
-                      break;
-                    case "guideTrips":
-                      navigation.navigate("GuideTripDetails", { id: item.id });
-                      break;
-                    case "plans":
-                      navigation.navigate("PlanDetails", { id: item.id });
-                      break;
-                    case "users":
-                      navigation.navigate("OtherUserProfile", {
-                        userId: item.id,
-                      });
-                      break;
-                    case "events":
-                      navigation.navigate("EventsDetails", { id: item.id });
-                      break;
-                    case "volunteering":
-                      navigation.navigate("VolunteerDetails", { id: item.id });
-                      break;
-                    case "categories":
-                      navigation.navigate("CategoryList", {
-                        categoryId: item.id,
-                      });
-                      break;
-                    default:
-                      console.warn("Unhandled title:", title);
-                  }
-                }}
-              />
-            )}
-          />
-        </View>
-      )}
-    </>
+  // Empty state component
+  const EmptyResultsView = () => (
+    <View style={styles.emptyContainer}>
+      <FontAwesome5
+        name="search"
+        size={50}
+        color={COLORS.gray}
+        style={styles.emptyIcon}
+      />
+      <Text style={styles.noDataText}>
+        {translations[currentLanguage].noResults || "No results found"}
+      </Text>
+      <Text style={styles.noDataSubText}>
+        {translations[currentLanguage].tryDifferentSearch ||
+          "Try different search terms"}
+      </Text>
+    </View>
   );
 
   return (
-    <SafeAreaView
-      style={[
-        reusable.container,
-        {
-          backgroundColor: isDarkMode ? COLORS.navey : COLORS.lightBackground,
-        },
-      ]}
-    >
-      <SearchInput
-        searchKey={searchKey}
-        setSearchKey={setSearchKey}
-        placeholder={translations.searchPlaceholder}
-      />
+    <View style={styles.container}>
+      <SearchInput searchKey={searchQuery} setSearchKey={setSearchQuery} />
+
       <TypeTabs selectedType={selectedType} onSelectType={setSelectedType} />
 
-      {loading ? (
-        <Text style={styles.loadingText}>
-          <ReusableText
-            text={translations.loading || "Loading..."}
-            family={"Bold"}
-            size={TEXT.large}
-            color={COLORS.black}
-            style={{ letterSpacing: 1 }}
-          />
-        </Text>
-      ) : (
-        <ScrollView>
-          {Object.entries(results).map(
-            ([key, value]) =>
-              (selectedType === "all" || selectedType === key) &&
-              renderSection(key, value)
-          )}
-        </ScrollView>
-      )}
-    </SafeAreaView>
+      {/* Content container with proper flex */}
+      <View style={styles.contentContainer}>
+        {loading ? (
+          <SkeletonLoader />
+        ) : (
+          <>
+            {error && <Text style={styles.errorText}>{error}</Text>}
+
+            {/* Don't show empty state if it's the first time opening the screen */}
+            {!firstLoad && searchPerformed && results.all.length === 0 && (
+              <EmptyResultsView />
+            )}
+
+            {/* First load welcome message */}
+            {firstLoad && (
+              <View style={styles.welcomeContainer}>
+                <FontAwesome5
+                  name="compass"
+                  size={60}
+                  color={COLORS.primary}
+                  style={styles.welcomeIcon}
+                />
+                <Text style={styles.welcomeText}>
+                  {translations[currentLanguage].searchWelcome ||
+                    "Search for places, trips, events and more"}
+                </Text>
+              </View>
+            )}
+
+            {/* Search results */}
+            {!firstLoad && searchPerformed && results.all.length > 0 && (
+              <View style={styles.resultContainer}>
+                {selectedType === 1 && <SearchPlaces places={results.all} />}
+                {selectedType === 2 && <SearchPlaces places={results.places} />}
+                {selectedType === 3 && <SearchTrips trips={results.trips} />}
+                {selectedType === 4 && <SearchEvents events={results.events} />}
+                {selectedType === 5 && <SearchPlans plans={results.plans} />}
+                {selectedType === 6 && (
+                  <SearchVolunteers volunteers={results.volunteering} />
+                )}
+                {selectedType === 7 && (
+                  <SearchGuideTrips guideTrips={results.guideTrips} />
+                )}
+                {selectedType === 8 && <SearchUseres />}
+              </View>
+            )}
+          </>
+        )}
+      </View>
+    </View>
   );
 };
 

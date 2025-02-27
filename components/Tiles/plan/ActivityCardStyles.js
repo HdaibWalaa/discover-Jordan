@@ -9,6 +9,12 @@ const styles = StyleSheet.create({
   cardContainer: {
     flexDirection: "row",
     marginBottom: hp(3),
+    marginLeft: -wp(5),
+  },
+  lastCardContainer: {
+    flexDirection: "row",
+    marginBottom: hp(10), // Increased bottom margin for the last card
+    marginLeft: -wp(5),
   },
   timelineContainer: {
     alignItems: "center",
@@ -48,7 +54,7 @@ const styles = StyleSheet.create({
     borderRadius: wp(2),
     backgroundColor: COLORS.primary,
     position: "absolute",
-    top: "100%",
+    top: "110%",
     left: "49%",
     transform: [{ translateX: -wp(1) }, { translateY: -wp(1) }],
     zIndex: 2,
@@ -72,8 +78,8 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   activityTitle: {
-    fontSize: wp(4.5),
-    fontWeight: "bold",
+    fontSize: wp(4),
+    fontFamily: "Bold",
     color: "black",
   },
   activityLocation: {
@@ -85,6 +91,11 @@ const styles = StyleSheet.create({
     fontSize: wp(4),
     color: "#333",
     marginTop: hp(0.5),
+  },
+  activityButtons: {
+    flexDirection: "column",
+    justifyContent: "space-around",
+    height: wp(15),
   },
   activityButton: {
     padding: wp(2),
@@ -102,8 +113,8 @@ const styles = StyleSheet.create({
     borderRadius: wp(4),
   },
   modalTitle: {
-    fontSize: wp(5),
-    fontWeight: "bold",
+    fontSize: wp(4),
+    fontFamily: "Bold",
     marginBottom: hp(2),
     color: COLORS.black,
   },

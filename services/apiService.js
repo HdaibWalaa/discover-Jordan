@@ -1,62 +1,82 @@
 import axios from "axios";
 import BASE_URL from "../hook/apiConfig";
 
-// Function to search for places
-export const searchPlaces = async (query, lat, lng, language) => {
+// Unified response handler
+const handleResponse = (response) => {
+  // Handle different API response structures
+  return (
+    response?.data?.data?.data || // For paginated responses
+    response?.data?.data || // For nested data
+    response?.data || // For direct arrays
+    []
+  ); // Fallback
+};
+
+export const searchAll = async (query, language) => {
   try {
-    const response = await axios.get(`${BASE_URL}/all/places/search`, {
-      params: { query, lat, lng },
+    const response = await axios.get(`${BASE_URL}/all/search`, {
+      params: { query },
       headers: { "Content-Language": language, "X-API-KEY": "DISCOVERJO91427" },
     });
-    return response.data.data.places || []; // Return an empty array if no places
+    return response.data?.data || {};
   } catch (error) {
-    console.error("Error fetching places:", error);
-    throw error;
+    console.error("All search error:", error);
+    return {};
   }
 };
 
-// Function to search for trips
+export const searchPlaces = async (query = "", language) => {
+  try {
+    const response = await axios.get(`${BASE_URL}/all/places/search`, {
+      params: { query },
+      headers: { "Content-Language": language, "X-API-KEY": "DISCOVERJO91427" },
+    });
+    return handleResponse(response);
+  } catch (error) {
+    console.error("Error fetching places:", error);
+    return [];
+  }
+};
+
+// Update all other search functions similarly:
 export const searchTrips = async (query, language) => {
   try {
     const response = await axios.get(`${BASE_URL}/all/trip/search`, {
       params: { query },
       headers: { "Content-Language": language, "X-API-KEY": "DISCOVERJO91427" },
     });
-    return response.data.data.trips || []; // Return an empty array if no trips
+    return handleResponse(response);
   } catch (error) {
     console.error("Error fetching trips:", error);
-    throw error;
+    return [];
   }
 };
 
-// Function to search for plans
 export const searchPlans = async (query, language) => {
   try {
     const response = await axios.get(`${BASE_URL}/all/plan/search`, {
       params: { query },
       headers: { "Content-Language": language, "X-API-KEY": "DISCOVERJO91427" },
     });
-    return response.data.data.plans || []; // Return an empty array if no plans
+    return response.data?.data?.data || [];
   } catch (error) {
     console.error("Error fetching plans:", error);
-    throw error;
+    return [];
   }
 };
 
-// Function to search for users
 export const searchUsers = async (query, language) => {
   try {
     const response = await axios.get(`${BASE_URL}/user/search`, {
       params: { query },
       headers: { "Content-Language": language, "X-API-KEY": "DISCOVERJO91427" },
     });
-    return response.data.data.users || []; 
+    return response.data?.data?.data || [];
   } catch (error) {
     console.error("Error fetching users:", error);
-    throw error;
+    return [];
   }
 };
-
 
 export const searchPopularPlaces = async (query, language) => {
   try {
@@ -64,66 +84,62 @@ export const searchPopularPlaces = async (query, language) => {
       params: { query },
       headers: { "Content-Language": language, "X-API-KEY": "DISCOVERJO91427" },
     });
-    return response.data.data || []; // Return an empty array if no popular places
+    return response.data?.data?.data || [];
   } catch (error) {
     console.error("Error fetching popular places:", error);
-    throw error;
+    return [];
   }
 };
 
-// Function to search for top ten places
 export const searchTopTenPlaces = async (query, language) => {
   try {
     const response = await axios.get(`${BASE_URL}/top-ten/places/search`, {
       params: { query },
       headers: { "Content-Language": language, "X-API-KEY": "DISCOVERJO91427" },
     });
-    return response.data.data || []; // Return an empty array if no top ten places
+    return response.data?.data?.data || [];
   } catch (error) {
     console.error("Error fetching top ten places:", error);
-    throw error;
+    return [];
   }
 };
 
-// Function to search for events
 export const searchEvents = async (query, language) => {
   try {
     const response = await axios.get(`${BASE_URL}/all/event/search`, {
       params: { query },
       headers: { "Content-Language": language, "X-API-KEY": "DISCOVERJO91427" },
     });
-    return response.data.data.events || []; // Return an empty array if no events
+    return response.data?.data?.data || [];
   } catch (error) {
     console.error("Error fetching events:", error);
-    throw error;
+    return [];
   }
 };
 
-// Function to search for volunteering opportunities
 export const searchVolunteering = async (query, language) => {
   try {
     const response = await axios.get(`${BASE_URL}/all/volunteering/search`, {
       params: { query },
       headers: { "Content-Language": language, "X-API-KEY": "DISCOVERJO91427" },
     });
-    return response.data.data.volunteering || []; // Return an empty array if no volunteering opportunities
+    return response.data?.data?.data || [];
   } catch (error) {
-    console.error("Error fetching volunteering opportunities:", error);
-    throw error;
+    console.error("Error fetching volunteering:", error);
+    return [];
   }
 };
 
-// Function to search for categories
 export const searchCategories = async (query, language) => {
   try {
     const response = await axios.get(`${BASE_URL}/categories/search`, {
       params: { query },
       headers: { "Content-Language": language, "X-API-KEY": "DISCOVERJO91427" },
     });
-    return response.data.data || []; // Return an empty array if no categories
+    return response.data?.data?.data || [];
   } catch (error) {
     console.error("Error fetching categories:", error);
-    throw error;
+    return [];
   }
 };
 
@@ -133,9 +149,9 @@ export const searchGuideTrips = async (query, language) => {
       params: { query },
       headers: { "Content-Language": language, "X-API-KEY": "DISCOVERJO91427" },
     });
-    return response.data.data.trips || []; // Return an empty array if no guide trips
+    return response.data?.data?.data || [];
   } catch (error) {
     console.error("Error fetching guide trips:", error);
-    throw error;
+    return [];
   }
 };

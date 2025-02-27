@@ -152,7 +152,7 @@ const CreatActivies = () => {
       }
     } catch (error) {
       console.error("Failed to create plan:", error);
-      alert(error.message); // This will show the formatted error messages
+      alert(error.message); 
     }
   };
   return (

@@ -1,153 +1,178 @@
 import { StyleSheet } from "react-native";
-import {
-  widthPercentageToDP as wp,
-  heightPercentageToDP as hp,
-} from "react-native-responsive-screen";
 import { COLORS, TEXT } from "../../constants/theme";
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
     padding: 20,
+    top: 50,
   },
   header: {
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
-    marginBottom: 20,
+    marginBottom: 16,
   },
   description: {
     lineHeight: 24,
     marginBottom: 10,
+    textAlign: "left",
   },
   readMoreText: {
     color: COLORS.primary,
     fontFamily: "Medium",
     fontSize: TEXT.small,
+    marginBottom: 20,
   },
   daysTabs: {
     marginVertical: 20,
     borderBottomWidth: 1,
     borderBottomColor: COLORS.lightGrey,
   },
-  dayTabContainer: {
-    marginRight: 25,
-    paddingBottom: 10,
-  },
-  dayTab: {
+  loadingText: {
+    textAlign: "center",
+    marginTop: 20,
+    fontSize: TEXT.medium,
     fontFamily: "Medium",
+  },
+  errorText: {
+    textAlign: "center",
+    marginTop: 20,
+    color: "red",
     fontSize: TEXT.medium,
-    color: COLORS.grey,
+    fontFamily: "Medium",
   },
-  dayTabActive: {
-    fontFamily: "Bold",
-    fontSize: TEXT.medium,
-    color: COLORS.primary,
+
+  // Activity Card Styles
+  activityCardContainer: {
+    marginBottom: 16,
+    width: "100%",
   },
-  activeIndicator: {
-    position: "absolute",
-    bottom: 0,
-    left: 0,
-    right: 0,
-    height: 2,
-    backgroundColor: COLORS.primary,
-  },
-  iconWrapper: {
-    justifyContent: "center",
-    paddingHorizontal: 10,
-  },
-  cardContainer: {
+  activityCard: {
     flexDirection: "row",
-    marginVertical: 10,
-    backgroundColor: COLORS.white,
-    borderRadius: 12,
-    padding: 15,
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 3,
+    backgroundColor: "#FFCD29", // Yellow background for activity cards
+    borderRadius: 16,
+    overflow: "hidden",
+    minHeight: 100,
   },
-  timelineContainer: {
-    width: 40,
+  activityIconContainer: {
+    width: 60,
+    backgroundColor: "#FFCD29", // Slightly darker yellow for the icon section
+    justifyContent: "center",
     alignItems: "center",
-    marginRight: 10,
-    position: "relative",
   },
-  timelineBackground: {
+  activityContent: {
+    flex: 1,
+    padding: 16,
+  },
+  activityTitle: {
+    fontSize: TEXT.large,
+    fontFamily: "Bold",
+    marginBottom: 8,
+    color: COLORS.black,
+  },
+  activityLocation: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginBottom: 8,
+  },
+  activityLocationText: {
+    fontSize: TEXT.medium,
+    fontFamily: "Medium",
+    marginLeft: 6,
+    color: COLORS.black,
+  },
+  activityTime: {
+    flexDirection: "row",
+    alignItems: "center",
+  },
+  activityTimeText: {
+    fontSize: TEXT.medium,
+    fontFamily: "Medium",
+    marginLeft: 6,
+    color: COLORS.black,
+  },
+  activityImage: {
+    width: 80,
+    height: 80,
+    borderRadius: 8,
+    marginRight: 16,
+  },
+  activityDetailsRow: {
+    flexDirection: "row",
+    alignItems: "center",
+  },
+  activityDetailsColumn: {
+    flex: 1,
+  },
+  activityActionButton: {
+    justifyContent: "center",
+    alignItems: "center",
+    padding: 10,
+  },
+
+  // Timeline & connectors
+  timelineContainer: {
     position: "absolute",
+    left: 30,
     top: 0,
     bottom: 0,
     width: 2,
-    backgroundColor: COLORS.lightGrey,
-  },
-  timelineIcon: {
-    backgroundColor: COLORS.white,
-    borderRadius: 20,
-    padding: 5,
+    alignItems: "center",
     zIndex: 1,
   },
-  cardContent: {
-    flex: 1,
-    flexDirection: "row",
-    alignItems: "center",
-  },
-  activityImage: {
-    width: 60,
-    height: 60,
-    borderRadius: 8,
-    marginRight: 15,
-  },
-  activityDetails: {
-    flex: 1,
-  },
-  activityTitle: {
-    fontFamily: "Bold",
-    fontSize: 16,
-    marginBottom: 5,
-  },
-  activityLocation: {
-    fontFamily: "Medium",
-    fontSize: 14,
-    color: COLORS.grey,
-    marginBottom: 3,
-    flexDirection: "row",
-    alignItems: "center",
-  },
-  activityTime: {
-    fontFamily: "Medium",
-    fontSize: 14,
-    color: COLORS.grey,
-    flexDirection: "row",
-    alignItems: "center",
-  },
-  modalOverlay: {
-    flex: 1,
-    backgroundColor: "rgba(0,0,0,0.5)",
-    justifyContent: "center",
-    alignItems: "center",
-  },
-  modalContent: {
-    backgroundColor: COLORS.white,
-    borderRadius: 12,
-    padding: 20,
-    width: "80%",
-  },
-  modalTitle: {
-    fontFamily: "Bold",
-    fontSize: 18,
-    marginBottom: 10,
-  },
-  modalText: {
-    fontFamily: "Regular",
-    fontSize: 16,
-    lineHeight: 24,
-  },
-  modalCloseButton: {
+  timelineConnector: {
     position: "absolute",
-    top: 10,
-    right: 10,
-    padding: 5,
+    width: 2,
+    backgroundColor: "#F0F0F0",
+    top: 40,
+    bottom: 0,
+  },
+  timelineDot: {
+    width: 10,
+    height: 10,
+    borderRadius: 5,
+    backgroundColor: "#FFCD29",
+    borderWidth: 2,
+    borderColor: "#FFF",
+    position: "absolute",
+    bottom: 0,
+  },
+
+  // Plan Days Tabs
+  daysTabsContainer: {
+    flexDirection: "row",
+    marginBottom: 20,
+  },
+  dayTab: {
+    paddingHorizontal: 16,
+    paddingBottom: 12,
+  },
+  dayTabText: {
+    fontSize: TEXT.medium,
+    fontFamily: "Medium",
+    color: COLORS.grey,
+  },
+  dayTabTextActive: {
+    fontSize: TEXT.medium,
+    fontFamily: "Bold",
+    color: COLORS.secondary,
+  },
+  dayTabIndicator: {
+    height: 3,
+    backgroundColor: COLORS.secondary,
+    position: "absolute",
+    bottom: 0,
+    left: 16,
+    right: 16,
+    borderRadius: 3,
+  },
+  dayTabsScrollContainer: {
+    flexDirection: "row",
+  },
+  dayTabsArrow: {
+    justifyContent: "center",
+    paddingHorizontal: 10,
   },
 });
 

@@ -1,13 +1,11 @@
 import React from "react";
+import { View, TouchableOpacity, StyleSheet, FlatList } from "react-native";
 import {
-  View,
-  Text,
-  TouchableOpacity,
-  StyleSheet,
-  FlatList,
-} from "react-native";
-import Icon from "react-native-vector-icons/MaterialIcons";
-import { COLORS,TEXT } from "../../constants/theme";
+  FontAwesome5,
+  MaterialIcons,
+  Ionicons,
+} from "react-native-vector-icons";
+import { COLORS, TEXT } from "../../constants/theme";
 import {
   widthPercentageToDP as wp,
   heightPercentageToDP as hp,
@@ -19,49 +17,74 @@ import ReusableText from "../Reusable/ReusableText";
 const TypeTabs = ({ selectedType, onSelectType }) => {
   const { mode } = useTheme();
   const isDarkMode = mode === "dark";
-  const { translations } = useLanguage(); // Get translations
+  const { language } = useLanguage(); // Get language
 
+  const currentLanguage = language || "en";
+  const translations = useLanguage().translations || {};
+
+  // Using the card data format you specified
   const types = [
-    { id: "all", label: translations.all || "All", icon: "dashboard" },
-    { id: "places", label: translations.places || "Places", icon: "place" },
+    { id: 1, text: "All", icon: "search", library: FontAwesome5 },
     {
-      id: "trips",
-      label: translations.trips || "Trips",
-      icon: "directions-car",
-    },
-    { id: "plans", label: translations.plans || "Plans", icon: "event" },
-    { id: "users", label: translations.users || "Users", icon: "people" },
-    {
-      id: "popular",
-      label: translations.popularPlaces || "Popular Places",
-      icon: "star",
+      id: 2,
+      text: translations[currentLanguage]?.places || "Places",
+      icon: "place",
+      library: MaterialIcons,
     },
     {
-      id: "topten",
-      label: translations.topTenPlaces || "Top Ten Places",
-      icon: "format-list-numbered",
+      id: 3,
+      text: translations[currentLanguage]?.trips || "Trips",
+      icon: "route",
+      library: FontAwesome5,
     },
     {
-      id: "events",
-      label: translations.events || "Events",
-      icon: "event-note",
+      id: 4,
+      text: translations[currentLanguage]?.events || "Events",
+      icon: "event",
+      library: MaterialIcons,
     },
     {
-      id: "volunteering",
-      label: translations.volunteering || "Volunteering",
-      icon: "volunteer-activism",
+      id: 5,
+      text: translations[currentLanguage]?.Plans || "Plans",
+      icon: "calendar",
+      library: Ionicons,
     },
     {
-      id: "categories",
-      label: translations.categories || "Categories",
-      icon: "category",
+      id: 6,
+      text: translations[currentLanguage]?.volunteers || "Volunteers",
+      icon: "hand-holding-heart",
+      library: FontAwesome5,
     },
     {
-      id: "guidetrips",
-      label: translations.guideTrips || "Guided Trips",
-      icon: "explore",
+      id: 7,
+      text: translations[currentLanguage]?.guideTrips || "Guide Trips",
+      icon: "map",
+      library: FontAwesome5,
+    },
+    {
+      id: 8,
+      text: translations[currentLanguage]?.Users || "Users",
+      icon: "user",
+      library: FontAwesome5,
     },
   ];
+
+  const renderIcon = (item) => {
+    const IconComponent = item.library;
+    return (
+      <IconComponent
+        name={item.icon}
+        size={20}
+        color={
+          selectedType === item.id
+            ? COLORS.primary
+            : isDarkMode
+            ? COLORS.secondary
+            : COLORS.darkGray
+        }
+      />
+    );
+  };
 
   return (
     <View
@@ -78,7 +101,7 @@ const TypeTabs = ({ selectedType, onSelectType }) => {
         data={types}
         horizontal
         showsHorizontalScrollIndicator={false}
-        keyExtractor={(item) => item.id}
+        keyExtractor={(item) => item.id.toString()}
         renderItem={({ item }) => (
           <TouchableOpacity
             style={[
@@ -90,30 +113,20 @@ const TypeTabs = ({ selectedType, onSelectType }) => {
             ]}
             onPress={() => onSelectType(item.id)}
           >
-            <View style={styles.iconContainer}>
-              <Icon
-                name={item.icon}
-                size={24}
-                color={
-                  selectedType === item.id
-                    ? COLORS.primary
-                    : isDarkMode
-                    ? COLORS.secondary
-                    : COLORS.darkGray
-                }
-              />
-            </View>
-            
+            <View style={styles.iconContainer}>{renderIcon(item)}</View>
+
             <ReusableText
-              text={item.label}
-              family={"Bold"}
-              size={TEXT.large}
-              color={COLORS.black}
-              style={[
-                styles.tabText,
-                selectedType === item.id && styles.selectedTabText,
-                { color: isDarkMode ? COLORS.black : COLORS.darkGray },
-              ]}
+              text={item.text}
+              family={"semiBold"}
+              size={TEXT.small}
+              color={
+                selectedType === item.id
+                  ? COLORS.primary
+                  : isDarkMode
+                  ? COLORS.white
+                  : COLORS.darkGray
+              }
+              style={styles.tabText}
             />
           </TouchableOpacity>
         )}
