@@ -1,25 +1,22 @@
-import React, { useState, useContext } from "react";
+import React, { useState, useContext, useEffect } from "react";
 import {
   StyleSheet,
-  Text,
   View,
-  TextInput,
-  Button,
   TouchableOpacity,
   ScrollView,
-  Modal,
+  ActivityIndicator,
 } from "react-native";
 import { useNavigation } from "@react-navigation/native";
 import { useRoute } from "@react-navigation/native";
 import { AuthContext } from "../../store/auth-context";
 import ActivityCard from "../../components/Tiles/plan/ActivityCard";
 import fetchCreatPlan from "../../hook/plane/fetchCreatPlan";
-import DateTimePicker from "@react-native-community/datetimepicker";
 import {
   HeightSpacer,
   ReusableBackground,
   ReusableText,
 } from "../../components";
+import AwesomeAlert from "react-native-awesome-alerts";
 import {
   widthPercentageToDP as wp,
   heightPercentageToDP as hp,
@@ -34,35 +31,53 @@ const CreatActivies = () => {
   const [days, setDays] = useState(route.params?.days || [{ activities: [] }]);
   const [selectedDay, setSelectedDay] = useState(0);
   const [isModalVisible, setModalVisible] = useState(false);
-  const [showStartPicker, setShowStartPicker] = useState(false);
-  const [showEndPicker, setShowEndPicker] = useState(false);
   const [newActivity, setNewActivity] = useState({
     name: "",
     start_time: "",
     end_time: "",
-    place_id: "",
+    place_id: "1", // Default place_id
     note: "",
   });
-  const formatTimeDisplay = (time) => {
-    if (!time) return "";
-    const [hours, minutes] = time.split(":");
-    const parsedHours = parseInt(hours, 10);
-    const period = parsedHours >= 12 ? "PM" : "AM";
-    const displayHours = parsedHours % 12 || 12;
-    return `${displayHours}:${minutes} ${period}`;
-  };
 
-  const getTimeDate = (timeString) => {
-    const date = new Date();
-    if (timeString) {
-      const [hours, minutes] = timeString.split(":");
-      date.setHours(parseInt(hours, 10));
-      date.setMinutes(parseInt(minutes, 10));
-    }
-    return date;
-  };
+  // Alert states
+  const [showAlert, setShowAlert] = useState(false);
+  const [alertTitle, setAlertTitle] = useState("");
+  const [alertMessage, setAlertMessage] = useState("");
+  const [alertType, setAlertType] = useState(""); // success, error, warning
+  const [isLoading, setIsLoading] = useState(false);
+
+  // Navigation state
+  const [pendingNavigation, setPendingNavigation] = useState(null);
 
   const { token } = useContext(AuthContext);
+
+  // Handle pending navigation after alert is closed
+  useEffect(() => {
+    if (pendingNavigation && !showAlert) {
+      const { screen, params } = pendingNavigation;
+
+      // Clear pending navigation before navigating to avoid loops
+      setPendingNavigation(null);
+
+      // Use setTimeout to ensure this happens after component updates
+      setTimeout(() => {
+        navigation.navigate(screen, params);
+      }, 300);
+    }
+  }, [pendingNavigation, showAlert, navigation]);
+
+  // Show alert helper function
+  const showCustomAlert = (title, message, type, navigationTarget = null) => {
+    setAlertTitle(title);
+    setAlertMessage(message);
+    setAlertType(type);
+
+    if (navigationTarget) {
+      setPendingNavigation(navigationTarget);
+    }
+
+    setShowAlert(true);
+  };
 
   const handleAddDay = () => {
     setDays([...days, { activities: [] }]);
@@ -70,49 +85,48 @@ const CreatActivies = () => {
   };
 
   const handleAddActivity = () => {
+    // Validate that required fields are filled
+    if (!newActivity.name || !newActivity.start_time || !newActivity.end_time) {
+      showCustomAlert(
+        "Validation Error",
+        "Please fill in all required fields.",
+        "error"
+      );
+      return;
+    }
+
+    // Validate time format
     if (!validateTimeOrder(newActivity.start_time, newActivity.end_time)) {
-      alert("End time must be after start time.");
+      showCustomAlert(
+        "Time Error",
+        "End time must be after start time.",
+        "error"
+      );
       return;
     }
 
     const newDays = [...days];
-    newDays[selectedDay].activities.push(newActivity);
+    newDays[selectedDay].activities.push({ ...newActivity });
     setDays(newDays);
+
+    // Reset the form
     setNewActivity({
       name: "",
       start_time: "",
       end_time: "",
-      place_id: "",
+      place_id: "1",
       note: "",
     });
+
     setModalVisible(false);
   };
 
-  const handleActivityChange = (field, value) => {
-    let formattedValue = value;
-
-    if (field === "start_time" || field === "end_time") {
-      const timeParts = formattedValue.match(/(\d+):(\d+)\s*(AM|PM)?/i);
-      if (timeParts) {
-        let [, hours, minutes, period] = timeParts;
-        hours = parseInt(hours, 10);
-        minutes = minutes.padStart(2, "0");
-
-        if (period) {
-          period = period.toUpperCase();
-          if (period === "PM" && hours < 12) hours += 12;
-          if (period === "AM" && hours === 12) hours = 0;
-        }
-        formattedValue = `${hours.toString().padStart(2, "0")}:${minutes}`;
-      }
-    }
-
-    setNewActivity({ ...newActivity, [field]: formattedValue });
-  };
-
   const validateTimeOrder = (startTime, endTime) => {
+    if (!startTime || !endTime) return false;
+
     const [startHours, startMinutes] = startTime.split(":").map(Number);
     const [endHours, endMinutes] = endTime.split(":").map(Number);
+
     return (
       endHours > startHours ||
       (endHours === startHours && endMinutes > startMinutes)
@@ -120,19 +134,33 @@ const CreatActivies = () => {
   };
 
   const handleSaveAndContinue = async () => {
+    // Filter out empty days (days with no activities)
+    const nonEmptyDays = days.filter((day) => day.activities.length > 0);
+
+    // Check if there are any activities across all days
+    if (nonEmptyDays.length === 0) {
+      showCustomAlert(
+        "Validation Error",
+        "Please add at least one activity.",
+        "error"
+      );
+      return;
+    }
+
+    // Prepare plan data with only non-empty days
     const planData = {
       name: planName,
       description: planDescription,
-      days: days.map((day, index) => ({
-        day_number: index + 1,
+      days: nonEmptyDays.map((day, index) => ({
+        day_number: index + 1, // Renumber days sequentially
         activities: day.activities.map((activity) => ({
           ...activity,
-          start_time: activity.start_time.padStart(5, "0"), // Ensure leading zeros
-          end_time: activity.end_time.padStart(5, "0"), // Ensure leading zeros
-          place_id: Number(activity.place_id) || null,
+          place_id: activity.place_id || "1",
         })),
       })),
     };
+
+    setIsLoading(true);
 
     try {
       console.log(
@@ -142,35 +170,71 @@ const CreatActivies = () => {
 
       const response = await fetchCreatPlan(planData, token);
 
-      if (response.data?.id) {
-        navigation.navigate("PlanDetails", { id: response.data.id });
+      setIsLoading(false);
+
+      if (response.success) {
+        // If we have an ID, prepare to navigate to plan details
+        if (response.data?.id) {
+          showCustomAlert("Success", "Plan created successfully!", "success", {
+            screen: "PlanDetails",
+            params: { id: response.data.id },
+          });
+        } else {
+          // If successful but no ID was returned (which is the case from your logs)
+          // Prepare to navigate to AllPlans screen
+          showCustomAlert(
+            "Success",
+            response.msg || "Plan created successfully!",
+            "success",
+            { screen: "AllPlans", params: {} }
+          );
+        }
       } else {
-        alert(
-          response.msg || "Plan created successfully, but no ID was returned."
+        // Handle error response
+        showCustomAlert(
+          "Error",
+          response.msg || "Failed to create plan",
+          "error"
         );
-        navigation.navigate("AllPlans");
       }
     } catch (error) {
+      setIsLoading(false);
       console.error("Failed to create plan:", error);
-      alert(error.message); 
+      showCustomAlert(
+        "Error",
+        error.message || "Failed to create plan. Please try again.",
+        "error"
+      );
     }
   };
+
+  // Detect Arabic text in the alert message
+  const isArabicText = (text) => {
+    const arabicPattern = /[\u0600-\u06FF]/;
+    return arabicPattern.test(text);
+  };
+
+  // Get the appropriate text alignment based on the language
+  const getTextAlignment = (text) => {
+    return isArabicText(text) ? "right" : "left";
+  };
+
   return (
     <ReusableBackground>
       <ScrollView contentContainerStyle={styles.container}>
         <ReusableText
           text={planName.toUpperCase()}
-          family="Medium"
-          size={TEXT.medium}
+          family="Bold"
+          size={TEXT.large}
           color={COLORS.black}
-          style={{ letterSpacing: 1, marginBottom: 5 }}
+          style={{ marginBottom: 5 }}
         />
         <ReusableText
           text={planDescription}
-          family="Light"
-          size={TEXT.xmedium}
-          color={COLORS.lightGreen}
-          style={{ textAlign: "justify" }}
+          family="Regular"
+          size={TEXT.medium}
+          color={COLORS.gray}
+          style={{ marginBottom: 20 }}
         />
         <View style={styles.daysHeader}>
           <ScrollView
@@ -197,48 +261,57 @@ const CreatActivies = () => {
             ))}
           </ScrollView>
         </View>
-        <View style={styles.activitiesContainer}>
+
+        {/* Activities Container */}
+        <View style={styles.activitiesSection}>
           {days[selectedDay].activities.map((activity, activityIndex) => (
             <ActivityCard key={activityIndex} activity={activity} />
           ))}
+
           <TouchableOpacity
             onPress={() => setModalVisible(true)}
-            style={styles.activityButton}
+            style={styles.addActivityButton}
           >
             <ReusableText
-              text={"+ Add New Activity"}
+              text="+ Add New Activity"
               family="Medium"
-              size={TEXT.larg}
+              size={TEXT.medium}
               color={COLORS.black}
-              style={styles.addActivityButton}
             />
           </TouchableOpacity>
         </View>
-        <View style={styles.activitiesContainer}>
-          <TouchableOpacity onPress={handleAddDay} style={styles.NewDayButton}>
-            <ReusableText
-              text={"+ Add New Day"}
-              family="Medium"
-              size={TEXT.larg}
-              color={COLORS.black}
-              style={styles.addDayButton}
-            />
-          </TouchableOpacity>
-        </View>
-        <TouchableOpacity
-          style={styles.savePlanButton}
-          onPress={handleSaveAndContinue}
-        >
+
+        {/* Add New Day Button */}
+        <TouchableOpacity onPress={handleAddDay} style={styles.addNewDayButton}>
           <ReusableText
-            text={"Save & Continue".toLocaleUpperCase()}
+            text="+ Add New Day"
             family="Medium"
             size={TEXT.medium}
             color={COLORS.black}
-            style={styles.savePlanText}
           />
         </TouchableOpacity>
-        <HeightSpacer height={250} />
 
+        {/* Save Button */}
+        <TouchableOpacity
+          style={styles.saveButton}
+          onPress={handleSaveAndContinue}
+          disabled={isLoading}
+        >
+          {isLoading ? (
+            <ActivityIndicator size="small" color={COLORS.black} />
+          ) : (
+            <ReusableText
+              text="SAVE & CONTINUE"
+              family="Bold"
+              size={TEXT.medium}
+              color={COLORS.black}
+            />
+          )}
+        </TouchableOpacity>
+
+        <HeightSpacer height={120} />
+
+        {/* Activity Modal */}
         <ActivityModal
           visible={isModalVisible}
           onClose={() => setModalVisible(false)}
@@ -246,9 +319,40 @@ const CreatActivies = () => {
           setNewActivity={setNewActivity}
           onSave={handleAddActivity}
         />
-        <HeightSpacer height={20} />
 
-        <HeightSpacer height={120} />
+        {/* Awesome Alert */}
+        <AwesomeAlert
+          show={showAlert}
+          showProgress={false}
+          title={alertTitle}
+          message={alertMessage}
+          closeOnTouchOutside={true}
+          closeOnHardwareBackPress={false}
+          showCancelButton={false}
+          showConfirmButton={true}
+          confirmText="OK"
+          confirmButtonColor={
+            alertType === "success"
+              ? COLORS.primary
+              : alertType === "error"
+              ? "#DD6B55"
+              : COLORS.primary
+          }
+          onConfirmPressed={() => {
+            setShowAlert(false);
+          }}
+          contentContainerStyle={styles.alertContainer}
+          titleStyle={[
+            styles.alertTitle,
+            { textAlign: getTextAlignment(alertMessage) },
+          ]}
+          messageStyle={[
+            styles.alertMessage,
+            { textAlign: getTextAlignment(alertMessage) },
+          ]}
+          confirmButtonStyle={styles.alertButton}
+          confirmButtonTextStyle={styles.alertButtonText}
+        />
       </ScrollView>
     </ReusableBackground>
   );
@@ -258,183 +362,78 @@ export default CreatActivies;
 
 const styles = StyleSheet.create({
   container: {
-    flex: 1,
     paddingVertical: hp(4),
-    top: hp(2),
     paddingHorizontal: wp(5),
   },
   daysHeader: {
-    marginVertical: 15,
+    marginBottom: 20,
   },
   daysList: {
-    paddingHorizontal: 15,
+    paddingVertical: 5,
   },
   dayTab: {
-    paddingHorizontal: 20,
+    paddingHorizontal: 15,
     paddingVertical: 10,
     marginRight: 10,
   },
   activeDayTab: {
     borderBottomWidth: 2,
     borderBottomColor: COLORS.primary,
-    marginBottom: -1,
   },
-  inactiveTab: {
-    fontFamily: "Medium",
-    fontSize: SIZES.large,
-    color: COLORS.lightGreen,
-    paddingHorizontal: 25,
-  },
-  activityButton: {
-    paddingVertical: hp(1),
-    borderRadius: wp(3),
-    alignItems: "center",
-    borderWidth: 2,
-    borderColor: COLORS.lightGrey,
-  },
-  activitiesContainer: {
-    paddingHorizontal: wp(5),
-    top: hp(2),
+  activitiesSection: {
     marginBottom: 20,
   },
   addActivityButton: {
-    fontFamily: "Medium",
-    fontSize: SIZES.large,
-    color: COLORS.dark,
-    padding: 10,
-  },
-  NewDayButton: {
-    paddingVertical: hp(1),
-    borderRadius: wp(3),
-    alignItems: "center",
-    borderWidth: 2,
+    borderWidth: 1,
     borderColor: COLORS.lightGrey,
-    backgroundColor: COLORS.primary,
-  },
-  NewDayContainer: {
-    paddingHorizontal: wp(5),
-  },
-  addDayButton: {
-    fontFamily: "Medium",
-    fontSize: SIZES.large,
-    color: COLORS.dark,
-    padding: 10,
-  },
-  continueButton: {
-    backgroundColor: "#FCD228",
-    paddingVertical: hp(2),
-    borderRadius: wp(3),
-    alignItems: "center",
-    marginBottom: 440,
-  },
-  modalContainer: {
-    flex: 1,
+    borderRadius: 15,
+    height: 60,
     justifyContent: "center",
     alignItems: "center",
-    backgroundColor: "rgba(0, 0, 0, 0.5)",
+    backgroundColor: "white",
+    marginVertical: 10,
   },
-  modalContent: {
-    width: "80%",
-    backgroundColor: "#fff",
-    padding: 20,
-    borderRadius: 10,
-    top: 100,
-  },
-  modalTitle: {
-    fontSize: 20,
-    fontWeight: "bold",
-    marginBottom: 20,
-    textAlign: "center",
-  },
-  input: {
-    borderBottomWidth: 1,
-    borderColor: "#ccc",
-    padding: 10,
-    marginBottom: 20,
-  },
-  cancelButton: {
-    backgroundColor: "#FFFFFF",
-    borderWidth: 1,
-    borderColor: "#FF4500",
-    padding: hp("2%"),
-    borderRadius: wp("3%"),
-    width: wp("35%"),
-    alignItems: "center",
-  },
-  addButton: {
+  addNewDayButton: {
     backgroundColor: COLORS.primary,
-    padding: 12,
-    borderRadius: SIZES.radius,
-    alignItems: "center",
-    marginTop: 15,
-  },
-  addButtonText: {
-    color: COLORS.white,
-    fontSize: TEXT.medium,
-    fontWeight: "bold",
-  },
-  modalContainer: {
-    flex: 1,
+    borderRadius: 15,
+    height: 60,
     justifyContent: "center",
     alignItems: "center",
-    backgroundColor: "rgba(0,0,0,0.5)",
-  },
-  modalContent: {
-    width: "80%",
-    backgroundColor: COLORS.white,
-    padding: 20,
-    borderRadius: SIZES.radius,
-    alignItems: "center",
-  },
-  modalTitle: {
-    fontSize: TEXT.large,
-    fontWeight: "bold",
-    marginBottom: 15,
-  },
-  input: {
-    width: "100%",
-    padding: 10,
-    borderWidth: 1,
-    borderColor: COLORS.gray,
-    borderRadius: SIZES.radius,
-    marginBottom: 10,
-  },
-  modalButtons: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    width: "100%",
-    marginTop: 10,
+    marginBottom: 25,
   },
   saveButton: {
     backgroundColor: COLORS.primary,
+    borderRadius: 10,
+    height: 50,
+    justifyContent: "center",
+    alignItems: "center",
+    marginBottom: 20,
+  },
+  // Alert styles
+  alertContainer: {
+    borderRadius: 10,
+    width: wp(80),
     padding: 10,
-    borderRadius: SIZES.radius,
-    flex: 1,
-    alignItems: "center",
-    marginRight: 5,
   },
-  cancelButton: {
-    backgroundColor: COLORS.red,
-    padding: 10,
-    borderRadius: SIZES.radius,
-    flex: 1,
-    alignItems: "center",
-    marginLeft: 5,
-  },
-  buttonText: {
-    color: COLORS.white,
-    fontSize: TEXT.medium,
-  },
-  savePlanButton: {
-    backgroundColor: COLORS.primary,
-    padding: 12,
-    borderRadius: SIZES.radius,
-    alignItems: "center",
-    marginTop: 15,
-  },
-  savePlan: {
-    color: COLORS.white,
-    fontSize: TEXT.large,
+  alertTitle: {
+    fontSize: 18,
     fontWeight: "bold",
+    color: COLORS.black,
+    marginBottom: 10,
+  },
+  alertMessage: {
+    fontSize: 16,
+    color: COLORS.black,
+    marginBottom: 10,
+  },
+  alertButton: {
+    borderRadius: 10,
+    paddingHorizontal: 20,
+    paddingVertical: 10,
+  },
+  alertButtonText: {
+    fontSize: 16,
+    fontWeight: "bold",
+    color: COLORS.white,
   },
 });

@@ -4,23 +4,21 @@ import {
   Image,
   FlatList,
   StyleSheet,
-  ActivityIndicator,
   TouchableOpacity,
-  ImageBackground,
 } from "react-native";
 import { useNavigation } from "@react-navigation/native";
-import {
-  widthPercentageToDP as wp,
-  heightPercentageToDP as hp,
-} from "react-native-responsive-screen";
+import { COLORS, TEXT } from "../../constants/theme";
 import { useTheme } from "../../store/context/ThemeContext";
 import { useLanguage } from "../../store/context/LanguageContext";
 import translations from "../../translations/translations";
 import { ReusableText, RusableWhite } from "../../components";
 import { AuthContext } from "../../store/auth-context";
 import BASE_URL from "../../hook/apiConfig";
-import Ionicons from "react-native-vector-icons/Ionicons";
-import { COLORS, TEXT } from "../../constants/theme";
+import {
+  widthPercentageToDP as wp,
+  heightPercentageToDP as hp,
+} from "react-native-responsive-screen";
+import { PlansListSkeleton } from "../../components/Skeletons/PlanSkeleton";
 
 const UserAllPlans = () => {
   const { mode } = useTheme();
@@ -28,12 +26,11 @@ const UserAllPlans = () => {
   const { token } = useContext(AuthContext);
   const navigation = useNavigation();
   const translatedText = translations[language] || translations["en"];
+
   const [plans, setPlans] = useState([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    console.log("User Token: ", token); // Log the user token
-
     const fetchPlans = async () => {
       try {
         const response = await fetch(`${BASE_URL}/plan/my-plans`, {
@@ -47,20 +44,28 @@ const UserAllPlans = () => {
           },
         });
 
+        console.log("Response Status:", response.status);
+
         if (!response.ok) {
           const errorText = await response.text();
           throw new Error(`HTTP Error: ${response.status} - ${errorText}`);
         }
 
         const result = await response.json();
+        console.log("API Response:", result);
 
         if (result?.status === 200) {
           setPlans(result.data || []);
+        } else {
+          console.error("Error fetching plans:", result.msg || "Unknown error");
         }
       } catch (error) {
         console.error("Error fetching plans:", error.message);
       } finally {
-        setLoading(false);
+        // Add a slight delay to make the skeleton visible for at least a moment
+        setTimeout(() => {
+          setLoading(false);
+        }, 800);
       }
     };
 
@@ -68,179 +73,103 @@ const UserAllPlans = () => {
   }, [token, language]);
 
   if (loading) {
-    return (
-      <View style={styles.loaderContainer}>
-        <ActivityIndicator size="large" color={COLORS.primary} />
-      </View>
-    );
+    return <PlansListSkeleton count={4} />;
   }
 
   if (!plans.length) {
     return (
-      <View style={styles.noDataContainer}>
-        <ReusableText
-          text={translatedText.noTrips || "No trips found"}
-          family="Bold"
-          size={TEXT.medium}
-          color={COLORS.secondary}
-        />
-      </View>
+      <RusableWhite>
+        <View style={styles.noDataContainer}>
+          <ReusableText
+            text={translatedText.noPlans || "No plans found"}
+            family="Bold"
+            size={TEXT.medium}
+            color={COLORS.secondary}
+          />
+        </View>
+      </RusableWhite>
     );
   }
+
   return (
-    <View style={styles.container}>
-      <View style={styles.headerWrapper}>
-        <ImageBackground
-          source={require("../../assets/images/header1.png")}
-          style={styles.headerImage}
-          imageStyle={{ resizeMode: "cover" }}
-        >
-          <View style={styles.TopHeader}>
-            <TouchableOpacity
-              style={styles.backButton}
-              onPress={() => navigation.goBack()}
-            >
-              <Ionicons name="arrow-back" size={24} color={COLORS.black} />
-            </TouchableOpacity>
-
-            <View style={styles.LeftRow}>
-              <View style={styles.textContainer}>
-                <View style={styles.titleRow}>
-                  <ReusableText
-                    text={translatedText.yourTrips}
-                    family={"Bold"}
-                    size={TEXT.large}
-                    color={COLORS.black}
-                    align={"left"}
-                    style={styles.mainTitle}
-                  />
-
-                  <Image
-                    source={require("../../assets/images/icons/distance-icon.png")}
-                    style={styles.icon}
-                  />
-                </View>
-              </View>
-            </View>
-          </View>
-        </ImageBackground>
-      </View>
+    <RusableWhite>
       <FlatList
         data={plans}
-        ListFooterComponent={<View style={{ height: hp(30) }} />}
+        ListFooterComponent={<View style={{ height: hp("12%") }} />}
         showsVerticalScrollIndicator={false}
         keyExtractor={(item) => item.id.toString()}
-        renderItem={({ item }) => {
-          console.log("Plan ID: ", item.id); // Log the plan ID
-
-          return (
-            <TouchableOpacity
-              style={[
-                styles.tripCard,
-                mode === "dark" ? styles.tripCardDark : styles.tripCardLight,
-              ]}
-              onPress={() =>
-                navigation.navigate("PlanDetails", { id: item.id })
-              }
-            >
-              <Image
-                source={{
-                  uri: item.image || "https://via.placeholder.com/80",
-                }}
-                style={styles.tripImage}
+        renderItem={({ item }) => (
+          <TouchableOpacity
+            style={[
+              styles.planCard,
+              mode === "dark" ? styles.planCardDark : styles.planCardLight,
+            ]}
+            onPress={() => navigation.navigate("PlanDetails", { id: item.id })}
+          >
+            <Image
+              source={{
+                uri: item.image || "https://via.placeholder.com/80",
+              }}
+              style={styles.planImage}
+            />
+            <View style={styles.planDetails}>
+              <ReusableText
+                text={item.name || translatedText.unknown}
+                family="Bold"
+                size={TEXT.medium}
+                color={mode === "dark" ? COLORS.white : COLORS.black}
               />
-              <View style={styles.tripDetails}>
-                <ReusableText
-                  text={item.name || translatedText.unknown}
-                  family="Bold"
-                  size={TEXT.medium}
-                  color={mode === "dark" ? COLORS.white : COLORS.black}
-                />
-                <ReusableText
-                  text={`${translatedText.numberOfDays}: ${item.number_of_days}`}
-                  family="Regular"
-                  size={TEXT.small}
-                  color={mode === "dark" ? COLORS.lightGrey : COLORS.gray}
-                />
-                <ReusableText
-                  text={`${translatedText.numberOfActivities}: ${item.number_of_activities}`}
-                  family="Regular"
-                  size={TEXT.small}
-                  color={mode === "dark" ? COLORS.lightGrey : COLORS.gray}
-                />
-              </View>
-            </TouchableOpacity>
-          );
-        }}
+              <ReusableText
+                text={`${translatedText.numofdayes}: ${
+                  item.number_of_days || translatedText.unknown
+                }`}
+                family="Regular"
+                size={TEXT.small}
+                color={mode === "dark" ? COLORS.lightGrey : COLORS.gray}
+              />
+              <ReusableText
+                text={`${translatedText.activities}: ${
+                  item.number_of_activities || 0
+                }`}
+                family="Regular"
+                size={TEXT.small}
+                color={mode === "dark" ? COLORS.lightGrey : COLORS.gray}
+              />
+              <ReusableText
+                text={`${translatedText.places}: ${item.number_of_place || 0}`}
+                family="Regular"
+                size={TEXT.small}
+                color={mode === "dark" ? COLORS.lightGrey : COLORS.gray}
+              />
+            </View>
+          </TouchableOpacity>
+        )}
       />
-    </View>
+    </RusableWhite>
   );
 };
 
 export default UserAllPlans;
 
 const styles = StyleSheet.create({
-  container: {
-    backgroundColor: COLORS.white,
-  },
-  headerWrapper: {
-    borderBottomLeftRadius: hp(4),
-    borderBottomRightRadius: hp(4),
-    overflow: "hidden",
-    width: "100%",
-  },
-  headerImage: {
-    width: "100%",
-    height: hp(20),
-  },
-  TopHeader: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-    paddingHorizontal: wp(7),
-    paddingTop: hp(10),
-  },
-  backButton: {
-    marginRight: wp(3),
-    padding: 8,
-    backgroundColor: COLORS.lightBlue,
-    borderRadius: 8,
-  },
-  LeftRow: {
-    flexDirection: "row",
-    alignItems: "center",
-  },
-  textContainer: {
-    marginLeft: wp(2),
-  },
-  titleRow: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
-    width: wp(75),
-  },
-  icon: {
-    width: 40,
-    height: 40,
-    marginRight: wp(7),
-  },
   loaderContainer: {
     flex: 1,
     justifyContent: "center",
     alignItems: "center",
-    backgroundColor: COLORS.white,
   },
   noDataContainer: {
+    flex: 1,
     alignItems: "center",
     justifyContent: "center",
     padding: wp("5%"),
+    marginTop: hp(10),
   },
-  tripCard: {
+  planCard: {
     flexDirection: "row",
     borderRadius: wp("2.5%"),
     padding: wp("3%"),
     marginVertical: hp("1%"),
-    marginHorizontal: wp("5%"),
+    marginHorizontal: wp("2%"),
     alignItems: "center",
     shadowColor: "#000",
     shadowOffset: { width: 0, height: 2 },
@@ -249,19 +178,19 @@ const styles = StyleSheet.create({
     elevation: 2,
     top: hp("3%"),
   },
-  tripCardLight: {
+  planCardLight: {
     backgroundColor: COLORS.white,
   },
-  tripCardDark: {
+  planCardDark: {
     backgroundColor: COLORS.lightGrey,
   },
-  tripImage: {
+  planImage: {
     width: wp("20%"),
     height: wp("20%"),
     borderRadius: wp("3%"),
     marginRight: wp("4%"),
   },
-  tripDetails: {
+  planDetails: {
     flex: 1,
   },
 });

@@ -12,6 +12,10 @@ import {
   StyleSheet,
   KeyboardAvoidingView,
 } from "react-native";
+import {
+  widthPercentageToDP as wp,
+  heightPercentageToDP as hp,
+} from "react-native-responsive-screen";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import axios from "axios";
 import fetchPlanDetails from "../../hook/plane/fetchPlandetails";
@@ -19,19 +23,14 @@ import { AuthContext } from "../../store/auth-context";
 import { useRoute, useNavigation } from "@react-navigation/native";
 import styles from "../../components/Plan/PlanDetailsStyles";
 import BASE_URL from "../../hook/apiConfig";
-import {
-  widthPercentageToDP as wp,
-  heightPercentageToDP as hp,
-} from "react-native-responsive-screen";
-import {
-  ReusableBackground,
-  ReusableFavorite,
-  ReusableText,
-} from "../../components";
+import { ReusableBackground, ReusableText } from "../../components";
 import { COLORS, TEXT } from "../../constants/theme";
 import ActivityCard from "../../components/Tiles/plan/ActivityCard";
 import PlanDays from "../../components/Tiles/plan/PlanDayes";
 import { Ionicons } from "@expo/vector-icons";
+import PlanFavorite from "./PlanFavorite";
+import PlanAction from "./PlaneAction";
+import PlanDetailsSkeleton from "../../components/Skeletons/PlanDetailsSkeleton";
 
 const PlanDetails = () => {
   const [planDetails, setPlanDetails] = useState(null);
@@ -47,11 +46,14 @@ const PlanDetails = () => {
   const [showEditModal, setShowEditModal] = useState(false);
   const [showActivityEditModal, setShowActivityEditModal] = useState(false);
   const [showDirectEditModal, setShowDirectEditModal] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const [isFavorite, setIsFavorite] = useState(false);
+  const [isUserCreated, setIsUserCreated] = useState(false);
 
   const authCtx = useContext(AuthContext);
   const route = useRoute();
   const navigation = useNavigation();
-  const { id } = route.params;
+  const { id } = route.params || {};
 
   useEffect(() => {
     const deviceLanguage =
@@ -74,6 +76,7 @@ const PlanDetails = () => {
   }, [authCtx, route.params?.id, language]);
 
   const fetchAndSetPlanDetails = async () => {
+    setLoading(true);
     try {
       let token = authCtx.token;
 
@@ -92,10 +95,31 @@ const PlanDetails = () => {
 
       const details = await fetchPlanDetails(planId, token, language);
       console.log("Plan details fetched:", details);
+
+      // Check favorite status - first check data.favorite, then fall back to is_favorite if needed
+      const isFavorited =
+        details.favorite === true ||
+        details.favorite === 1 ||
+        details.is_favorite === true ||
+        details.is_favorite === 1;
+
+      setIsFavorite(isFavorited);
+      console.log("Favorite status:", isFavorited);
+
+      // Check if plan was created by user
+      const createdByUser = details.creator === "user";
+      setIsUserCreated(createdByUser);
+
       setPlanDetails(details);
+
+      // Add a small delay for a smoother transition
+      setTimeout(() => {
+        setLoading(false);
+      }, 300);
     } catch (error) {
       setError("Failed to fetch plan details");
       console.error(error);
+      setLoading(false);
     }
   };
 
@@ -149,6 +173,12 @@ const PlanDetails = () => {
 
   // New function to handle direct editing from the main screen
   const handleDirectEditActivity = (activity) => {
+    // Only allow editing if user created the plan
+    if (!isUserCreated) {
+      Alert.alert("Not Editable", "You can only edit plans that you created.");
+      return;
+    }
+
     // Find the index of this activity in the current day
     const currentDayActivities = planDetails.days[selectedDay].activities;
     const activityIndex = currentDayActivities.findIndex(
@@ -163,7 +193,7 @@ const PlanDetails = () => {
     // Create a deep copy of plan details if not already done
     if (!editablePlan) {
       const editableData = JSON.parse(JSON.stringify(planDetails));
-      
+
       // Format times correctly for editing
       editableData.days.forEach((day) => {
         day.activities.forEach((activity) => {
@@ -171,7 +201,7 @@ const PlanDetails = () => {
           activity.end_time = formatTimeForApi(activity.end_time);
         });
       });
-      
+
       setEditablePlan(editableData);
     }
 
@@ -198,6 +228,7 @@ const PlanDetails = () => {
       place_id: selectedActivity.place_id || "1",
       note: selectedActivity.note || "",
       image: selectedActivity.image || "",
+      place: selectedActivity.place,
     };
 
     setEditablePlan(updatedPlan);
@@ -210,7 +241,7 @@ const PlanDetails = () => {
 
     // If editablePlan isn't set yet, create it
     const currentPlan = editablePlan || JSON.parse(JSON.stringify(planDetails));
-    
+
     // Update activity in the current day
     currentPlan.days[selectedDay].activities[directEditActivity.index] = {
       name: directEditActivity.name,
@@ -224,14 +255,14 @@ const PlanDetails = () => {
 
     setEditablePlan(currentPlan);
     setShowDirectEditModal(false);
-    
+
     // Immediately send the update to the server
     handleUpdatePlan(currentPlan);
   };
 
   const handleUpdatePlan = async (planToUpdate = null) => {
     const planData = planToUpdate || editablePlan;
-    
+
     if (!planData || isUpdating) return;
 
     try {
@@ -318,6 +349,11 @@ const PlanDetails = () => {
     }
   };
 
+  // Handle favorite toggle
+  const handleFavoriteToggle = (newState) => {
+    setIsFavorite(newState);
+  };
+
   if (error) {
     return (
       <View style={styles.container}>
@@ -326,11 +362,11 @@ const PlanDetails = () => {
     );
   }
 
-  if (!planDetails) {
+  if (loading) {
     return (
-      <View style={styles.container}>
-        <Text style={styles.loadingText}>Loading...</Text>
-      </View>
+      <ReusableBackground>
+        <PlanDetailsSkeleton activitiesCount={3} />
+      </ReusableBackground>
     );
   }
 
@@ -347,17 +383,29 @@ const PlanDetails = () => {
             color={COLORS.black}
           />
           <View style={{ flexDirection: "row", alignItems: "center" }}>
-            <TouchableOpacity
-              onPress={prepareEditablePlan}
-              style={{
-                marginRight: 15,
-                padding: 8,
-              }}
-              disabled={isUpdating}
-            >
-              <Ionicons name="pencil" size={24} color={COLORS.primary} />
-            </TouchableOpacity>
-            <ReusableFavorite />
+            {/* Only show PlanAction if the creator is "user" */}
+            {isUserCreated && (
+              <>
+                <PlanAction
+                  planId={id}
+                  onEditPress={prepareEditablePlan}
+                  disabled={isUpdating}
+                />
+                <View style={{ width: 15 }} />
+              </>
+            )}
+
+            <PlanFavorite
+              planId={id}
+              token={authCtx?.token}
+              initialFavorite={isFavorite}
+              onToggle={handleFavoriteToggle}
+              iconColor="black"
+              size={wp("6%")}
+              bgColor={COLORS.lightBlue}
+              width={wp("12%")}
+              height={hp("5%")}
+            />
           </View>
         </View>
         <View>
@@ -398,7 +446,7 @@ const PlanDetails = () => {
               activity={activity}
               showConnector={index !== activities.length - 1}
               isLastCard={index === activities.length - 1}
-              onEditActivity={handleDirectEditActivity} // Pass the direct edit handler
+              onEditActivity={isUserCreated ? handleDirectEditActivity : null} // Only enable editing for user-created plans
             />
           ))
         ) : (
@@ -458,25 +506,123 @@ const PlanDetails = () => {
 
                 {editablePlan.days[editingDay].activities.map(
                   (activity, index) => (
-                    <TouchableOpacity
-                      key={index}
-                      style={modalStyles.activityItem}
-                      onPress={() => handleEditActivity(activity, index)}
-                    >
-                      <View style={modalStyles.activityItemContent}>
-                        <Text style={modalStyles.activityName}>
-                          {activity.name}
-                        </Text>
-                        <Text style={modalStyles.activityTime}>
-                          {activity.start_time} - {activity.end_time}
-                        </Text>
-                      </View>
-                      <Ionicons
-                        name="chevron-forward"
-                        size={20}
-                        color={COLORS.gray}
-                      />
-                    </TouchableOpacity>
+                    <View key={index} style={modalStyles.activityEditContainer}>
+                      <TouchableOpacity
+                        style={modalStyles.activityItem}
+                        onPress={() => handleEditActivity(activity, index)}
+                      >
+                        <View style={modalStyles.activityItemContent}>
+                          <Text style={modalStyles.activityName}>
+                            {activity.name}
+                          </Text>
+                          <Text style={modalStyles.activityTime}>
+                            {activity.start_time} - {activity.end_time}
+                          </Text>
+                        </View>
+                        <Ionicons
+                          name="chevron-forward"
+                          size={20}
+                          color={COLORS.gray}
+                        />
+                      </TouchableOpacity>
+
+                      {/* Show Activity Edit Form Inline Inside Plan Edit Modal */}
+                      {selectedActivity?.index === index && (
+                        <View style={modalStyles.activityEditForm}>
+                          <Text style={modalStyles.inputLabel}>
+                            Activity Name
+                          </Text>
+                          <TextInput
+                            style={modalStyles.input}
+                            value={selectedActivity.name}
+                            onChangeText={(text) =>
+                              setSelectedActivity({
+                                ...selectedActivity,
+                                name: text,
+                              })
+                            }
+                            placeholder="Activity Name"
+                          />
+
+                          <Text style={modalStyles.inputLabel}>Location</Text>
+                          <TextInput
+                            style={modalStyles.input}
+                            value={selectedActivity.place}
+                            onChangeText={(text) =>
+                              setSelectedActivity({
+                                ...selectedActivity,
+                                place: text,
+                              })
+                            }
+                            placeholder="Location"
+                          />
+
+                          <View style={modalStyles.timeContainer}>
+                            <View style={modalStyles.timeField}>
+                              <Text style={modalStyles.inputLabel}>
+                                Start Time
+                              </Text>
+                              <TextInput
+                                style={modalStyles.input}
+                                value={selectedActivity.start_time}
+                                onChangeText={(text) =>
+                                  setSelectedActivity({
+                                    ...selectedActivity,
+                                    start_time: text,
+                                  })
+                                }
+                                placeholder="HH:MM"
+                                keyboardType="numbers-and-punctuation"
+                              />
+                            </View>
+
+                            <View style={modalStyles.timeField}>
+                              <Text style={modalStyles.inputLabel}>
+                                End Time
+                              </Text>
+                              <TextInput
+                                style={modalStyles.input}
+                                value={selectedActivity.end_time}
+                                onChangeText={(text) =>
+                                  setSelectedActivity({
+                                    ...selectedActivity,
+                                    end_time: text,
+                                  })
+                                }
+                                placeholder="HH:MM"
+                                keyboardType="numbers-and-punctuation"
+                              />
+                            </View>
+                          </View>
+
+                          <Text style={modalStyles.inputLabel}>Notes</Text>
+                          <TextInput
+                            style={[modalStyles.input, modalStyles.textArea]}
+                            value={selectedActivity.note}
+                            onChangeText={(text) =>
+                              setSelectedActivity({
+                                ...selectedActivity,
+                                note: text,
+                              })
+                            }
+                            placeholder="Notes"
+                            multiline
+                            numberOfLines={4}
+                          />
+
+                          <View style={modalStyles.buttonContainer}>
+                            <TouchableOpacity
+                              style={modalStyles.saveButton}
+                              onPress={updateActivity}
+                            >
+                              <Text style={modalStyles.saveButtonText}>
+                                Save Activity
+                              </Text>
+                            </TouchableOpacity>
+                          </View>
+                        </View>
+                      )}
+                    </View>
                   )
                 )}
 
@@ -526,233 +672,6 @@ const PlanDetails = () => {
                   >
                     <Text style={modalStyles.saveButtonText}>
                       {isUpdating ? "Updating..." : "Save Changes"}
-                    </Text>
-                  </TouchableOpacity>
-                </View>
-              </ScrollView>
-            )}
-          </View>
-        </KeyboardAvoidingView>
-      </Modal>
-
-      {/* Edit Activity Modal (from plan edit modal) */}
-      <Modal
-        visible={showActivityEditModal}
-        animationType="slide"
-        transparent={true}
-        onRequestClose={() => setShowActivityEditModal(false)}
-      >
-        <KeyboardAvoidingView
-          behavior={Platform.OS === "ios" ? "padding" : "height"}
-          style={modalStyles.centeredView}
-        >
-          <View style={modalStyles.modalView}>
-            <View style={modalStyles.modalHeader}>
-              <Text style={modalStyles.modalTitle}>Edit Activity</Text>
-              <TouchableOpacity
-                onPress={() => setShowActivityEditModal(false)}
-                style={modalStyles.closeButton}
-              >
-                <Ionicons name="close" size={24} color="black" />
-              </TouchableOpacity>
-            </View>
-
-            {selectedActivity && (
-              <ScrollView style={modalStyles.formContainer}>
-                <Text style={modalStyles.inputLabel}>Activity Name</Text>
-                <TextInput
-                  style={modalStyles.input}
-                  value={selectedActivity.name}
-                  onChangeText={(text) =>
-                    setSelectedActivity({ ...selectedActivity, name: text })
-                  }
-                  placeholder="Activity Name"
-                />
-
-                <Text style={modalStyles.inputLabel}>Location</Text>
-                <TextInput
-                  style={modalStyles.input}
-                  value={selectedActivity.place}
-                  onChangeText={(text) =>
-                    setSelectedActivity({ ...selectedActivity, place: text })
-                  }
-                  placeholder="Location"
-                />
-
-                <View style={modalStyles.timeContainer}>
-                  <View style={modalStyles.timeField}>
-                    <Text style={modalStyles.inputLabel}>Start Time</Text>
-                    <TextInput
-                      style={modalStyles.input}
-                      value={selectedActivity.start_time}
-                      onChangeText={(text) =>
-                        setSelectedActivity({
-                          ...selectedActivity,
-                          start_time: text,
-                        })
-                      }
-                      placeholder="HH:MM"
-                      keyboardType="numbers-and-punctuation"
-                    />
-                  </View>
-
-                  <View style={modalStyles.timeField}>
-                    <Text style={modalStyles.inputLabel}>End Time</Text>
-                    <TextInput
-                      style={modalStyles.input}
-                      value={selectedActivity.end_time}
-                      onChangeText={(text) =>
-                        setSelectedActivity({
-                          ...selectedActivity,
-                          end_time: text,
-                        })
-                      }
-                      placeholder="HH:MM"
-                      keyboardType="numbers-and-punctuation"
-                    />
-                  </View>
-                </View>
-
-                <Text style={modalStyles.inputLabel}>Notes</Text>
-                <TextInput
-                  style={[modalStyles.input, modalStyles.textArea]}
-                  value={selectedActivity.note}
-                  onChangeText={(text) =>
-                    setSelectedActivity({ ...selectedActivity, note: text })
-                  }
-                  placeholder="Notes"
-                  multiline
-                  numberOfLines={4}
-                />
-
-                <View style={modalStyles.buttonContainer}>
-                  <TouchableOpacity
-                    style={modalStyles.cancelButton}
-                    onPress={() => setShowActivityEditModal(false)}
-                  >
-                    <Text style={modalStyles.cancelButtonText}>Cancel</Text>
-                  </TouchableOpacity>
-
-                  <TouchableOpacity
-                    style={modalStyles.saveButton}
-                    onPress={updateActivity}
-                  >
-                    <Text style={modalStyles.saveButtonText}>
-                      Save Activity
-                    </Text>
-                  </TouchableOpacity>
-                </View>
-              </ScrollView>
-            )}
-          </View>
-        </KeyboardAvoidingView>
-      </Modal>
-
-      {/* Direct Edit Activity Modal (from main screen) */}
-      <Modal
-        visible={showDirectEditModal}
-        animationType="slide"
-        transparent={true}
-        onRequestClose={() => setShowDirectEditModal(false)}
-      >
-        <KeyboardAvoidingView
-          behavior={Platform.OS === "ios" ? "padding" : "height"}
-          style={modalStyles.centeredView}
-        >
-          <View style={modalStyles.modalView}>
-            <View style={modalStyles.modalHeader}>
-              <Text style={modalStyles.modalTitle}>Edit Activity</Text>
-              <TouchableOpacity
-                onPress={() => setShowDirectEditModal(false)}
-                style={modalStyles.closeButton}
-              >
-                <Ionicons name="close" size={24} color="black" />
-              </TouchableOpacity>
-            </View>
-
-            {directEditActivity && (
-              <ScrollView style={modalStyles.formContainer}>
-                <Text style={modalStyles.inputLabel}>Activity Name</Text>
-                <TextInput
-                  style={modalStyles.input}
-                  value={directEditActivity.name}
-                  onChangeText={(text) =>
-                    setDirectEditActivity({ ...directEditActivity, name: text })
-                  }
-                  placeholder="Activity Name"
-                />
-
-                <Text style={modalStyles.inputLabel}>Location</Text>
-                <TextInput
-                  style={modalStyles.input}
-                  value={directEditActivity.place}
-                  onChangeText={(text) =>
-                    setDirectEditActivity({ ...directEditActivity, place: text })
-                  }
-                  placeholder="Location"
-                />
-
-                <View style={modalStyles.timeContainer}>
-                  <View style={modalStyles.timeField}>
-                    <Text style={modalStyles.inputLabel}>Start Time</Text>
-                    <TextInput
-                      style={modalStyles.input}
-                      value={directEditActivity.start_time}
-                      onChangeText={(text) =>
-                        setDirectEditActivity({
-                          ...directEditActivity,
-                          start_time: text,
-                        })
-                      }
-                      placeholder="HH:MM"
-                      keyboardType="numbers-and-punctuation"
-                    />
-                  </View>
-
-                  <View style={modalStyles.timeField}>
-                    <Text style={modalStyles.inputLabel}>End Time</Text>
-                    <TextInput
-                      style={modalStyles.input}
-                      value={directEditActivity.end_time}
-                      onChangeText={(text) =>
-                        setDirectEditActivity({
-                          ...directEditActivity,
-                          end_time: text,
-                        })
-                      }
-                      placeholder="HH:MM"
-                      keyboardType="numbers-and-punctuation"
-                    />
-                  </View>
-                </View>
-
-                <Text style={modalStyles.inputLabel}>Notes</Text>
-                <TextInput
-                  style={[modalStyles.input, modalStyles.textArea]}
-                  value={directEditActivity.note}
-                  onChangeText={(text) =>
-                    setDirectEditActivity({ ...directEditActivity, note: text })
-                  }
-                  placeholder="Notes"
-                  multiline
-                  numberOfLines={4}
-                />
-
-                <View style={modalStyles.buttonContainer}>
-                  <TouchableOpacity
-                    style={modalStyles.cancelButton}
-                    onPress={() => setShowDirectEditModal(false)}
-                  >
-                    <Text style={modalStyles.cancelButtonText}>Cancel</Text>
-                  </TouchableOpacity>
-
-                  <TouchableOpacity
-                    style={modalStyles.saveButton}
-                    onPress={updateDirectActivity}
-                    disabled={isUpdating}
-                  >
-                    <Text style={modalStyles.saveButtonText}>
-                      {isUpdating ? "Updating..." : "Save Activity"}
                     </Text>
                   </TouchableOpacity>
                 </View>

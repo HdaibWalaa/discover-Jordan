@@ -21,7 +21,6 @@ import { useRoute, useNavigation } from "@react-navigation/native";
 import fetchPlace from "../../hook/fetchPlace";
 import Loader from "../../components/Shimmers/Loader";
 import ImageGallery from "../../components/places/imageGallery";
-import PlaceStatus from "../../components/places/PlaceStatus";
 import PlaceInfoCards from "../../components/places/PlaceInfoCards";
 import PlaceFeatures from "../../components/places/PlaceFeatures";
 import OpeningHours from "../../components/places/OpeningHoures";
@@ -283,10 +282,10 @@ const PlaceDetails = () => {
 
       {/* Fixed Bottom Section */}
       <BottomSection
-        favorite={placeData.favorite}
         placeId={placeData.id}
         visited={placeData.visited}
         refresh={refetch}
+        googleMapUrl={placeData.google_map_url} 
       />
     </RusableWhite>
   );

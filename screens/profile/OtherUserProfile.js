@@ -4,7 +4,7 @@ import {
   Image,
   ImageBackground,
   TouchableOpacity,
-  Alert, 
+  Alert,
 } from "react-native";
 import React, { useContext, useEffect, useState } from "react";
 import { createMaterialTopTabNavigator } from "@react-navigation/material-top-tabs";
@@ -16,8 +16,10 @@ import styles from "./topTab.style";
 import { AntDesign } from "@expo/vector-icons";
 import { useNavigation, useRoute } from "@react-navigation/native";
 import { AuthContext } from "../../store/auth-context";
-import axios from "axios"; 
-import BASE_URL from "../../hook/apiConfig"; 
+import { useLanguage } from "../../store/context/LanguageContext";
+import axios from "axios";
+import BASE_URL from "../../hook/apiConfig";
+import ProfileSkeleton from "../../components/Skeletons/ProfileSkeleton";
 
 const Tab = createMaterialTopTabNavigator();
 
@@ -26,12 +28,94 @@ const OtherUserProfile = () => {
   const route = useRoute();
   const { userId } = route.params || {};
   const authCtx = useContext(AuthContext);
+  const { language } = useLanguage();
 
   const [profile, setProfile] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [isFollowing, setIsFollowing] = useState(false);
 
-  // Fetch the other user’s profile
+  useEffect(() => {
+    fetchOtherUserProfile();
+  }, [userId, language]);
+
+  // Add the missing handleFollow function
+  const handleFollow = async () => {
+    try {
+      if (isFollowing) {
+        // Unfollow logic
+        const response = await axios.delete(
+          `${BASE_URL}/follow/delete/${userId}`,
+          {
+            headers: {
+              Authorization: `Bearer ${authCtx.token}`,
+              "X-API-KEY": "DISCOVERJO91427",
+              "Content-Language": language || "en",
+            },
+          }
+        );
+
+        if (response.status === 200) {
+          setIsFollowing(false);
+          // Update follower count
+          setProfile((prev) => ({
+            ...prev,
+            follower_number: Math.max(0, prev.follower_number - 1),
+          }));
+          Alert.alert("Success", "Unfollowed successfully.");
+        } else {
+          Alert.alert("Error", "Failed to unfollow user.");
+        }
+      } else {
+        // Follow logic
+        const formData = new FormData();
+        formData.append("following_id", userId);
+
+        const response = await axios.post(
+          `${BASE_URL}/follow/create`,
+          formData,
+          {
+            headers: {
+              Authorization: `Bearer ${authCtx.token}`,
+              "Content-Type": "multipart/form-data",
+              "X-API-KEY": "DISCOVERJO91427",
+              "Content-Language": language || "en",
+            },
+          }
+        );
+
+        if (response.status === 200) {
+          setIsFollowing(true);
+          // Update follower count
+          setProfile((prev) => ({
+            ...prev,
+            follower_number: prev.follower_number + 1,
+          }));
+          Alert.alert("Success", "Follow request sent successfully.");
+        } else {
+          Alert.alert("Error", "Failed to send follow request.");
+        }
+      }
+    } catch (error) {
+      console.error(
+        "Error handling follow action:",
+        error.response?.data || error.message
+      );
+      const errorMessage =
+        error.response?.data?.msg?.[0] ||
+        "An error occurred while processing your request.";
+
+      Alert.alert("Error", errorMessage);
+    }
+  };
+
   const fetchOtherUserProfile = async () => {
+    if (!userId) {
+      Alert.alert("Error", "User ID is missing");
+      navigation.goBack();
+      return;
+    }
+
+    setIsLoading(true);
     try {
       const response = await axios.get(
         `${BASE_URL}/other/user/profile/${userId}`,
@@ -39,13 +123,14 @@ const OtherUserProfile = () => {
           headers: {
             Authorization: `Bearer ${authCtx.token}`,
             "X-API-KEY": "DISCOVERJO91427",
-            "Content-Language": language,
+            "Content-Language": language || "en",
           },
         }
       );
 
       if (response.status === 200) {
         setProfile(response.data.data);
+        setIsFollowing(response.data.data.is_following || false);
       } else {
         Alert.alert("Error", "Failed to load user profile.");
       }
@@ -57,45 +142,23 @@ const OtherUserProfile = () => {
     }
   };
 
- 
-  const handleAddFriend = async () => {
-    try {
-      const formData = new FormData();
-      formData.append("following_id", userId);
-
-      const response = await axios.post(`${BASE_URL}/follow/create`, formData, {
-        headers: {
-          Authorization: `Bearer ${authCtx.token}`,
-          "Content-Type": "multipart/form-data",
-          "X-API-KEY": "DISCOVERJO91427",
-          "Content-Language": language,
-        },
-      });
-
-      if (response.status === 200) {
-        Alert.alert("Success", "Follow request sent successfully.");
-      } else {
-        Alert.alert("Error", "Failed to send follow request.");
-      }
-    } catch (error) {
-      console.error(
-        "Error sending follow request:",
-        error.response?.data || error.message
-      );
-      const errorMessage =
-        error.response?.data?.msg?.[0] ||
-        "An error occurred while sending the follow request.";
-
-      Alert.alert("Error", errorMessage);
-    }
-  };
-
-  useEffect(() => {
-    fetchOtherUserProfile();
-  }, [userId]);
-
   if (isLoading) {
-    return <Text>Loading...</Text>;
+    return <ProfileSkeleton />;
+  }
+
+  if (!profile) {
+    return (
+      <View style={styles.errorContainer}>
+        <AntDesign name="exclamationcircleo" size={50} color={COLORS.red} />
+        <Text style={styles.errorText}>User profile not found</Text>
+        <TouchableOpacity
+          style={styles.backButton}
+          onPress={() => navigation.goBack()}
+        >
+          <Text style={styles.backButtonText}>Go Back</Text>
+        </TouchableOpacity>
+      </View>
+    );
   }
 
   return (
@@ -109,17 +172,19 @@ const OtherUserProfile = () => {
           <TouchableOpacity
             style={styles.iconButtonLeft}
             onPress={() => navigation.goBack()}
-            accessibilityLabel="Go Back"
           >
             <AntDesign name="arrowleft" size={24} color={COLORS.black} />
           </TouchableOpacity>
 
           <TouchableOpacity
             style={styles.iconButtonRight}
-            onPress={handleAddFriend}
-            accessibilityLabel="Add Friend"
+            onPress={handleFollow}
           >
-            <AntDesign name="adduser" size={24} color={COLORS.black} />
+            <AntDesign
+              name={isFollowing ? "deleteuser" : "adduser"}
+              size={24}
+              color={COLORS.black}
+            />
           </TouchableOpacity>
         </View>
 
@@ -133,13 +198,13 @@ const OtherUserProfile = () => {
             style={styles.image}
           />
           <ReusableText
-            text={`${profile?.first_name} ${profile?.last_name}`}
+            text={`${profile?.first_name || ""} ${profile?.last_name || ""}`}
             family={"Bold"}
             size={SIZES.large}
             color={COLORS.black}
           />
           <ReusableText
-            text={`@${profile?.username}`}
+            text={`@${profile?.username || ""}`}
             family={"Regular"}
             size={SIZES.medium}
             color={COLORS.black}
@@ -150,11 +215,15 @@ const OtherUserProfile = () => {
       <View style={styles.container}>
         <View style={styles.followContainer}>
           <View style={styles.followBox}>
-            <Text style={styles.followCount}>{profile?.follower_number}</Text>
+            <Text style={styles.followCount}>
+              {profile?.follower_number || 0}
+            </Text>
             <Text style={styles.followLabel}>Followers</Text>
           </View>
           <View style={styles.followBox}>
-            <Text style={styles.followCount}>{profile?.following_number}</Text>
+            <Text style={styles.followCount}>
+              {profile?.following_number || 0}
+            </Text>
             <Text style={styles.followLabel}>Following</Text>
           </View>
         </View>
@@ -173,7 +242,11 @@ const OtherUserProfile = () => {
               component={TopInfo}
               initialParams={{ profile }}
             />
-            <Tab.Screen name="POSTS" component={Following} />
+            <Tab.Screen
+              name="POSTS"
+              component={Following}
+              initialParams={{ userId }}
+            />
           </Tab.Navigator>
         </View>
       </View>

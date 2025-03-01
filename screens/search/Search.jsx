@@ -34,6 +34,7 @@ const Search = () => {
     plans: [],
     volunteering: [],
     guideTrips: [],
+    users: [],
   });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
@@ -42,68 +43,77 @@ const Search = () => {
 
   const currentLanguage = language || "en";
 
-  const performSearch = debounce(async (query) => {
-    if (!query.trim()) {
-      setResults({
-        all: [],
-        places: [],
-        trips: [],
-        events: [],
-        plans: [],
-        volunteering: [],
-        guideTrips: [],
-      });
-      setSearchPerformed(false);
-      return;
-    }
+const performSearch = debounce(async (query) => {
+  if (!query.trim()) {
+    setResults({
+      all: [],
+      places: [],
+      trips: [],
+      events: [],
+      plans: [],
+      volunteering: [],
+      guideTrips: [],
+      users: [],
+    });
+    setSearchPerformed(false);
+    return;
+  }
 
-    setSearchPerformed(true);
-    setFirstLoad(false); // Mark that the user has searched
-    setLoading(true);
-    try {
-      const response = await axios.get(`${BASE_URL}/all/search`, {
-        params: { query },
-        headers: {
-          "Content-Language": language,
-          "X-API-KEY": "DISCOVERJO91427",
-        },
-      });
+  setSearchPerformed(true);
+  setFirstLoad(false);
+  setLoading(true);
 
-      const transformedResults = {
-        all: [
-          ...(response.data?.data?.places?.data || []),
-          ...(response.data?.data?.trips?.data || []),
-          ...(response.data?.data?.events?.data || []),
-          ...(response.data?.data?.plans?.data || []),
-          ...(response.data?.data?.volunteering?.data || []),
-          ...(response.data?.data?.guide_trips?.data || []),
-        ],
-        places: response.data?.data?.places?.data || [],
-        trips: response.data?.data?.trips?.data || [],
-        events: response.data?.data?.events?.data || [],
-        plans: response.data?.data?.plans?.data || [],
-        volunteering: response.data?.data?.volunteering?.data || [],
-        guideTrips: response.data?.data?.guide_trips?.data || [],
-      };
+  try {
+    const response = await axios.get(`${BASE_URL}/all/search`, {
+      params: { query },
+      headers: {
+        "Content-Language": language,
+        "X-API-KEY": "DISCOVERJO91427",
+      },
+    });
 
-      setResults(transformedResults);
-      setError(null);
-    } catch (error) {
-      console.error("Search error:", error);
-      setError(translations[currentLanguage].searchError || "Search failed");
-      setResults({
-        all: [],
-        places: [],
-        trips: [],
-        events: [],
-        plans: [],
-        volunteering: [],
-        guideTrips: [],
-      });
-    } finally {
-      setLoading(false);
-    }
-  }, 500);
+    const usersData = response.data?.data?.users?.data || []; // ✅ Fetch users correctly
+
+    const transformedResults = {
+      all: [
+        ...(response.data?.data?.places?.data || []),
+        ...(response.data?.data?.trips?.data || []),
+        ...(response.data?.data?.events?.data || []),
+        ...(response.data?.data?.plans?.data || []),
+        ...(response.data?.data?.volunteering?.data || []),
+        ...(response.data?.data?.guide_trips?.data || []),
+        ...usersData, // ✅ Ensure users are included in 'all'
+      ],
+      places: response.data?.data?.places?.data || [],
+      trips: response.data?.data?.trips?.data || [],
+      events: response.data?.data?.events?.data || [],
+      plans: response.data?.data?.plans?.data || [],
+      volunteering: response.data?.data?.volunteering?.data || [],
+      guideTrips: response.data?.data?.guide_trips?.data || [],
+      users: usersData, // ✅ Fix: Assigning users correctly to the 'users' tab
+    };
+
+    setResults(transformedResults);
+    setError(null);
+  } catch (error) {
+    console.error("Search error:", error);
+    setError(translations[currentLanguage].searchError || "Search failed");
+    setResults({
+      all: [],
+      places: [],
+      trips: [],
+      events: [],
+      plans: [],
+      volunteering: [],
+      guideTrips: [],
+      users: [],
+    });
+  } finally {
+    setLoading(false);
+  }
+}, 500);
+
+
 
   useEffect(() => {
     performSearch(searchQuery);
@@ -193,7 +203,9 @@ const Search = () => {
                 {selectedType === 7 && (
                   <SearchGuideTrips guideTrips={results.guideTrips} />
                 )}
-                {selectedType === 8 && <SearchUseres />}
+                {selectedType === 8 && (
+                  <SearchUseres users={results.users} /> 
+                )}
               </View>
             )}
           </>

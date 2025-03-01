@@ -24,11 +24,6 @@ const styles = StyleSheet.create({
     fontSize: TEXT.small,
     marginBottom: 20,
   },
-  daysTabs: {
-    marginVertical: 20,
-    borderBottomWidth: 1,
-    borderBottomColor: COLORS.lightGrey,
-  },
   loadingText: {
     textAlign: "center",
     marginTop: 20,

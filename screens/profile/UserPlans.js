@@ -4,7 +4,6 @@ import {
   Image,
   FlatList,
   StyleSheet,
-  ActivityIndicator,
   TouchableOpacity,
 } from "react-native";
 import { useNavigation } from "@react-navigation/native";
@@ -19,6 +18,8 @@ import {
   widthPercentageToDP as wp,
   heightPercentageToDP as hp,
 } from "react-native-responsive-screen";
+import { PlansListSkeleton } from "../../components/Skeletons/PlanSkeleton";
+
 
 const UserPlans = () => {
   const { mode } = useTheme();
@@ -62,36 +63,35 @@ const UserPlans = () => {
       } catch (error) {
         console.error("Error fetching plans:", error.message);
       } finally {
-        setLoading(false);
+        // Add a slight delay to make the skeleton visible for at least a moment
+        setTimeout(() => {
+          setLoading(false);
+        }, 800);
       }
     };
 
     fetchPlans();
   }, [token, language]);
 
-  if (loading) {
-    return (
-      <View style={styles.loaderContainer}>
-        <ActivityIndicator size="large" color={COLORS.primary} />
-      </View>
-    );
-  }
+  const renderContent = () => {
+    if (loading) {
+      return <PlansListSkeleton count={4} />;
+    }
 
-  if (!plans.length) {
-    return (
-      <View style={styles.noDataContainer}>
-        <ReusableText
-          text={translatedText.noPlans || "No favorite plans found"}
-          family="Bold"
-          size={TEXT.medium}
-          color={COLORS.secondary}
-        />
-      </View>
-    );
-  }
+    if (!plans.length) {
+      return (
+        <View style={styles.noDataContainer}>
+          <ReusableText
+            text={translatedText.noPlans || "No plans found"}
+            family="Bold"
+            size={TEXT.medium}
+            color={COLORS.secondary}
+          />
+        </View>
+      );
+    }
 
-  return (
-    <RusableWhite>
+    return (
       <FlatList
         data={plans}
         ListFooterComponent={<View style={{ height: hp("12%") }} />}
@@ -144,6 +144,15 @@ const UserPlans = () => {
           </TouchableOpacity>
         )}
       />
+    );
+  };
+
+  return (
+    <RusableWhite>
+     
+
+      {/* Render the content based on loading state */}
+      {renderContent()}
     </RusableWhite>
   );
 };
@@ -151,15 +160,12 @@ const UserPlans = () => {
 export default UserPlans;
 
 const styles = StyleSheet.create({
-  loaderContainer: {
-    flex: 1,
-    justifyContent: "center",
-    alignItems: "center",
-  },
   noDataContainer: {
+    flex: 1,
     alignItems: "center",
     justifyContent: "center",
     padding: wp("5%"),
+    marginTop: hp(10),
   },
   planCard: {
     flexDirection: "row",

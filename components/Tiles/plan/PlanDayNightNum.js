@@ -8,8 +8,8 @@ import {
 import ReusableText from "../../Reusable/ReusableText";
 
 const PlanDayNightNum = ({ numberOfDays }) => {
-  const nights = numberOfDays > 1 ? numberOfDays - 1 : 0; // Calculate nights
-  const days = numberOfDays; // Number of days
+  const nights = numberOfDays > 1 ? numberOfDays - 1 : 0; 
+  const days = numberOfDays; 
 
   return (
     <View style={styles.container}>
@@ -28,13 +28,13 @@ export default PlanDayNightNum;
 
 const styles = StyleSheet.create({
   container: {
-    backgroundColor:COLORS.secondary, // Background color
+    backgroundColor: COLORS.secondary, // Background color
     paddingVertical: hp(0.5), // Vertical padding for height
     paddingHorizontal: wp(3), // Horizontal padding for width
     borderRadius: wp(2), // Rounded corners
     alignItems: "center",
     justifyContent: "center",
-    alignSelf: "flex-start", // So that the width adjusts according to the content
+    alignSelf: "flex-start",
   },
   text: {
     color: COLORS.white, // White text color

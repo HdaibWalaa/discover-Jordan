@@ -9,6 +9,7 @@ import store from "./store/redux/store";
 import { ThemeProvider } from "./store/context/ThemeContext";
 import { ReviewProvider } from "./store/context/ReviewContext";
 import { LanguageProvider } from "./store/context/LanguageContext";
+import PlanHeader from "./components/header/PlanHeader";
 import { COLORS } from "./constants/theme";
 import {
   Onboarding,
@@ -126,11 +127,6 @@ function AuthStack() {
         options={{ headerShown: false }}
       />
       <Stack.Screen
-        name="UserAllPlans"
-        component={UserAllPlans}
-        options={{ headerShown: false }}
-      />
-      <Stack.Screen
         name="UserAllTrips"
         component={UserAllTrips}
         options={{ headerShown: false }}
@@ -223,7 +219,10 @@ function AppStack() {
           <Stack.Screen
             name="UserAllPlans"
             component={UserAllPlans}
-            options={{ headerShown: false }}
+            options={{
+              tabBarShowLabel: false,
+              header: () => <PlanHeader />,
+            }}
           />
           <Stack.Screen
             name="UserAllTrips"
@@ -339,7 +338,7 @@ export default function App() {
   }
 
   return (
-      <LanguageProvider>
+    <LanguageProvider>
       <ThemeProvider>
         <AuthContextProvider>
           <ReviewProvider>

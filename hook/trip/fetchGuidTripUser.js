@@ -35,7 +35,10 @@ export const fetchGuideTripSubscribers = async (tripId, token) => {
 export const deleteGuideTripSubscriber = async (tripId, phoneNumber, token) => {
   try {
     await axios.delete(`${BASE_URL}/user/guide-trip/delete/${tripId}`, {
-      headers: { Authorization: `Bearer ${token}` },
+      headers: {
+        Authorization: `Bearer ${token}`,
+        "X-API-KEY": "DISCOVERJO91427",
+      },
       data: { phone_number: phoneNumber },
     });
   } catch (error) {
@@ -61,7 +64,10 @@ export const updateGuideTripSubscribers = async (
       `${BASE_URL}/user/guide-trip/update`,
       { guide_trip_id: tripId, subscribers },
       {
-        headers: { Authorization: `Bearer ${token}` },
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "X-API-KEY": "DISCOVERJO91427",
+        },
       }
     );
   } catch (error) {
