@@ -60,15 +60,6 @@ const ActivityCard = ({
             </Text>
           </View>
           <View style={styles.activityButtons}>
-            {/* Edit button */}
-            {onEditActivity && (
-              <TouchableOpacity
-                style={styles.activityButton}
-                onPress={() => onEditActivity(activity)}
-              >
-                <Ionicons name="pencil-outline" size={22} color="black" />
-              </TouchableOpacity>
-            )}
 
             {/* View details button */}
             <TouchableOpacity

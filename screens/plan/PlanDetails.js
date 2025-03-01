@@ -7,10 +7,7 @@ import {
   Platform,
   NativeModules,
   Alert,
-  Modal,
-  TextInput,
-  StyleSheet,
-  KeyboardAvoidingView,
+  StyleSheet
 } from "react-native";
 import {
   widthPercentageToDP as wp,
@@ -21,22 +18,24 @@ import axios from "axios";
 import fetchPlanDetails from "../../hook/plane/fetchPlandetails";
 import { AuthContext } from "../../store/auth-context";
 import { useRoute, useNavigation } from "@react-navigation/native";
-import styles from "../../components/Plan/PlanDetailsStyles";
+import planStyles from "../../components/Plan/PlanDetailsStyles";
 import BASE_URL from "../../hook/apiConfig";
 import { ReusableBackground, ReusableText } from "../../components";
 import { COLORS, TEXT } from "../../constants/theme";
 import ActivityCard from "../../components/Tiles/plan/ActivityCard";
 import PlanDays from "../../components/Tiles/plan/PlanDayes";
-import { Ionicons } from "@expo/vector-icons";
 import PlanFavorite from "./PlanFavorite";
 import PlanAction from "./PlaneAction";
 import PlanDetailsSkeleton from "../../components/Skeletons/PlanDetailsSkeleton";
+import EditPlanModal from "./EditPlanModal";
+import DirectEditModal from "./DirectEditModal";
 
 const PlanDetails = () => {
   const [planDetails, setPlanDetails] = useState(null);
   const [editablePlan, setEditablePlan] = useState(null);
   const [selectedDay, setSelectedDay] = useState(0);
   const [editingDay, setEditingDay] = useState(0);
+  const [expandedActivityIndex, setExpandedActivityIndex] = useState(null);
   const [selectedActivity, setSelectedActivity] = useState(null);
   const [directEditActivity, setDirectEditActivity] = useState(null);
   const [error, setError] = useState(null);
@@ -44,7 +43,6 @@ const PlanDetails = () => {
   const [showFullDescription, setShowFullDescription] = useState(false);
   const [isUpdating, setIsUpdating] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
-  const [showActivityEditModal, setShowActivityEditModal] = useState(false);
   const [showDirectEditModal, setShowDirectEditModal] = useState(false);
   const [loading, setLoading] = useState(true);
   const [isFavorite, setIsFavorite] = useState(false);
@@ -163,12 +161,73 @@ const PlanDetails = () => {
 
     setEditablePlan(editableData);
     setEditingDay(selectedDay);
+    setExpandedActivityIndex(null); // Reset any expanded activity when opening the modal
     setShowEditModal(true);
   };
 
-  const handleEditActivity = (activity, activityIndex) => {
-    setSelectedActivity({ ...activity, index: activityIndex });
-    setShowActivityEditModal(true);
+  const handleActivityItemPress = (activity, index) => {
+    if (expandedActivityIndex === index) {
+      // If this activity is already expanded, collapse it
+      setExpandedActivityIndex(null);
+      setSelectedActivity(null);
+    } else {
+      // Expand this activity and set it as selected
+      setExpandedActivityIndex(index);
+      setSelectedActivity({ ...activity, index });
+    }
+  };
+
+  // Handle place selection from SelectPlace component
+  const handlePlaceSelection = (placeId) => {
+    if (selectedActivity) {
+      setSelectedActivity({
+        ...selectedActivity,
+        place_id: placeId.toString(),
+      });
+    }
+  };
+
+  const updateActivity = () => {
+    if (!selectedActivity) return;
+
+    const updatedPlan = { ...editablePlan };
+    updatedPlan.days[editingDay].activities[selectedActivity.index] = {
+      name: selectedActivity.name,
+      start_time: selectedActivity.start_time,
+      end_time: selectedActivity.end_time,
+      place_id: selectedActivity.place_id || "1",
+      note: selectedActivity.note || "",
+      image: selectedActivity.image || "",
+      place: selectedActivity.place,
+    };
+
+    setEditablePlan(updatedPlan);
+    setExpandedActivityIndex(null); // Collapse after saving
+  };
+
+  // Function to update activity from direct edit
+  const updateDirectActivity = () => {
+    if (!directEditActivity) return;
+
+    // If editablePlan isn't set yet, create it
+    const currentPlan = editablePlan || JSON.parse(JSON.stringify(planDetails));
+
+    // Update activity in the current day
+    currentPlan.days[selectedDay].activities[directEditActivity.index] = {
+      name: directEditActivity.name,
+      start_time: directEditActivity.start_time,
+      end_time: directEditActivity.end_time,
+      place_id: directEditActivity.place_id || "1",
+      note: directEditActivity.note || "",
+      image: directEditActivity.image || "",
+      place: directEditActivity.place, // Make sure to keep the place field
+    };
+
+    setEditablePlan(currentPlan);
+    setShowDirectEditModal(false);
+
+    // Immediately send the update to the server
+    handleUpdatePlan(currentPlan);
   };
 
   // New function to handle direct editing from the main screen
@@ -215,49 +274,6 @@ const PlanDetails = () => {
     setDirectEditActivity(formattedActivity);
     setEditingDay(selectedDay);
     setShowDirectEditModal(true);
-  };
-
-  const updateActivity = () => {
-    if (!selectedActivity) return;
-
-    const updatedPlan = { ...editablePlan };
-    updatedPlan.days[editingDay].activities[selectedActivity.index] = {
-      name: selectedActivity.name,
-      start_time: selectedActivity.start_time,
-      end_time: selectedActivity.end_time,
-      place_id: selectedActivity.place_id || "1",
-      note: selectedActivity.note || "",
-      image: selectedActivity.image || "",
-      place: selectedActivity.place,
-    };
-
-    setEditablePlan(updatedPlan);
-    setShowActivityEditModal(false);
-  };
-
-  // Function to update activity from direct edit
-  const updateDirectActivity = () => {
-    if (!directEditActivity) return;
-
-    // If editablePlan isn't set yet, create it
-    const currentPlan = editablePlan || JSON.parse(JSON.stringify(planDetails));
-
-    // Update activity in the current day
-    currentPlan.days[selectedDay].activities[directEditActivity.index] = {
-      name: directEditActivity.name,
-      start_time: directEditActivity.start_time,
-      end_time: directEditActivity.end_time,
-      place_id: directEditActivity.place_id || "1",
-      note: directEditActivity.note || "",
-      image: directEditActivity.image || "",
-      place: directEditActivity.place, // Make sure to keep the place field
-    };
-
-    setEditablePlan(currentPlan);
-    setShowDirectEditModal(false);
-
-    // Immediately send the update to the server
-    handleUpdatePlan(currentPlan);
   };
 
   const handleUpdatePlan = async (planToUpdate = null) => {
@@ -356,8 +372,8 @@ const PlanDetails = () => {
 
   if (error) {
     return (
-      <View style={styles.container}>
-        <Text style={styles.errorText}>{error}</Text>
+      <View style={planStyles.container}>
+        <Text style={planStyles.errorText}>{error}</Text>
       </View>
     );
   }
@@ -374,8 +390,8 @@ const PlanDetails = () => {
 
   return (
     <ReusableBackground>
-      <ScrollView contentContainerStyle={[styles.container]}>
-        <View style={styles.header}>
+      <ScrollView contentContainerStyle={[planStyles.container]}>
+        <View style={planStyles.header}>
           <ReusableText
             text={planDetails.name}
             family={"Bold"}
@@ -418,11 +434,11 @@ const PlanDetails = () => {
             family={"Medium"}
             size={TEXT.small}
             color={COLORS.gray}
-            style={styles.description}
+            style={planStyles.description}
           />
           {planDetails.description.length > 100 && (
             <TouchableOpacity onPress={toggleDescription}>
-              <Text style={styles.readMoreText}>
+              <Text style={planStyles.readMoreText}>
                 {showFullDescription ? "Read Less" : "Read More"}
               </Text>
             </TouchableOpacity>
@@ -430,7 +446,7 @@ const PlanDetails = () => {
         </View>
 
         {planDetails.days.length > 1 && (
-          <View style={styles.daysTabs}>
+          <View style={planStyles.daysTabs}>
             <PlanDays
               days={planDetails.days}
               selectedDay={selectedDay}
@@ -455,235 +471,35 @@ const PlanDetails = () => {
       </ScrollView>
 
       {/* Edit Plan Modal */}
-      <Modal
+      <EditPlanModal
         visible={showEditModal}
-        animationType="slide"
-        transparent={true}
-        onRequestClose={() => setShowEditModal(false)}
-      >
-        <KeyboardAvoidingView
-          behavior={Platform.OS === "ios" ? "padding" : "height"}
-          style={modalStyles.centeredView}
-        >
-          <View style={modalStyles.modalView}>
-            <View style={modalStyles.modalHeader}>
-              <Text style={modalStyles.modalTitle}>Edit Plan</Text>
-              <TouchableOpacity
-                onPress={() => setShowEditModal(false)}
-                style={modalStyles.closeButton}
-              >
-                <Ionicons name="close" size={24} color="black" />
-              </TouchableOpacity>
-            </View>
+        onClose={() => setShowEditModal(false)}
+        editablePlan={editablePlan}
+        editingDay={editingDay}
+        setEditingDay={setEditingDay}
+        selectedActivity={selectedActivity}
+        setSelectedActivity={setSelectedActivity}
+        expandedActivityIndex={expandedActivityIndex}
+        setExpandedActivityIndex={setExpandedActivityIndex}
+        handleActivityItemPress={handleActivityItemPress}
+        updateActivity={updateActivity}
+        handleUpdatePlan={handleUpdatePlan}
+        isUpdating={isUpdating}
+      />
 
-            {editablePlan && (
-              <ScrollView style={modalStyles.formContainer}>
-                <Text style={modalStyles.inputLabel}>Plan Name</Text>
-                <TextInput
-                  style={modalStyles.input}
-                  value={editablePlan.name}
-                  onChangeText={(text) =>
-                    setEditablePlan({ ...editablePlan, name: text })
-                  }
-                  placeholder="Plan Name"
-                />
-
-                <Text style={modalStyles.inputLabel}>Description</Text>
-                <TextInput
-                  style={[modalStyles.input, modalStyles.textArea]}
-                  value={editablePlan.description}
-                  onChangeText={(text) =>
-                    setEditablePlan({ ...editablePlan, description: text })
-                  }
-                  placeholder="Description"
-                  multiline
-                  numberOfLines={4}
-                />
-
-                <Text style={modalStyles.sectionTitle}>
-                  Day {editablePlan.days[editingDay].day_number} Activities
-                </Text>
-
-                {editablePlan.days[editingDay].activities.map(
-                  (activity, index) => (
-                    <View key={index} style={modalStyles.activityEditContainer}>
-                      <TouchableOpacity
-                        style={modalStyles.activityItem}
-                        onPress={() => handleEditActivity(activity, index)}
-                      >
-                        <View style={modalStyles.activityItemContent}>
-                          <Text style={modalStyles.activityName}>
-                            {activity.name}
-                          </Text>
-                          <Text style={modalStyles.activityTime}>
-                            {activity.start_time} - {activity.end_time}
-                          </Text>
-                        </View>
-                        <Ionicons
-                          name="chevron-forward"
-                          size={20}
-                          color={COLORS.gray}
-                        />
-                      </TouchableOpacity>
-
-                      {/* Show Activity Edit Form Inline Inside Plan Edit Modal */}
-                      {selectedActivity?.index === index && (
-                        <View style={modalStyles.activityEditForm}>
-                          <Text style={modalStyles.inputLabel}>
-                            Activity Name
-                          </Text>
-                          <TextInput
-                            style={modalStyles.input}
-                            value={selectedActivity.name}
-                            onChangeText={(text) =>
-                              setSelectedActivity({
-                                ...selectedActivity,
-                                name: text,
-                              })
-                            }
-                            placeholder="Activity Name"
-                          />
-
-                          <Text style={modalStyles.inputLabel}>Location</Text>
-                          <TextInput
-                            style={modalStyles.input}
-                            value={selectedActivity.place}
-                            onChangeText={(text) =>
-                              setSelectedActivity({
-                                ...selectedActivity,
-                                place: text,
-                              })
-                            }
-                            placeholder="Location"
-                          />
-
-                          <View style={modalStyles.timeContainer}>
-                            <View style={modalStyles.timeField}>
-                              <Text style={modalStyles.inputLabel}>
-                                Start Time
-                              </Text>
-                              <TextInput
-                                style={modalStyles.input}
-                                value={selectedActivity.start_time}
-                                onChangeText={(text) =>
-                                  setSelectedActivity({
-                                    ...selectedActivity,
-                                    start_time: text,
-                                  })
-                                }
-                                placeholder="HH:MM"
-                                keyboardType="numbers-and-punctuation"
-                              />
-                            </View>
-
-                            <View style={modalStyles.timeField}>
-                              <Text style={modalStyles.inputLabel}>
-                                End Time
-                              </Text>
-                              <TextInput
-                                style={modalStyles.input}
-                                value={selectedActivity.end_time}
-                                onChangeText={(text) =>
-                                  setSelectedActivity({
-                                    ...selectedActivity,
-                                    end_time: text,
-                                  })
-                                }
-                                placeholder="HH:MM"
-                                keyboardType="numbers-and-punctuation"
-                              />
-                            </View>
-                          </View>
-
-                          <Text style={modalStyles.inputLabel}>Notes</Text>
-                          <TextInput
-                            style={[modalStyles.input, modalStyles.textArea]}
-                            value={selectedActivity.note}
-                            onChangeText={(text) =>
-                              setSelectedActivity({
-                                ...selectedActivity,
-                                note: text,
-                              })
-                            }
-                            placeholder="Notes"
-                            multiline
-                            numberOfLines={4}
-                          />
-
-                          <View style={modalStyles.buttonContainer}>
-                            <TouchableOpacity
-                              style={modalStyles.saveButton}
-                              onPress={updateActivity}
-                            >
-                              <Text style={modalStyles.saveButtonText}>
-                                Save Activity
-                              </Text>
-                            </TouchableOpacity>
-                          </View>
-                        </View>
-                      )}
-                    </View>
-                  )
-                )}
-
-                {editablePlan.days.length > 1 && (
-                  <View style={modalStyles.daySelector}>
-                    <Text style={modalStyles.inputLabel}>Select Day:</Text>
-                    <ScrollView
-                      horizontal
-                      showsHorizontalScrollIndicator={false}
-                    >
-                      {editablePlan.days.map((day, index) => (
-                        <TouchableOpacity
-                          key={index}
-                          style={[
-                            modalStyles.dayButton,
-                            editingDay === index && modalStyles.activeDayButton,
-                          ]}
-                          onPress={() => setEditingDay(index)}
-                        >
-                          <Text
-                            style={[
-                              modalStyles.dayButtonText,
-                              editingDay === index &&
-                                modalStyles.activeDayButtonText,
-                            ]}
-                          >
-                            Day {day.day_number}
-                          </Text>
-                        </TouchableOpacity>
-                      ))}
-                    </ScrollView>
-                  </View>
-                )}
-
-                <View style={modalStyles.buttonContainer}>
-                  <TouchableOpacity
-                    style={modalStyles.cancelButton}
-                    onPress={() => setShowEditModal(false)}
-                  >
-                    <Text style={modalStyles.cancelButtonText}>Cancel</Text>
-                  </TouchableOpacity>
-
-                  <TouchableOpacity
-                    style={modalStyles.saveButton}
-                    onPress={() => handleUpdatePlan()}
-                    disabled={isUpdating}
-                  >
-                    <Text style={modalStyles.saveButtonText}>
-                      {isUpdating ? "Updating..." : "Save Changes"}
-                    </Text>
-                  </TouchableOpacity>
-                </View>
-              </ScrollView>
-            )}
-          </View>
-        </KeyboardAvoidingView>
-      </Modal>
+      {/* Direct Edit Modal */}
+      <DirectEditModal
+        visible={showDirectEditModal}
+        onClose={() => setShowDirectEditModal(false)}
+        activity={directEditActivity}
+        setActivity={setDirectEditActivity}
+        onUpdate={updateDirectActivity}
+      />
     </ReusableBackground>
   );
 };
 
+export default PlanDetails;
 const modalStyles = StyleSheet.create({
   centeredView: {
     flex: 1,
@@ -749,6 +565,27 @@ const modalStyles = StyleSheet.create({
     fontSize: 16,
     marginBottom: 10,
   },
+  placeSelector: {
+    backgroundColor: "#f5f5f5",
+    padding: 12,
+    borderRadius: 8,
+    fontFamily: "Regular",
+    fontSize: 16,
+    marginBottom: 10,
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+  },
+  placeSelectorText: {
+    color: COLORS.gray,
+    fontFamily: "Regular",
+    fontSize: 16,
+  },
+  placeSelectorTextSelected: {
+    color: COLORS.black,
+    fontFamily: "Regular",
+    fontSize: 16,
+  },
   textArea: {
     minHeight: 100,
     textAlignVertical: "top",
@@ -790,14 +627,19 @@ const modalStyles = StyleSheet.create({
     fontSize: 16,
     color: "white",
   },
+  activityEditContainer: {
+    marginBottom: 10,
+    borderRadius: 8,
+    overflow: "hidden",
+    borderWidth: 1,
+    borderColor: "#f0f0f0",
+  },
   activityItem: {
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
     padding: 15,
     backgroundColor: "#f9f9f9",
-    borderRadius: 8,
-    marginVertical: 5,
   },
   activityItemContent: {
     flex: 1,
@@ -812,6 +654,12 @@ const modalStyles = StyleSheet.create({
     fontSize: 14,
     color: COLORS.gray,
     marginTop: 4,
+  },
+  activityEditForm: {
+    padding: 15,
+    backgroundColor: "white",
+    borderTopWidth: 1,
+    borderTopColor: "#f0f0f0",
   },
   daySelector: {
     marginTop: 20,
@@ -834,6 +682,420 @@ const modalStyles = StyleSheet.create({
   activeDayButtonText: {
     color: "white",
   },
+  centeredView: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+    backgroundColor: "rgba(0, 0, 0, 0.5)",
+  },
+  modalView: {
+    width: "90%",
+    maxHeight: "80%",
+    backgroundColor: "white",
+    borderRadius: 20,
+    paddingHorizontal: 20,
+    paddingBottom: 20,
+    shadowColor: "#000",
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.25,
+    shadowRadius: 4,
+    elevation: 5,
+  },
+  modalHeader: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    paddingVertical: 15,
+    borderBottomWidth: 1,
+    borderBottomColor: "#f0f0f0",
+  },
+  modalTitle: {
+    fontSize: 20,
+    fontFamily: "Bold",
+    color: COLORS.black,
+  },
+  closeButton: {
+    padding: 5,
+  },
+  formContainer: {
+    marginTop: 10,
+    width: "100%",
+  },
+  inputLabel: {
+    fontFamily: "Medium",
+    fontSize: 16,
+    color: COLORS.black,
+    marginTop: 10,
+    marginBottom: 5,
+  },
+  sectionTitle: {
+    fontFamily: "Bold",
+    fontSize: 18,
+    color: COLORS.black,
+    marginTop: 20,
+    marginBottom: 10,
+  },
+  input: {
+    backgroundColor: "#f5f5f5",
+    padding: 12,
+    borderRadius: 8,
+    fontFamily: "Regular",
+    fontSize: 16,
+    marginBottom: 10,
+  },
+  placeSelector: {
+    backgroundColor: "#f5f5f5",
+    padding: 12,
+    borderRadius: 8,
+    fontFamily: "Regular",
+    fontSize: 16,
+    marginBottom: 10,
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+  },
+  placeSelectorText: {
+    color: COLORS.gray,
+    fontFamily: "Regular",
+    fontSize: 16,
+  },
+  placeSelectorTextSelected: {
+    color: COLORS.black,
+    fontFamily: "Regular",
+    fontSize: 16,
+  },
+  textArea: {
+    minHeight: 100,
+    textAlignVertical: "top",
+  },
+  timeContainer: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+  },
+  timeField: {
+    width: "48%",
+  },
+  buttonContainer: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    marginTop: 20,
+    marginBottom: 20,
+  },
+  cancelButton: {
+    paddingVertical: 12,
+    paddingHorizontal: 20,
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: COLORS.gray,
+    backgroundColor: "white",
+  },
+  cancelButtonText: {
+    fontFamily: "Medium",
+    fontSize: 16,
+    color: COLORS.black,
+  },
+  saveButton: {
+    paddingVertical: 12,
+    paddingHorizontal: 20,
+    borderRadius: 8,
+    backgroundColor: COLORS.primary,
+  },
+  saveButtonText: {
+    fontFamily: "Medium",
+    fontSize: 16,
+    color: "white",
+  },
+  activityEditContainer: {
+    marginBottom: 10,
+    borderRadius: 8,
+    overflow: "hidden",
+    borderWidth: 1,
+    borderColor: "#f0f0f0",
+  },
+  activityItem: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    padding: 15,
+    backgroundColor: "#f9f9f9",
+  },
+  activityItemContent: {
+    flex: 1,
+  },
+  activityName: {
+    fontFamily: "Bold",
+    fontSize: 16,
+    color: COLORS.black,
+  },
+  activityTime: {
+    fontFamily: "Regular",
+    fontSize: 14,
+    color: COLORS.gray,
+    marginTop: 4,
+  },
+  activityEditForm: {
+    padding: 15,
+    backgroundColor: "white",
+    borderTopWidth: 1,
+    borderTopColor: "#f0f0f0",
+  },
+  daySelector: {
+    marginTop: 20,
+  },
+  dayButton: {
+    paddingHorizontal: 15,
+    paddingVertical: 8,
+    borderRadius: 8,
+    backgroundColor: "#f0f0f0",
+    marginRight: 10,
+  },
+  activeDayButton: {
+    backgroundColor: COLORS.primary,
+  },
+  dayButtonText: {
+    fontFamily: "Medium",
+    fontSize: 14,
+    color: COLORS.black,
+  },
+  activeDayButtonText: {
+    color: "white",
+  },
+  // Place search modal styles
+  searchContainer: {
+    flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: "#f5f5f5",
+    borderRadius: 8,
+    paddingHorizontal: 10,
+    marginVertical: 15,
+  },
+  searchIcon: {
+    marginRight: 10,
+  },
+  searchInput: {
+    flex: 1,
+    height: 45,
+    fontSize: 16,
+    fontFamily: "Regular",
+    color: COLORS.black,
+  },
+  clearButton: {
+    padding: 5,
+  },
+  loadingContainer: {
+    padding: 20,
+    alignItems: "center",
+  },
+  loadingText: {
+    marginTop: 10,
+    fontFamily: "Regular",
+    fontSize: 16,
+    color: COLORS.gray,
+  },
+  placeItem: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    padding: 15,
+    borderBottomWidth: 1,
+    borderBottomColor: "#f0f0f0",
+  },
+  placeItemContent: {
+    flex: 1,
+  },
+  placeItemName: {
+    fontFamily: "Medium",
+    fontSize: 16,
+    color: COLORS.black,
+  },
+  placeItemRegion: {
+    fontFamily: "Regular",
+    fontSize: 14,
+    color: COLORS.gray,
+    marginTop: 2,
+  },
+  emptyList: {
+    padding: 20,
+    alignItems: "center",
+  },
+  emptyListText: {
+    fontFamily: "Regular",
+    fontSize: 16,
+    color: COLORS.gray,
+    textAlign: "center",
+  },
+  centeredView: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+    backgroundColor: "rgba(0, 0, 0, 0.5)",
+  },
+  modalView: {
+    width: "90%",
+    maxHeight: "80%",
+    backgroundColor: "white",
+    borderRadius: 20,
+    paddingHorizontal: 20,
+    paddingBottom: 20,
+    shadowColor: "#000",
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.25,
+    shadowRadius: 4,
+    elevation: 5,
+  },
+  modalHeader: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    paddingVertical: 15,
+    borderBottomWidth: 1,
+    borderBottomColor: "#f0f0f0",
+  },
+  modalTitle: {
+    fontSize: 20,
+    fontFamily: "Bold",
+    color: COLORS.black,
+  },
+  closeButton: {
+    padding: 5,
+  },
+  formContainer: {
+    marginTop: 10,
+    width: "100%",
+  },
+  inputLabel: {
+    fontFamily: "Medium",
+    fontSize: 16,
+    color: COLORS.black,
+    marginTop: 10,
+    marginBottom: 5,
+  },
+  sectionTitle: {
+    fontFamily: "Bold",
+    fontSize: 18,
+    color: COLORS.black,
+    marginTop: 20,
+    marginBottom: 10,
+  },
+  input: {
+    backgroundColor: "#f5f5f5",
+    padding: 12,
+    borderRadius: 8,
+    fontFamily: "Regular",
+    fontSize: 16,
+    marginBottom: 10,
+  },
+  inputGroup: {
+    marginBottom: 15,
+  },
+  timeSelector: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    borderWidth: 1,
+    borderColor: "#ddd",
+    borderRadius: 5,
+    padding: 12,
+    backgroundColor: "#f9f9f9",
+  },
+  timeSelectorText: {
+    fontSize: 16,
+    color: COLORS.black,
+  },
+  textArea: {
+    minHeight: 100,
+    textAlignVertical: "top",
+  },
+  timeContainer: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+  },
+  timeField: {
+    width: "48%",
+  },
+  buttonContainer: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    marginTop: 20,
+    marginBottom: 20,
+  },
+  cancelButton: {
+    paddingVertical: 12,
+    paddingHorizontal: 20,
+    borderRadius: 8,
+    backgroundColor: COLORS.primary,
+    flex: 1,
+    alignItems: "center",
+    marginLeft: 5,
+  },
+  saveButtonText: {
+    fontFamily: "Medium",
+    fontSize: 16,
+    color: "white",
+  },
+  activityEditContainer: {
+    marginBottom: 10,
+    borderRadius: 8,
+    overflow: "hidden",
+    borderWidth: 1,
+    borderColor: "#f0f0f0",
+  },
+  activityItem: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    padding: 15,
+    backgroundColor: "#f9f9f9",
+  },
+  activityItemContent: {
+    flex: 1,
+  },
+  activityName: {
+    fontFamily: "Bold",
+    fontSize: 16,
+    color: COLORS.black,
+  },
+  activityTime: {
+    fontFamily: "Regular",
+    fontSize: 14,
+    color: COLORS.gray,
+    marginTop: 4,
+  },
+  activityEditForm: {
+    padding: 15,
+    backgroundColor: "white",
+    borderTopWidth: 1,
+    borderTopColor: "#f0f0f0",
+  },
+  daySelector: {
+    marginTop: 20,
+  },
+  dayButton: {
+    paddingHorizontal: 15,
+    paddingVertical: 8,
+    borderRadius: 8,
+    backgroundColor: "#f0f0f0",
+    marginRight: 10,
+  },
+  activeDayButton: {
+    backgroundColor: COLORS.primary,
+  },
+  dayButtonText: {
+    fontFamily: "Medium",
+    fontSize: 14,
+    color: COLORS.black,
+  },
+  activeDayButtonText: {
+    color: "white",
+  },
+  borderRadius: 8,
+  borderWidth: 1,
+  borderColor: COLORS.gray,
+  backgroundColor: "white",
 });
-
-export default PlanDetails;

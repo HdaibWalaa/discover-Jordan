@@ -32,7 +32,11 @@ const Guides = () => {
   const { guidTripData, isLoading, error } = fetchAllGuideTrips(language);
 
   if (isLoading) {
-    return <ActivityIndicator color="black" size={60} />;
+    return (
+      <View style={styles.loadingContainer}>
+        <ActivityIndicator color={COLORS.primary} size={60} />
+      </View>
+    );
   }
 
   if (error) {
@@ -44,10 +48,8 @@ const Guides = () => {
   }
 
   return (
-    <View>
-      <View
-        style={[reusable.rowWithSpace("space-between"), { paddingBottom: 20 }]}
-      >
+    <View style={styles.container}>
+      <View style={styles.headerContainer}>
         <ReusableText
           text={"Guide".toUpperCase()}
           family={"Medium"}
@@ -60,35 +62,75 @@ const Guides = () => {
           color="black"
         />
       </View>
-      <FlatList
-        data={guidTripData}
-        horizontal
-        keyExtractor={(item) => item.id}
-        showsHorizontalScrollIndicator={false}
-        contentContainerStyle={{ columnGap: SIZES.medium }}
-        renderItem={({ item }) => (
-          <GuideTripCard
-            item={item}
-            margin={5}
-            onPress={() => {
-              navigation.navigate("GuideTripDetails", { tripId: item.id });
-            }}
-          />
-        )}
-      />
+
+      {guidTripData && guidTripData.length > 0 ? (
+        <FlatList
+          data={guidTripData}
+          horizontal
+          keyExtractor={(item) => item.id.toString()}
+          showsHorizontalScrollIndicator={false}
+          contentContainerStyle={styles.listContainer}
+          renderItem={({ item }) => (
+            <GuideTripCard
+              item={item}
+              margin={10}
+              onPress={() => {
+                navigation.navigate("GuideTripDetails", { tripId: item.id });
+              }}
+            />
+          )}
+        />
+      ) : (
+        <View style={styles.emptyContainer}>
+          <Text style={styles.emptyText}>No guide trips available</Text>
+        </View>
+      )}
     </View>
   );
 };
 
 const styles = StyleSheet.create({
-  errorContainer: {
+  container: {
+    marginVertical: 10,
+  },
+  headerContainer: {
+    ...reusable.rowWithSpace("space-between"),
+    paddingHorizontal: SIZES.small,
+    paddingBottom: 15,
+    marginBottom: 5,
+  },
+  listContainer: {
+    paddingLeft: SIZES.small,
+    paddingRight: SIZES.small / 2,
+    paddingBottom: 5,
+  },
+  loadingContainer: {
     flex: 1,
     justifyContent: "center",
     alignItems: "center",
+    height: 200,
+  },
+  errorContainer: {
+    padding: SIZES.medium,
+    alignItems: "center",
+    justifyContent: "center",
+    backgroundColor: COLORS.lightWhite,
+    borderRadius: SIZES.small,
+    marginHorizontal: SIZES.small,
   },
   errorText: {
     fontSize: TEXT.medium,
     color: COLORS.red,
+    textAlign: "center",
+  },
+  emptyContainer: {
+    height: 150,
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  emptyText: {
+    fontSize: TEXT.medium,
+    color: COLORS.gray,
   },
 });
 
