@@ -1,8 +1,10 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useContext } from "react";
 import axios from "axios";
 import BASE_URL from "../apiConfig";
+import { AuthContext } from "../../store/auth-context"; // Import AuthContext
 
 const fetchAllGuideTrips = (language) => {
+  const { token } = useContext(AuthContext); // ✅ Get token from AuthContext
   const [guidTripData, setGuidTripData] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -24,6 +26,7 @@ const fetchAllGuideTrips = (language) => {
           params: { page },
           headers: {
             "Content-Language": language,
+            Authorization: `Bearer ${token}`, // ✅ Send token
             "X-API-KEY": "DISCOVERJO91427",
           },
         });
@@ -34,7 +37,7 @@ const fetchAllGuideTrips = (language) => {
           // Set pagination data
           setPagination({
             currentPage: page,
-            totalPages: Math.ceil(response.data.data.pagination.total / 10), // Assuming 10 items per page
+            totalPages: Math.ceil(response.data.data.pagination.total / 10),
             nextPageUrl: response.data.data.pagination.next_page_url,
             prevPageUrl: response.data.data.pagination.prev_page_url,
             total: response.data.data.pagination.total,
@@ -48,7 +51,7 @@ const fetchAllGuideTrips = (language) => {
         setIsLoading(false);
       }
     },
-    [language]
+    [language, token] // ✅ Add token dependency
   );
 
   const loadMoreTrips = useCallback(async () => {
@@ -58,18 +61,17 @@ const fetchAllGuideTrips = (language) => {
       const response = await axios.get(pagination.nextPageUrl, {
         headers: {
           "Content-Language": language,
+          Authorization: `Bearer ${token}`, // ✅ Send token
           "X-API-KEY": "DISCOVERJO91427",
         },
       });
 
       if (response.data && response.data.data && response.data.data.trips) {
-        // Append new trips to existing ones
         setGuidTripData((prevTrips) => [
           ...prevTrips,
           ...response.data.data.trips,
         ]);
 
-        // Update pagination
         setPagination({
           currentPage: pagination.currentPage + 1,
           totalPages: Math.ceil(response.data.data.pagination.total / 10),
@@ -81,9 +83,14 @@ const fetchAllGuideTrips = (language) => {
     } catch (error) {
       setError(error);
     }
-  }, [pagination.nextPageUrl, pagination.currentPage, isLoading, language]);
+  }, [
+    pagination.nextPageUrl,
+    pagination.currentPage,
+    isLoading,
+    language,
+    token,
+  ]); // ✅ Add token dependency
 
-  // Initial fetch
   useEffect(() => {
     fetchData();
   }, [fetchData]);

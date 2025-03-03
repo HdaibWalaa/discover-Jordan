@@ -37,8 +37,9 @@ import {
   AllUserPosts,
   AllGuideTrip,
   CreateGuideTrip,
+  EditGuideTrip,
   AllFavorites,
-  Favorites
+  Favorites,
 } from "../screens";
 import { COLORS } from "../constants/theme";
 import Header from "../components/header/Header";
@@ -293,6 +294,16 @@ const HomeStack = () => {
             tabBarShowLabel: false,
             header: () => (
               <ReusableHeader headerText={"CreateGuideTrip".toUpperCase()} />
+            ),
+          }}
+        />
+        <Stack.Screen
+          name="EditGuideTrip"
+          component={EditGuideTrip}
+          options={{
+            tabBarShowLabel: false,
+            header: () => (
+              <ReusableHeader headerText={"EditGuideTrip".toUpperCase()} />
             ),
           }}
         />

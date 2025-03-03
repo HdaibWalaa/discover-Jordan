@@ -40,6 +40,7 @@ import AllUserPosts from "./Posts/AllUserPosts";
 import EditUserPost from "./Posts/EditUserPost";
 import AllGuideTrip from "./trips/AllGuideTrip";
 import CreateGuideTrip from "./trips/CreateGuideTrip";
+import EditGuideTrip from "./trips/EditGuideTrip";
 import GuideTripDetails from "./trips/GuideTripDetails";
 import PlaceForLocation from "./search/PlaceForLocation";
 import UserAllPlans from "./Sitting/UserAllPlans";
@@ -97,4 +98,5 @@ export {
   FilterComponent,
   AllFavorites,
   Favorites,
+  EditGuideTrip,
 };

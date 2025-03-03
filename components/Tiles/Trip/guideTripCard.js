@@ -171,6 +171,7 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.1,
     shadowRadius: wp("1%"),
     elevation: 5,
+    overflow: "visible",
   },
   cardImage: {
     width: "100%",

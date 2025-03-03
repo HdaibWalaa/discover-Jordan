@@ -15,6 +15,7 @@ import { useNavigation } from "@react-navigation/native";
 import ReusableArrow from "../Buttons/ReusableArrow";
 import GuideTripCard from "../Tiles/Trip/guideTripCard";
 import fetchAllGuideTrips from "../../hook/trip/fetchAllGuideTrips";
+import { AuthContext } from "../../store/auth-context";
 
 const Guides = () => {
   const navigation = useNavigation();

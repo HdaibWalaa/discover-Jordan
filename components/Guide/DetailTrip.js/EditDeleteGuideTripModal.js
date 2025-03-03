@@ -27,8 +27,12 @@ const EditDeleteGuideTripModal = ({ isVisible, onClose, tripId, tripName }) => {
   const handleEdit = () => {
     // Close the modal
     onClose();
-    // Navigate to edit trip screen with the trip ID
-    navigation.navigate("EditTrip", { tripId });
+
+    // Navigate to the edit trip screen with the tripId
+    navigation.navigate("EditGuideTrip", {
+      tripId: tripId,
+      tripName: tripName,
+    });
   };
 
   const handleDelete = async () => {
@@ -67,7 +71,6 @@ const EditDeleteGuideTripModal = ({ isVisible, onClose, tripId, tripName }) => {
       if (response.data && response.data.status === 200) {
         onClose();
 
-        
         navigation.dispatch(
           CommonActions.reset({
             index: 0,

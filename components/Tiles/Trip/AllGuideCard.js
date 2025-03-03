@@ -169,6 +169,7 @@ const styles = StyleSheet.create({
     backgroundColor: COLORS.white,
     shadowColor: "#000",
     shadowOffset: { width: 0, height: hp("0.3%") },
+    overflow: "visible",
     shadowOpacity: 0.1,
     shadowRadius: wp("1%"),
     elevation: 5,
