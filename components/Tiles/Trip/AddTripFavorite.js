@@ -2,8 +2,8 @@ import React, { useState, useContext } from "react";
 import { TouchableOpacity, StyleSheet, Image, Alert } from "react-native";
 import axios from "axios";
 import { widthPercentageToDP as wp, heightPercentageToDP as hp } from "react-native-responsive-screen";
-import { AuthContext } from "../../../store/auth-context"; // Import AuthContext
-import BASE_URL from "../../../hook/apiConfig"; // Import your BASE_URL configuration
+import { AuthContext } from "../../../store/auth-context"; 
+import BASE_URL from "../../../hook/apiConfig"; 
 
 const AddTripFavorite = ({ tripId, isFavoritedInitially, size = 24 }) => {
   const { token } = useContext(AuthContext); // Get the user token from AuthContext

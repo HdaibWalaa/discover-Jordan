@@ -11,70 +11,145 @@ import {
   widthPercentageToDP as wp,
   heightPercentageToDP as hp,
 } from "react-native-responsive-screen";
-import { COLORS, TEXT } from "../../../constants/theme";
-import FavoritedGuideTrip from "./FavoritedGuideTrip";
+import { COLORS, TEXT, SIZES } from "../../../constants/theme";
+import ReusableText from "../../Reusable/ReusableText";
+import AddGuideTripFavorite from "./AddGuideTripFavorite";
+import { useNavigation } from "@react-navigation/native";
 
-const GuideTripCard = ({ item, onPress, margin }) => {
-  // Calculate attendance percentage
+
+const defaultTripImage = require("../../../assets/images/default/defaulttrip.jpeg");
+
+const GuideTripCard = ({ item, margin }) => {
+  const navigation = useNavigation();
   const attendancePercentage =
     (item.number_of_request / item.max_attendance) * 100;
 
-  // Format date
   const tripDate = new Date(item.start_time);
   const day = tripDate.getDate();
   const month = tripDate.toLocaleString("en", { month: "short" }).toUpperCase();
 
+  const handlePress = () => {
+    navigation.navigate("GuideTripDetails", { tripId: item.id });
+  };
+
   return (
     <TouchableOpacity
       style={[styles.tripCard, margin && { marginRight: margin }]}
-      onPress={onPress}
+      onPress={handlePress}
     >
       <ImageBackground
-        source={{ uri: item.image }}
+        source={item.image ? { uri: item.image } : defaultTripImage}
         style={styles.cardImage}
         imageStyle={{ borderTopLeftRadius: 12, borderTopRightRadius: 12 }}
         resizeMode="cover"
       >
         <View style={styles.topSection}>
           <View style={styles.dateContainer}>
-            <Text style={styles.dateText}>{day}</Text>
-            <Text style={styles.monthText}>{month}</Text>
+            <ReusableText
+              text={day.toString()}
+              family={"Bold"}
+              size={SIZES.large}
+              color={COLORS.black}
+              style={styles.dateText}
+            />
+            <ReusableText
+              text={month}
+              family={"Bold"}
+              size={SIZES.small}
+              color={COLORS.gray}
+              style={styles.monthText}
+            />
           </View>
-          <FavoritedGuideTrip
+          <AddGuideTripFavorite
             tripId={item.id}
-            favorite={item.favorite}
-            onFavoriteToggle={(id, status) => {
-              console.log(`Trip ${id} favorite status changed to ${status}`);
-            }}
+            isFavoritedInitially={item.favorite}
+            size={20}
           />
         </View>
       </ImageBackground>
 
       <View style={styles.detailsSection}>
+        {/* Name and status in the same row */}
+        <View style={styles.nameStatusRow}>
+          <View style={styles.nameContainer}>
+            <ReusableText
+              text={item.name}
+              family={"Bold"}
+              size={SIZES.large}
+              color={COLORS.black}
+              style={styles.tripName}
+              numberOfLines={2}
+              ellipsizeMode="tail"
+            />
+          </View>
+
+          {/* Status indicator */}
+          {item.status !== undefined && (
+            <View style={styles.statusContainer}>
+              <View
+                style={[
+                  styles.statusIndicator,
+                  {
+                    backgroundColor:
+                      item.status === 1 ? COLORS.primary : COLORS.gray,
+                  },
+                ]}
+              />
+              <ReusableText
+                text={item.status === 1 ? "Available" : "Not Available"}
+                family={"Regular"}
+                size={SIZES.small}
+                color={item.status === 1 ? COLORS.primary : COLORS.gray}
+              />
+            </View>
+          )}
+        </View>
+
         <View style={styles.priceRow}>
           <Image
             source={require("../../../assets/images/icons/walletTrip.png")}
             style={styles.walletIcon}
           />
-          <Text style={styles.priceText}>{item.price} JOD</Text>
+          <ReusableText
+            text={`${item.price} JOD`}
+            family={"Bold"}
+            size={SIZES.medium}
+            color={COLORS.black}
+            style={styles.priceText}
+          />
+          <ReusableText
+            text={"/per person"}
+            family={"Bold"}
+            size={SIZES.small}
+            color={COLORS.gray}
+            style={styles.perPersonText}
+          />
         </View>
-
-        <Text style={styles.tripName} numberOfLines={1} ellipsizeMode="tail">
-          {item.name}
-        </Text>
 
         <View style={styles.guideInfoRow}>
           <View style={styles.guideContainer}>
             <Image source={{ uri: item.guide_avatar }} style={styles.avatar} />
-            <Text style={styles.guideUsername}>{item.guide_username}</Text>
+            <ReusableText
+              text={item.guide_username}
+              family={"Bold"}
+              size={SIZES.medium}
+              color={COLORS.gray}
+              style={styles.guideUsername}
+            />
           </View>
 
           {/* Display guide rating */}
           <View style={styles.ratingContainer}>
-            <Text style={styles.ratingText}>{item.guide_rating}</Text>
             <Image
               source={require("../../../assets/images/icons/star.png")}
               style={styles.starIcon}
+            />
+            <ReusableText
+              text={item.guide_rating.toString()}
+              family={"Bold"}
+              size={SIZES.medium}
+              color={COLORS.black}
+              style={styles.ratingText}
             />
           </View>
         </View>
@@ -91,17 +166,15 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     overflow: "hidden",
     backgroundColor: COLORS.white,
-   
-    elevation: 3,
     shadowColor: "#000",
-    shadowOffset: { width: 5, height: 12 },
+    shadowOffset: { width: 0, height: hp("0.3%") },
     shadowOpacity: 0.1,
-    shadowRadius: 5,
+    shadowRadius: wp("1%"),
+    elevation: 5,
   },
   cardImage: {
     width: "100%",
     height: hp("18%"),
-    
   },
   topSection: {
     flexDirection: "row",
@@ -115,46 +188,47 @@ const styles = StyleSheet.create({
     alignItems: "center",
     minWidth: wp("12%"),
   },
-  dateText: {
-    fontSize: wp("5%"),
-    fontWeight: "bold",
-    color: COLORS.black,
-  },
-  monthText: {
-    fontSize: wp("3%"),
-    fontWeight: "500",
-    color: COLORS.gray,
-    marginTop: 2,
-  },
   detailsSection: {
     padding: wp("4%"),
+  },
+  nameStatusRow: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "flex-start",
+    marginBottom: hp("1%"),
+  },
+  nameContainer: {
+    flex: 1,
+    marginRight: wp("2%"),
+  },
+  statusContainer: {
+    flexDirection: "row",
+    alignItems: "center",
+    paddingTop: 2,
+  },
+  statusIndicator: {
+    width: wp("2%"),
+    height: wp("2%"),
+    borderRadius: wp("1%"),
+    marginRight: wp("1%"),
   },
   priceRow: {
     flexDirection: "row",
     alignItems: "center",
-    marginBottom: hp("0.8%"),
+    marginBottom: hp("1.5%"),
   },
   walletIcon: {
     width: wp("4%"),
     height: wp("4%"),
     marginRight: 4,
   },
-  priceText: {
-    fontSize: wp("3.8%"),
-    color: COLORS.black,
-    fontWeight: "bold",
-  },
-  tripName: {
-    fontSize: wp("4.5%"),
-    fontWeight: "bold",
-    color: COLORS.black,
-    marginBottom: hp("1.5%"),
+  perPersonText: {
+    marginLeft: 3,
   },
   guideInfoRow: {
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
-    marginBottom: hp("1.5%"),
   },
   guideContainer: {
     flexDirection: "row",
@@ -166,46 +240,16 @@ const styles = StyleSheet.create({
     borderRadius: wp("4%"),
     marginRight: wp("2%"),
   },
-  guideUsername: {
-    fontSize: wp("3.5%"),
-    color: COLORS.gray,
-    fontWeight: "500",
-  },
   ratingContainer: {
     flexDirection: "row",
     alignItems: "center",
-    backgroundColor: COLORS.primary || "#FFD700",
     paddingHorizontal: wp("2%"),
     paddingVertical: hp("0.5%"),
     borderRadius: 12,
   },
-  ratingText: {
-    fontSize: wp("3.5%"),
-    fontWeight: "bold",
-    color: COLORS.white,
-    marginRight: 4,
-  },
   starIcon: {
-    width: wp("3.5%"),
-    height: wp("3.5%"),
-  },
-  attendanceContainer: {
-    marginTop: hp("1%"),
-  },
-  attendanceText: {
-    fontSize: wp("3.2%"),
-    color: COLORS.gray,
-    marginBottom: 4,
-  },
-  progressBarContainer: {
-    height: hp("1%"),
-    backgroundColor: "#ECECEC",
-    borderRadius: 10,
-    overflow: "hidden",
-  },
-  progressBar: {
-    height: "100%",
-    backgroundColor: COLORS.primary || "#4CAF50",
-    borderRadius: 10,
+    width: wp("4%"),
+    height: wp("4%"),
+    marginRight: 4,
   },
 });

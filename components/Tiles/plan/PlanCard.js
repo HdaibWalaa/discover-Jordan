@@ -143,13 +143,11 @@ const styles = StyleSheet.create({
     width: wp("80%"),
     alignSelf: "center",
     shadowColor: "#000",
-    shadowOpacity: 0.15,
-    shadowRadius: wp("4%"),
-    shadowOffset: {
-      width: 0,
-      height: 4,
-    },
+    shadowOffset: { width: 0, height: hp("0.3%") },
+    shadowOpacity: 0.1,
+    shadowRadius: wp("1%"),
     elevation: 5,
+    overflow: "visible",
   },
   innerContainer: {
     flexDirection: "column",

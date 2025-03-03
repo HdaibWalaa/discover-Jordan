@@ -17,7 +17,7 @@ const styles = StyleSheet.create({
     marginRight: wp("2%"), // Adjusted margin for responsiveness
     shadowColor: "#000",
     shadowOffset: { width: 0, height: hp("0.3%") }, // Responsive shadow offset
-    shadowOpacity: 0.3,
+    shadowOpacity: 0.1,
     shadowRadius: wp("1%"), // Responsive shadow radius
     elevation: 5,
     overflow: "visible",
@@ -28,7 +28,7 @@ const styles = StyleSheet.create({
     borderTopRightRadius: wp("4%"), // Responsive border radius
     overflow: "hidden",
     paddingHorizontal: wp("1%"), // Responsive padding
-    paddingVertical: hp(.5), // Responsive padding
+    paddingVertical: hp(0.5), // Responsive padding
   },
   iconContainer: {
     position: "absolute",
@@ -40,7 +40,7 @@ const styles = StyleSheet.create({
   },
   contentContainer: {
     paddingHorizontal: wp("3%"), // Responsive padding
-    paddingVertical: hp(.5), // Responsive padding
+    paddingVertical: hp(0.5), // Responsive padding
   },
 });
 

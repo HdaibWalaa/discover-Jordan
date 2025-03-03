@@ -11,7 +11,7 @@ const GuideDate = ({
   end_datetime,
   price,
   maxAttendance,
-  joinRequests,
+  joinRequests = [], // ✅ Default to an empty array if undefined
 }) => {
   // Format date and time
   const startDate = new Date(start_datetime).toLocaleDateString("en-GB");
@@ -28,7 +28,7 @@ const GuideDate = ({
   });
 
   // Attendance info
-  const joinedCount = joinRequests.length;
+  const joinedCount = joinRequests?.length ?? 0; // ✅ Safe check using optional chaining
 
   return (
     <View style={styles.container}>
@@ -70,6 +70,7 @@ const GuideDate = ({
     </View>
   );
 };
+
 
 export default GuideDate;
 

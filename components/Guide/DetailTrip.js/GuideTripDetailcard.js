@@ -15,11 +15,14 @@ import GuideTripJoin from "./GuideTripJoin";
 import AddReview from "./Review/AddReview";
 import { COLORS, TEXT, SIZES } from "../../../constants/theme";
 import { AuthContext } from "../../../store/auth-context";
-import { BASE_URL } from "../../../hook/PostApi";
+
 
 const GuideTripDetailCard = ({ trip }) => {
   const { token } = useContext(AuthContext);
   const [reviewList, setReviewList] = useState(trip.reviews || []);
+
+  // Validate gallery data to ensure it's an array
+  const galleryData = Array.isArray(trip.gallery) ? trip.gallery : [];
 
   return (
     <View style={styles.card}>
@@ -27,7 +30,7 @@ const GuideTripDetailCard = ({ trip }) => {
       <DetailTripHeader tripDetails={trip} isCreator={true} />
 
       {/* Gallery Section */}
-      <GalleryTrip gallery={trip.gallery} />
+      <GalleryTrip gallery={galleryData} />
 
       {/* Guide Info Section */}
       <GuideInfo
@@ -59,7 +62,7 @@ const GuideTripDetailCard = ({ trip }) => {
           style={styles.titleText}
         />
         <ReusableText
-          text={trip.description}
+          text={trip.description || "No description available."}
           family={"Regular"}
           size={TEXT.small}
           color={COLORS.gray}
@@ -95,5 +98,11 @@ const styles = StyleSheet.create({
     backgroundColor: COLORS.lightGray,
     borderRadius: SIZES.base,
     paddingVertical: hp("1.5%"),
+  },
+  titleText: {
+    fontWeight: "bold",
+  },
+  subTitleText: {
+    lineHeight: 20,
   },
 });

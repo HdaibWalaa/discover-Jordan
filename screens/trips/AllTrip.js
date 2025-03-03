@@ -2,13 +2,10 @@ import React, { useContext, useEffect, useState } from "react";
 import {
   View,
   Text,
-  ActivityIndicator,
   FlatList,
   Image,
   TouchableOpacity,
   SafeAreaView,
-  Platform,
-  NativeModules,
 } from "react-native";
 import axios from "axios";
 import reusable from "../../components/Reusable/reusable.style";

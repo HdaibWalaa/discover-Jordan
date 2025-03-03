@@ -16,9 +16,11 @@ const GalleryTrip = ({ gallery }) => {
   const SPACING = -25; // Spacing between images
   const SIDE_SPACER = (width - IMAGE_WIDTH) / 3; // Spacer to center the images
 
-  if (!gallery || gallery.length === 0) {
-    return <Text style={styles.noImagesText}>No images available.</Text>;
-  }
+  // Check if gallery is empty or undefined, and use default image
+  const displayGallery =
+    !gallery || gallery.length === 0
+      ? [require("../../../assets/images/default/defaulttrip.jpeg")]
+      : gallery;
 
   const onScrollHandler = useAnimatedScrollHandler((event) => {
     scrollX.value = event.contentOffset.x;
@@ -38,7 +40,7 @@ const GalleryTrip = ({ gallery }) => {
         scrollEventThrottle={16}
         contentContainerStyle={{ paddingHorizontal: SIDE_SPACER }}
       >
-        {gallery.map((item, index) => {
+        {displayGallery.map((item, index) => {
           // Use animated style for scaling effect
           const animatedStyle = useAnimatedStyle(() => {
             const scale = interpolate(
@@ -56,13 +58,16 @@ const GalleryTrip = ({ gallery }) => {
             };
           });
 
+          // Handle local asset vs URI image source
+          const imageSource = typeof item === "string" ? { uri: item } : item;
+
           return (
             <View
               key={index}
               style={{ width: IMAGE_WIDTH, marginHorizontal: SPACING / 2 }}
             >
               <Animated.View style={[styles.imageContainer, animatedStyle]}>
-                <Image source={{ uri: item }} style={styles.galleryImage} />
+                <Image source={imageSource} style={styles.galleryImage} />
               </Animated.View>
             </View>
           );
@@ -70,43 +75,45 @@ const GalleryTrip = ({ gallery }) => {
       </Animated.ScrollView>
 
       {/* Dots Indicator */}
-      <View style={styles.dotsContainer}>
-        {gallery.map((_, index) => {
-          const animatedDotStyle = useAnimatedStyle(() => {
-            const opacity = interpolate(
-              scrollX.value,
-              [
-                (index - 1) * (IMAGE_WIDTH + SPACING),
-                index * (IMAGE_WIDTH + SPACING),
-                (index + 1) * (IMAGE_WIDTH + SPACING),
-              ],
-              [0.5, 1, 0.5] // Opacity for previous, current, and next dots
+      {displayGallery.length > 1 && (
+        <View style={styles.dotsContainer}>
+          {displayGallery.map((_, index) => {
+            const animatedDotStyle = useAnimatedStyle(() => {
+              const opacity = interpolate(
+                scrollX.value,
+                [
+                  (index - 1) * (IMAGE_WIDTH + SPACING),
+                  index * (IMAGE_WIDTH + SPACING),
+                  (index + 1) * (IMAGE_WIDTH + SPACING),
+                ],
+                [0.5, 1, 0.5] // Opacity for previous, current, and next dots
+              );
+
+              const scale = interpolate(
+                scrollX.value,
+                [
+                  (index - 1) * (IMAGE_WIDTH + SPACING),
+                  index * (IMAGE_WIDTH + SPACING),
+                  (index + 1) * (IMAGE_WIDTH + SPACING),
+                ],
+                [0.8, 1.2, 0.8] // Scale for previous, current, and next dots
+              );
+
+              return {
+                opacity,
+                transform: [{ scale }],
+              };
+            });
+
+            return (
+              <Animated.View
+                key={index}
+                style={[styles.dot, animatedDotStyle]}
+              />
             );
-
-            const scale = interpolate(
-              scrollX.value,
-              [
-                (index - 1) * (IMAGE_WIDTH + SPACING),
-                index * (IMAGE_WIDTH + SPACING),
-                (index + 1) * (IMAGE_WIDTH + SPACING),
-              ],
-              [0.8, 1.2, 0.8] // Scale for previous, current, and next dots
-            );
-
-            return {
-              opacity,
-              transform: [{ scale }],
-            };
-          });
-
-          return (
-            <Animated.View
-              key={index}
-              style={[styles.dot, animatedDotStyle]}
-            />
-          );
-        })}
-      </View>
+          })}
+        </View>
+      )}
     </View>
   );
 };
@@ -118,12 +125,15 @@ const styles = StyleSheet.create({
     width: "90%",
     height: "100%",
     borderRadius: 10,
+    resizeMode: "cover",
   },
   imageContainer: {
     width: "110%",
     height: 300,
     overflow: "hidden",
     borderRadius: 10,
+    alignItems: "center",
+    justifyContent: "center",
   },
   noImagesText: {
     fontSize: 16,

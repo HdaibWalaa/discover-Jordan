@@ -6,7 +6,7 @@ import { COLORS } from "../../constants/theme";
 import { RusableWhite, ReusableText, HeightSpacer } from "../../components"; // Import RusableWhite and other components
 
 const GuideTripDetails = ({ route }) => {
-  const { tripId } = route.params; // Get tripId from route params
+  const { tripId } = route.params; 
   const { GuideTripDetails, isLoading, error } = useFetchGuideTrip(tripId); // Use custom hook to fetch trip details
 
   if (isLoading) {
@@ -52,7 +52,7 @@ const GuideTripDetails = ({ route }) => {
   return (
     <RusableWhite>
       <FlatList
-        data={[GuideTripDetails]} // Pass trip details as an array with one item
+        data={[GuideTripDetails]} 
         keyExtractor={(item) => item.name}
         renderItem={({ item }) => <GuideTripDetailCard trip={item} />}
         showsHorizontalScrollIndicator={false}

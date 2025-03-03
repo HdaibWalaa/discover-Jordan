@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useCallback } from "react";
 import {
   FlatList,
   StyleSheet,
@@ -18,6 +18,8 @@ import fetchAllGuideTrips from "../../hook/trip/fetchAllGuideTrips";
 
 const Guides = () => {
   const navigation = useNavigation();
+
+  // Get device language
   const deviceLanguage =
     Platform.OS === "ios"
       ? NativeModules.SettingsManager.settings.AppleLocale ||
@@ -29,9 +31,19 @@ const Guides = () => {
     : deviceLanguage.split("-")[0];
 
   language = language || "en";
-  const { guidTripData, isLoading, error } = fetchAllGuideTrips(language);
 
-  if (isLoading) {
+  // Get guide trips with pagination
+  const { guidTripData, isLoading, error, pagination, loadMoreTrips } =
+    fetchAllGuideTrips(language);
+
+  // Handle loading more trips for horizontal FlatList
+  const handleLoadMore = useCallback(() => {
+    if (pagination.nextPageUrl) {
+      loadMoreTrips();
+    }
+  }, [pagination.nextPageUrl, loadMoreTrips]);
+
+  if (isLoading && guidTripData.length === 0) {
     return (
       <View style={styles.loadingContainer}>
         <ActivityIndicator color={COLORS.primary} size={60} />
@@ -64,22 +76,40 @@ const Guides = () => {
       </View>
 
       {guidTripData && guidTripData.length > 0 ? (
-        <FlatList
-          data={guidTripData}
-          horizontal
-          keyExtractor={(item) => item.id.toString()}
-          showsHorizontalScrollIndicator={false}
-          contentContainerStyle={styles.listContainer}
-          renderItem={({ item }) => (
-            <GuideTripCard
-              item={item}
-              margin={10}
-              onPress={() => {
-                navigation.navigate("GuideTripDetails", { tripId: item.id });
-              }}
+        <View>
+          <FlatList
+            data={guidTripData}
+            horizontal
+            keyExtractor={(item) => item.id.toString()}
+            showsHorizontalScrollIndicator={false}
+            contentContainerStyle={styles.listContainer}
+            renderItem={({ item }) => (
+              <GuideTripCard
+                item={item}
+                margin={10}
+                onPress={() => {
+                  navigation.navigate("GuideTripDetails", { tripId: item.id });
+                }}
+              />
+            )}
+            onEndReached={handleLoadMore}
+            onEndReachedThreshold={0.3}
+            ListFooterComponent={
+              pagination.nextPageUrl ? (
+                <View style={styles.footerLoader}>
+                  <ActivityIndicator color={COLORS.primary} size={30} />
+                </View>
+              ) : null
+            }
+          />
+          {isLoading && guidTripData.length > 0 && (
+            <ActivityIndicator
+              color={COLORS.primary}
+              size={30}
+              style={styles.paginationLoader}
             />
           )}
-        />
+        </View>
       ) : (
         <View style={styles.emptyContainer}>
           <Text style={styles.emptyText}>No guide trips available</Text>
@@ -131,6 +161,16 @@ const styles = StyleSheet.create({
   emptyText: {
     fontSize: TEXT.medium,
     color: COLORS.gray,
+  },
+  footerLoader: {
+    width: 80,
+    height: "100%",
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  paginationLoader: {
+    marginTop: 10,
+    alignSelf: "center",
   },
 });
 

@@ -2,146 +2,223 @@ import React, { useContext, useEffect, useState } from "react";
 import {
   View,
   Text,
-  StyleSheet,
-  ActivityIndicator,
   FlatList,
   Image,
   TouchableOpacity,
   SafeAreaView,
+  ActivityIndicator,
 } from "react-native";
+import reusable from "../../components/Reusable/reusable.style";
 import { AuthContext } from "../../store/auth-context";
 import { GuideTripContext } from "../../store/guide-trip-context";
 import AllGuideCard from "../../components/Tiles/Trip/AllGuideCard";
-import { COLORS, SIZES, TEXT } from "../../constants/theme";
-import { useNavigation } from "@react-navigation/native";
-import DateSelector from "../../components/Tiles/Trip/DateSelector";
+import { COLORS, TEXT } from "../../constants/theme";
+import { Video } from "expo-av";
+import { ReusableText, ReusableBackground } from "../../components";
+import DateTimePickerModal from "react-native-modal-datetime-picker";
+import { useNavigation, useFocusEffect } from "@react-navigation/native";
+import {
+  widthPercentageToDP as wp,
+  heightPercentageToDP as hp,
+} from "react-native-responsive-screen";
+import { useLanguage } from "../../store/context/LanguageContext";
+import translations from "../../translations/translations";
+import styles from "./AllGuideTrip.style";
 
-const AllGuideTrip = () => {
+const AllGuideTrip = ({ route }) => {
+  const { language } = useLanguage();
+  const localizedText = translations[language] || translations["en"];
+
   const { token, user } = useContext(AuthContext);
-  const { guideTrips, isLoading, error, fetchGuideTrips } =
-    useContext(GuideTripContext);
+  const {
+    guideTrips,
+    setGuideTrips, // Assuming your context has this setter function
+    isLoading,
+    error,
+    pagination,
+    fetchGuideTrips,
+    loadMoreTrips,
+  } = useContext(GuideTripContext);
+
   const navigation = useNavigation();
   const [filteredTrips, setFilteredTrips] = useState([]);
-  const [selectedDate, setSelectedDate] = useState(
-    new Date().toISOString().split("T")[0]
-  );
-  const [selectedMonth, setSelectedMonth] = useState(new Date());
+  const [selectedDate, setSelectedDate] = useState(null);
+  const [isDatePickerVisible, setDatePickerVisibility] = useState(false);
+  const [isLoadingMore, setIsLoadingMore] = useState(false);
 
+  // Extract deletedTripId from route params if it exists
+  const deletedTripId = route?.params?.deletedTripId;
+  const timestamp = route?.params?.timestamp;
+
+  // This effect runs when the component mounts or when route params change
   useEffect(() => {
     if (token) {
-      fetchGuideTrips(token, user.lang);
-    }
-  }, [token, user.lang]);
+      // If we have a deletedTripId, first update the local state to remove the deleted trip
+      if (deletedTripId && guideTrips.length > 0) {
+        const updatedTrips = guideTrips.filter(
+          (trip) => trip.id.toString() !== deletedTripId.toString()
+        );
 
+        // Update the context with filtered trips
+        if (updatedTrips.length !== guideTrips.length) {
+          setGuideTrips(updatedTrips);
+        }
+      }
+
+      // Then fetch fresh data from the server
+      fetchGuideTrips(token, language);
+    }
+  }, [token, deletedTripId, timestamp, language]);
+
+  // This effect updates filtered trips when selected date or guide trips change
   useEffect(() => {
     if (selectedDate) {
-      const tripsOnSelectedDate = guideTrips.filter(
-        (trip) => trip.start_time.split(" ")[0] === selectedDate
+      // Filter trips based on the selected date
+      const formattedDate = selectedDate.split("T")[0];
+      setFilteredTrips(
+        guideTrips.filter(
+          (trip) => trip.start_time.split(" ")[0] === formattedDate
+        )
       );
-      setFilteredTrips(tripsOnSelectedDate);
+    } else {
+      setFilteredTrips(guideTrips);
     }
   }, [selectedDate, guideTrips]);
 
-  const handleMonthChange = (newMonth) => {
-    console.log("Month changed to:", newMonth.toISOString().slice(0, 7));
-    setSelectedMonth(newMonth);
+  // Also refresh on screen focus to ensure up-to-date data
+  useFocusEffect(
+    React.useCallback(() => {
+      if (token) {
+        fetchGuideTrips(token, language);
+      }
+    }, [token, language])
+  );
+
+  const handleConfirm = (date) => {
+    const formattedDate = date.toISOString().split("T")[0];
+    setSelectedDate(formattedDate);
+    setDatePickerVisibility(false);
   };
 
-  if (isLoading) {
-    return (
-      <View style={styles.centered}>
-        <ActivityIndicator size="large" color={COLORS.primary} />
-      </View>
-    );
-  }
+  const handleLoadMore = async () => {
+    if (!pagination.nextPageUrl || isLoading || isLoadingMore) return;
 
-  if (error) {
+    setIsLoadingMore(true);
+    await loadMoreTrips(token, language);
+    setIsLoadingMore(false);
+  };
+
+  const renderFooter = () => {
+    if (!isLoadingMore) return <View style={{ height: hp(15) }} />;
+
     return (
       <View style={styles.centered}>
-        <Text>Error: {error.message}</Text>
+        <ActivityIndicator size="small" color={COLORS.primary} />
+        <Text style={styles.noDataText}>Loading more trips...</Text>
       </View>
     );
-  }
+  };
+
+  // Clear date filter
+  const clearDateFilter = () => {
+    setSelectedDate(null);
+  };
+
+  // Check if user is a guide (is_guide === 1)
+  const isUserGuide = user && user.is_guide === 1;
 
   return (
-    <SafeAreaView style={styles.container}>
-      <View style={styles.header}>
-        <Text style={styles.title}>Pick your perfect trip day</Text>
+    <ReusableBackground>
+      <SafeAreaView style={[reusable.container, styles.safeArea]}>
+        <View style={{ gap: 0 }}>
+          <View style={reusable.header1}>
+            <View style={styles.headerTextContainer}>
+              <ReusableText
+                text={localizedText.pickYourGuideTrip || "Pick Your Trip"}
+                family="Bold"
+                size={TEXT.large}
+                color={COLORS.black}
+              />
 
-        {user?.is_guide === 1 && (
-          <TouchableOpacity
-            style={styles.createButton}
-            onPress={() => navigation.navigate("CreateGuideTrip")}
-          >
-            <Image
-              source={require("../../assets/images/icons/creat.png")}
-              style={styles.createIcon}
+              {selectedDate && (
+                <TouchableOpacity
+                  onPress={clearDateFilter}
+                  style={styles.clearFilterButton}
+                >
+                  <Text style={styles.clearFilterText}>
+                    {localizedText.clearFilter || "Clear filter"}
+                  </Text>
+                </TouchableOpacity>
+              )}
+            </View>
+            <View style={styles.createButtonsWrapper}>
+              <TouchableOpacity onPress={() => setDatePickerVisibility(true)}>
+                <View style={styles.createButtonContent}>
+                  <Image
+                    source={require("../../assets/images/icons/datecalender.png")}
+                    style={styles.dateIcon}
+                  />
+                </View>
+              </TouchableOpacity>
+
+              {/* Only show Create Guide Trip button if user is a guide */}
+              {isUserGuide && (
+                <TouchableOpacity
+                  onPress={() => navigation.navigate("CreateGuideTrip")}
+                >
+                  <View style={styles.createButtonContent}>
+                    <Image
+                      source={require("../../assets/images/icons/creattripnew.png")}
+                      style={styles.dateIcon}
+                    />
+                  </View>
+                </TouchableOpacity>
+              )}
+            </View>
+          </View>
+
+          {isLoading && !isLoadingMore ? (
+            <View style={styles.centered}>
+              <ActivityIndicator size="large" color={COLORS.primary} />
+            </View>
+          ) : filteredTrips.length > 0 ? (
+            <FlatList
+              data={filteredTrips}
+              ListFooterComponent={renderFooter}
+              showsVerticalScrollIndicator={false}
+              keyExtractor={(item) => item.id.toString()}
+              renderItem={({ item, index }) => (
+                <AllGuideCard item={item} isFirst={index === 0} />
+              )}
+              contentContainerStyle={styles.listContainer}
+              onEndReached={handleLoadMore}
+              onEndReachedThreshold={0.5}
             />
-            <Text style={styles.createText}>Create</Text>
-          </TouchableOpacity>
-        )}
-      </View>
+          ) : (
+            <View style={styles.noDataContainer}>
+              <Video
+                source={require("../../assets/images/videos/nodata.mp4")}
+                style={styles.noDataVideo}
+                resizeMode="contain"
+                shouldPlay
+                isLooping
+              />
+              <Text style={styles.noDataText}>
+                {localizedText.noTripFound || "No trips found"}
+              </Text>
+            </View>
+          )}
 
-      <DateSelector
-        selectedMonth={selectedMonth}
-        selectedDate={selectedDate}
-        onChangeMonth={handleMonthChange}
-        onSelectDate={setSelectedDate}
-      />
-
-      {filteredTrips.length > 0 ? (
-        <FlatList
-          data={filteredTrips}
-          keyExtractor={(item) => item.id.toString()}
-          renderItem={({ item }) => <AllGuideCard item={item} />}
-        />
-      ) : (
-        <View style={styles.centered}>
-          <Text>No trips available for this day.</Text>
+          <DateTimePickerModal
+            isVisible={isDatePickerVisible}
+            mode="date"
+            onConfirm={handleConfirm}
+            onCancel={() => setDatePickerVisibility(false)}
+          />
         </View>
-      )}
-    </SafeAreaView>
+      </SafeAreaView>
+    </ReusableBackground>
   );
 };
 
 export default AllGuideTrip;
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    padding: 30,
-    top: 50,
-    paddingHorizontal: 30,
-  },
-  header: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-    marginBottom: 20,
-  },
-  title: {
-    fontSize: 24,
-    fontWeight: "bold",
-  },
-  createButton: {
-    flexDirection: "row",
-    alignItems: "center",
-    backgroundColor: COLORS.primary,
-    padding: 10,
-    borderRadius: 8,
-  },
-  createIcon: {
-    width: 20,
-    height: 20,
-    marginRight: 5,
-  },
-  createText: {
-    color: COLORS.white,
-    fontWeight: "bold",
-  },
-  centered: {
-    flex: 1,
-    justifyContent: "center",
-    alignItems: "center",
-  },
-});

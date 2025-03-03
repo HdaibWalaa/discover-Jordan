@@ -54,6 +54,7 @@ const TripJoinForm = ({ guideTripId, token, onJoinSuccess }) => {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
+          "X-API-KEY": "DISCOVERJO91427",
           Authorization: `Bearer ${token}`,
         },
         body: JSON.stringify(requestData),
